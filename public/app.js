@@ -71,7 +71,11 @@ loginForm.addEventListener('submit', async (e) => {
     loginError.textContent = '';
     
     if (!selectedAgent) {
-        loginError.textContent = 'Vui lòng chọn Máy ký số!';
+        if (agentSelect.options.length <= 1) {
+            loginError.textContent = 'Không có agent nào đang hoạt động, vui lòng liên hệ quản trị để được xử lý!';
+        } else {
+            loginError.textContent = 'Vui lòng chọn Máy ký số!';
+        }
         return;
     }
     
