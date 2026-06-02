@@ -32,8 +32,30 @@ wss.on('connection', (ws, req) => {
                 ws.send(JSON.stringify({ type: 'ACK', status: 'REGISTERED', agentId: currentAgentId }));
             }
 
-            // Handle other messages (Sign responses, etc.)
-            // ...
+            // Handle ACK from Agent
+            if (data.type === 'legacy-login-ack' && data.reqId) {
+                const pending = pendingRequests.get(data.reqId);
+                if (pending) {
+                    clearTimeout(pending.timeout);
+                    pendingRequests.delete(data.reqId);
+                    
+                    if (data.ok) {
+                        pending.res.json({
+                            success: true,
+                            user: { 
+                                id: data.data?.loginUserId, 
+                                username: data.data?.userCode, 
+                                name: data.data?.userName, 
+                                role: 'doctor' 
+                            },
+                            token: 'mock-jwt-token-12345'
+                        });
+                    } else {
+                        pending.res.json({ success: false, message: data.message || 'Lỗi đăng nhập từ Agent!' });
+                    }
+                }
+            }
+
         } catch (e) {
             console.error('[WS] Error parsing message:', e);
         }
@@ -62,15 +84,40 @@ let mockDocuments = [
     { id: 'doc3', title: 'Đơn thuốc điện tử - BN Lê Văn C', status: 'pending', date: '2026-06-02' },
 ];
 
-// API: Login
+// Map to hold pending requests
+const pendingRequests = new Map();
+
+// API: Login Endpoint (Forwards to Agent)
 app.post('/api/login', (req, res) => {
-    const { username, password } = req.body;
-    const user = mockUsers.find(u => u.username === username && u.password === password);
-    if (user) {
-        res.json({ success: true, token: 'dummy-token-' + username, user: { username: user.username, name: user.name } });
-    } else {
-        res.status(401).json({ success: false, message: 'Sai tên đăng nhập hoặc mật khẩu!' });
+    const { username, password, agentId } = req.body;
+    
+    if (!agentId || !connectedAgents.has(agentId)) {
+        return res.json({ success: false, message: 'Agent không khả dụng hoặc đã mất kết nối!' });
     }
+
+    const ws = connectedAgents.get(agentId);
+    const reqId = Date.now().toString() + Math.random().toString(36).substring(7);
+
+    // Lưu request vào danh sách chờ
+    const timeout = setTimeout(() => {
+        if (pendingRequests.has(reqId)) {
+            pendingRequests.delete(reqId);
+            res.json({ success: false, message: 'Máy ký số không phản hồi (Timeout)!' });
+        }
+    }, 15000); // 15 seconds timeout
+
+    pendingRequests.set(reqId, { res, timeout });
+
+    // Gửi lệnh xuống Agent C#
+    const loginPayload = {
+        type: 'legacy-login',
+        reqId: reqId,
+        uid: reqId, // Dùng reqId làm uid tạm thời
+        username: username,
+        password: password
+    };
+    
+    ws.send(JSON.stringify(loginPayload));
 });
 
 // API: Get Documents

@@ -83,7 +83,7 @@ loginForm.addEventListener('submit', async (e) => {
         const res = await fetch('/api/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username, password })
+            body: JSON.stringify({ username, password, agentId: selectedAgent })
         });
         
         const data = await res.json();
