@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>eHospital - Cổng Ký Số Điện Tử</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="background-shapes">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+        <div class="shape shape-3"></div>
+    </div>
+
+    <!-- MÀN HÌNH LOGIN -->
+    <div id="login-view" class="view active">
+        <div class="glass-panel login-box">
+            <div class="logo">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                <h2>SignCore Portal</h2>
+            </div>
+            <p class="subtitle">Hệ thống Ký số Y tế Tập trung</p>
+            
+            <form id="login-form">
+                <div class="input-group">
+                    <label>Tên đăng nhập</label>
+                    <input type="text" id="username" placeholder="Nhập admin hoặc bacsi_nam" required>
+                </div>
+                <div class="input-group">
+                    <label>Mật khẩu</label>
+                    <input type="password" id="password" placeholder="Nhập 123" required>
+                </div>
+                <div id="login-error" class="error-msg"></div>
+                <button type="submit" class="btn-primary">
+                    <span>Đăng Nhập</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MÀN HÌNH DASHBOARD -->
+    <div id="dashboard-view" class="view">
+        <nav class="navbar glass-panel">
+            <div class="nav-brand">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                <span>SignCore Portal</span>
+            </div>
+            <div class="nav-user">
+                <span id="user-greeting">Xin chào, Bác sĩ</span>
+                <button id="btn-logout" class="btn-secondary">Đăng xuất</button>
+            </div>
+        </nav>
+
+        <main class="dashboard-content">
+            <div class="glass-panel main-panel">
+                <div class="panel-header">
+                    <h3>Danh sách tài liệu chờ ký</h3>
+                    <button id="btn-refresh" class="btn-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 11-9-9c2.52 0 4.93 1 6.74 2.74L21 8"></path><path d="M21 3v5h-5"></path></svg>
+                    </button>
+                </div>
+                
+                <div class="table-container">
+                    <table id="docs-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Tên Tài Liệu</th>
+                                <th>Ngày Tạo</th>
+                                <th>Trạng Thái</th>
+                                <th>Thao Tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="docs-body">
+                            <!-- JS sẽ render dữ liệu vào đây -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Màn hình chờ ký (Modal) -->
+    <div id="loading-overlay" class="overlay hidden">
+        <div class="glass-panel loading-box">
+            <div class="spinner"></div>
+            <h3>Đang gửi lệnh xuống USB Token...</h3>
+            <p>Vui lòng kiểm tra màn hình máy tính của bạn và nhập mã PIN để hoàn tất ký số.</p>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
