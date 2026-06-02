@@ -97,11 +97,16 @@ loginForm.addEventListener('submit', async (e) => {
 });
 
 btnLogout.addEventListener('click', async () => {
+    if (!confirm('Bạn có chắc chắn muốn thoát phiên làm việc hiện tại?')) {
+        return;
+    }
+
     try {
         await fetch('/api/logout', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ uid: currentUser.uid, agentId: currentUser.activeAgentId })
+            // Fallback id if uid is missing (for old cached user data)
+            body: JSON.stringify({ uid: currentUser.uid || currentUser.id, agentId: currentUser.activeAgentId })
         });
     } catch (err) {
         console.error('Lỗi khi logout:', err);
