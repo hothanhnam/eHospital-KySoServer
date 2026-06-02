@@ -44,6 +44,7 @@ wss.on('connection', (ws, req) => {
                             success: true,
                             user: { 
                                 id: data.data?.loginUserId, 
+                                uid: data.uid,
                                 username: data.data?.userCode, 
                                 name: data.data?.userName, 
                                 role: 'doctor' 
@@ -118,6 +119,17 @@ app.post('/api/login', (req, res) => {
     };
     
     ws.send(JSON.stringify(loginPayload));
+});
+
+// API: Logout Endpoint (Forwards to Agent)
+app.post('/api/logout', (req, res) => {
+    const { agentId, uid } = req.body;
+    if (agentId && uid && connectedAgents.has(agentId)) {
+        const ws = connectedAgents.get(agentId);
+        const reqId = Date.now().toString() + Math.random().toString(36).substring(7);
+        ws.send(JSON.stringify({ type: 'logout', reqId: reqId, uid: uid }));
+    }
+    res.json({ success: true });
 });
 
 // API: Get Documents

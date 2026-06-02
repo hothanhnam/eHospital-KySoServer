@@ -96,7 +96,17 @@ loginForm.addEventListener('submit', async (e) => {
     }
 });
 
-btnLogout.addEventListener('click', () => {
+btnLogout.addEventListener('click', async () => {
+    try {
+        await fetch('/api/logout', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ uid: currentUser.uid, agentId: currentUser.activeAgentId })
+        });
+    } catch (err) {
+        console.error('Lỗi khi logout:', err);
+    }
+    
     currentUser = null;
     localStorage.removeItem('kyso_user');
     loginView.classList.add('active');
