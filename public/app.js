@@ -42,17 +42,14 @@ async function fetchAgents() {
             opt.textContent = '-- Chưa có máy ký số nào đang bật --';
             agentSelect.appendChild(opt);
         } else {
-            const opt = document.createElement('option');
-            opt.value = '';
-            opt.textContent = '-- Vui lòng chọn một máy ký số --';
-            agentSelect.appendChild(opt);
-            
             data.data.forEach(agentId => {
                 const opt = document.createElement('option');
                 opt.value = agentId;
-                opt.textContent = `Máy: ${agentId}`;
+                opt.textContent = agentId; // Bỏ chữ "Máy: "
                 agentSelect.appendChild(opt);
             });
+            // Tự động chọn Agent đầu tiên
+            agentSelect.selectedIndex = 0;
         }
     } catch (err) {
         agentSelect.innerHTML = '<option value="">Lỗi tải danh sách Agent</option>';
