@@ -25,6 +25,17 @@
             
             <form id="login-form">
                 <div class="input-group">
+                    <label>Chọn máy ký số (Agent)</label>
+                    <div style="display: flex; gap: 8px;">
+                        <select id="agent-select" required style="flex-grow: 1; padding: 12px 16px; border-radius: 12px; background: rgba(15, 23, 42, 0.6); border: 1px solid var(--glass-border); color: white; font-size: 1rem;">
+                            <option value="">Đang tải danh sách Agent...</option>
+                        </select>
+                        <button type="button" id="btn-refresh-agents" class="btn-secondary" style="padding: 12px;" title="Làm mới danh sách">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 11-9-9c2.52 0 4.93 1 6.74 2.74L21 8"></path><path d="M21 3v5h-5"></path></svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="input-group">
                     <label>Tên đăng nhập</label>
                     <input type="text" id="username" placeholder="Nhập admin hoặc bacsi_nam" required>
                 </div>

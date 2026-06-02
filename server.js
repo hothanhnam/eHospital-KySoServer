@@ -78,6 +78,12 @@ app.get('/api/documents', (req, res) => {
     res.json({ success: true, data: mockDocuments });
 });
 
+// API: Get active agents
+app.get('/api/agents', (req, res) => {
+    const agents = Array.from(connectedAgents.keys());
+    res.json({ success: true, data: agents });
+});
+
 // API for Web HIS to trigger signing (or triggered from Portal)
 app.post('/api/sign/request', (req, res) => {
     const { agentId, payload, docId } = req.body;

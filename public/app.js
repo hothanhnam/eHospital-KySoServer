@@ -14,6 +14,8 @@ const btnLogout = document.getElementById('btn-logout');
 const btnRefresh = document.getElementById('btn-refresh');
 const docsBody = document.getElementById('docs-body');
 const loadingOverlay = document.getElementById('loading-overlay');
+const agentSelect = document.getElementById('agent-select');
+const btnRefreshAgents = document.getElementById('btn-refresh-agents');
 
 // --- Initialization ---
 function init() {
@@ -22,16 +24,56 @@ function init() {
     if (storedUser) {
         currentUser = JSON.parse(storedUser);
         showDashboard();
+    } else {
+        fetchAgents();
     }
 }
+
+// --- Fetch Active Agents ---
+async function fetchAgents() {
+    try {
+        const res = await fetch('/api/agents');
+        const data = await res.json();
+        
+        agentSelect.innerHTML = '';
+        if (data.data.length === 0) {
+            const opt = document.createElement('option');
+            opt.value = '';
+            opt.textContent = '-- Chưa có máy ký số nào đang bật --';
+            agentSelect.appendChild(opt);
+        } else {
+            const opt = document.createElement('option');
+            opt.value = '';
+            opt.textContent = '-- Vui lòng chọn một máy ký số --';
+            agentSelect.appendChild(opt);
+            
+            data.data.forEach(agentId => {
+                const opt = document.createElement('option');
+                opt.value = agentId;
+                opt.textContent = `Máy: ${agentId}`;
+                agentSelect.appendChild(opt);
+            });
+        }
+    } catch (err) {
+        agentSelect.innerHTML = '<option value="">Lỗi tải danh sách Agent</option>';
+    }
+}
+
+btnRefreshAgents.addEventListener('click', fetchAgents);
 
 // --- Login Logic ---
 loginForm.addEventListener('submit', async (e) => {
     e.preventDefault();
+    const selectedAgent = agentSelect.value;
     const username = document.getElementById('username').value;
     const password = document.getElementById('password').value;
     
     loginError.textContent = '';
+    
+    if (!selectedAgent) {
+        loginError.textContent = 'Vui lòng chọn Máy ký số!';
+        return;
+    }
     
     try {
         const res = await fetch('/api/login', {
@@ -42,7 +84,7 @@ loginForm.addEventListener('submit', async (e) => {
         
         const data = await res.json();
         if (data.success) {
-            currentUser = data.user;
+            currentUser = { ...data.user, activeAgentId: selectedAgent };
             localStorage.setItem('kyso_user', JSON.stringify(currentUser));
             showDashboard();
         } else {
@@ -136,12 +178,12 @@ window.signDocument = async function(docId) {
     loadingOverlay.classList.remove('hidden');
     
     try {
-        // Gửi lệnh xuống Server, truyền ID của Agent (Ở đây giả lập agentId = username)
+        // Gửi lệnh xuống Server, truyền ID của Agent đã chọn lúc Login
         const res = await fetch('/api/sign/request', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                agentId: currentUser.username, // Assumes the SignCoreVD agent connects with username
+                agentId: currentUser.activeAgentId, 
                 docId: docId,
                 payload: {
                     action: 'SIGN_DOCUMENT',
