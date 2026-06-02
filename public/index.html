@@ -93,6 +93,20 @@
         </main>
     </div>
 
+    <!-- Toast Notifications -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Custom Confirm Modal -->
+    <div id="confirm-modal" class="overlay hidden" style="z-index: 1000;">
+        <div class="glass-panel confirm-box">
+            <h3 id="confirm-msg">Bạn có chắc chắn?</h3>
+            <div class="confirm-actions">
+                <button id="btn-confirm-cancel" class="btn-secondary">Hủy</button>
+                <button id="btn-confirm-ok" class="btn-primary" style="margin-top: 0;">Đồng ý</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Màn hình chờ ký (Modal) -->
     <div id="loading-overlay" class="overlay hidden">
         <div class="glass-panel loading-box">
@@ -102,6 +116,6 @@
         </div>
     </div>
 
-    <script src="app.js?v=7"></script>
+    <script src="app.js?v=8"></script>
 </body>
 </html>

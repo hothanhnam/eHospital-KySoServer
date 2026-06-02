@@ -96,26 +96,69 @@ loginForm.addEventListener('submit', async (e) => {
     }
 });
 
-btnLogout.addEventListener('click', async () => {
-    if (!confirm('Bạn có chắc chắn muốn thoát phiên làm việc hiện tại?')) {
-        return;
-    }
-
-    try {
-        await fetch('/api/logout', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            // Fallback id if uid is missing (for old cached user data)
-            body: JSON.stringify({ uid: currentUser.uid || currentUser.id, agentId: currentUser.activeAgentId })
-        });
-    } catch (err) {
-        console.error('Lỗi khi logout:', err);
-    }
+// --- UI Components ---
+function showToast(message, type = 'info') {
+    const container = document.getElementById('toast-container');
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.innerHTML = `<span>${message}</span>`;
     
-    currentUser = null;
-    localStorage.removeItem('kyso_user');
-    loginView.classList.add('active');
-    dashboardView.classList.remove('active');
+    container.appendChild(toast);
+    
+    // Trigger animation
+    setTimeout(() => toast.classList.add('show'), 10);
+    
+    // Remove after 3s
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+}
+
+function showConfirm(message, onConfirm) {
+    const modal = document.getElementById('confirm-modal');
+    const msgEl = document.getElementById('confirm-msg');
+    const btnCancel = document.getElementById('btn-confirm-cancel');
+    const btnOk = document.getElementById('btn-confirm-ok');
+    
+    msgEl.textContent = message;
+    modal.classList.remove('hidden');
+    
+    // Cleanup old listeners to prevent multiple triggers
+    const newBtnOk = btnOk.cloneNode(true);
+    const newBtnCancel = btnCancel.cloneNode(true);
+    btnOk.parentNode.replaceChild(newBtnOk, btnOk);
+    btnCancel.parentNode.replaceChild(newBtnCancel, btnCancel);
+    
+    newBtnCancel.addEventListener('click', () => {
+        modal.classList.add('hidden');
+    });
+    
+    newBtnOk.addEventListener('click', () => {
+        modal.classList.add('hidden');
+        onConfirm();
+    });
+}
+
+btnLogout.addEventListener('click', () => {
+    showConfirm('Bạn có chắc chắn muốn thoát phiên làm việc hiện tại?', async () => {
+        try {
+            await fetch('/api/logout', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                // Fallback id if uid is missing (for old cached user data)
+                body: JSON.stringify({ uid: currentUser.uid || currentUser.id, agentId: currentUser.activeAgentId })
+            });
+        } catch (err) {
+            console.error('Lỗi khi logout:', err);
+        }
+        
+        currentUser = null;
+        localStorage.removeItem('kyso_user');
+        loginView.classList.add('active');
+        dashboardView.classList.remove('active');
+        showToast('Đã đăng xuất thành công', 'success');
+    });
 });
 
 // --- View Transition ---
@@ -216,16 +259,16 @@ window.signDocument = async function(docId) {
         setTimeout(() => {
             loadingOverlay.classList.add('hidden');
             if (data.success) {
-                alert(`Đã gửi lệnh ký tới USB Token thành công! Vui lòng kiểm tra Agent dưới máy tính.`);
+                showToast(`Đã gửi lệnh ký tới USB Token thành công! Vui lòng kiểm tra màn hình máy tính.`, 'success');
                 loadDocuments(); // Refresh to see "Đang xử lý" status
             } else {
-                alert(`Lỗi: ${data.error}`);
+                showToast(`Lỗi: ${data.error}`, 'error');
             }
         }, 1000);
         
     } catch (err) {
         loadingOverlay.classList.add('hidden');
-        alert('Có lỗi xảy ra khi kết nối tới Server!');
+        showToast('Có lỗi xảy ra khi kết nối tới Server!', 'error');
     }
 }
 
