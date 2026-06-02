@@ -58,6 +58,15 @@ async function fetchAgents() {
 
 btnRefreshAgents.addEventListener('click', fetchAgents);
 
+// --- Realtime SSE for Agent Updates ---
+const evtSource = new EventSource('/api/events');
+evtSource.addEventListener('agents_update', () => {
+    // Chỉ auto-refresh nếu người dùng đang ở trang đăng nhập
+    if (loginView.classList.contains('active')) {
+        fetchAgents();
+    }
+});
+
 // --- Login Logic ---
 loginForm.addEventListener('submit', async (e) => {
     e.preventDefault();

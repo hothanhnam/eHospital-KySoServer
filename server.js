@@ -13,6 +13,20 @@ const wss = new WebSocket.Server({ server, path: '/ws' });
 // Store connected agents
 const connectedAgents = new Map();
 
+// SSE Clients
+const webClients = new Set();
+
+function broadcastAgentUpdate() {
+    for (let client of webClients) {
+        try {
+            client.write(`event: agents_update\n`);
+            client.write(`data: ${JSON.stringify({ timestamp: Date.now() })}\n\n`);
+        } catch (e) {
+            webClients.delete(client);
+        }
+    }
+}
+
 wss.on('connection', (ws, req) => {
     console.log(`[WS] New connection from ${req.socket.remoteAddress}`);
     let currentAgentId = null;
@@ -30,6 +44,9 @@ wss.on('connection', (ws, req) => {
                 
                 // Send ACK back
                 ws.send(JSON.stringify({ type: 'ACK', status: 'REGISTERED', agentId: currentAgentId }));
+                
+                // Notify Web
+                broadcastAgentUpdate();
             }
 
             // Handle ACK from Agent
@@ -66,6 +83,9 @@ wss.on('connection', (ws, req) => {
         if (currentAgentId) {
             connectedAgents.delete(currentAgentId);
             console.log(`[WS] Agent Disconnected: ${currentAgentId}`);
+            
+            // Notify Web
+            broadcastAgentUpdate();
         }
     });
 });
@@ -87,6 +107,20 @@ let mockDocuments = [
 
 // Map to hold pending requests
 const pendingRequests = new Map();
+
+// API: SSE Events for Web
+app.get('/api/events', (req, res) => {
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    res.flushHeaders();
+
+    webClients.add(res);
+
+    req.on('close', () => {
+        webClients.delete(res);
+    });
+});
 
 // API: Login Endpoint (Forwards to Agent)
 app.post('/api/login', (req, res) => {
