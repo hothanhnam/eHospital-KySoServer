@@ -8,6 +8,7 @@ let currentPage = 1;
 let pageSize = 10;
 let currentDocTypeIndex = 0;
 let totalItems = 0;
+let currentLoadToken = 0;
 
 const loginView = document.getElementById('login-view');
 const dashboardView = document.getElementById('dashboard-view');
@@ -18,6 +19,8 @@ const btnLogout = document.getElementById('btn-logout');
 const btnRefresh = document.getElementById('btn-refresh');
 const docsBody = document.getElementById('docs-body');
 const loadingOverlay = document.getElementById('loading-overlay');
+const loadingTitle = document.getElementById('loading-title');
+const loadingDesc = document.getElementById('loading-desc');
 const agentSelect = document.getElementById('agent-select');
 const btnRefreshAgents = document.getElementById('btn-refresh-agents');
 
@@ -226,6 +229,8 @@ async function loadFilters() {
 }
 
 async function loadDocumentTypes() {
+    if (loadingTitle) loadingTitle.textContent = 'Đang xử lý...';
+    if (loadingDesc) loadingDesc.textContent = 'Vui lòng chờ trong giây lát.';
     loadingOverlay.classList.remove('hidden');
     try {
         const res = await callAgent('get-document-types', {
@@ -304,50 +309,35 @@ function updateBadges() {
 async function loadPatients() {
     currentPage = 1;
     updateBadges();
+    if (loadingTitle) loadingTitle.textContent = 'Đang xử lý...';
+    if (loadingDesc) loadingDesc.textContent = 'Vui lòng chờ trong giây lát.';
     loadingOverlay.classList.remove('hidden');
+    
+    currentLoadToken++;
+    const myToken = currentLoadToken;
     
     let dt = null;
     let ids = '';
     
     try {
         if (currentDocTypeIndex == -1) {
-            // "Tất cả loại giấy tờ" -> Fetch từng loại để đảm bảo lọc đúng Khoa/Phòng và Quyền ký
-            let allPatients = [];
-            const promises = [];
-            const seen = new Set();
+            // "Tất cả loại giấy tờ" -> Fetch 1 lần duy nhất bằng reportId = 0 để C# Agent tự xử lý gom nhóm, tránh quá tải WS
+            const data = await callAgent('get-patients-by-document', {
+                documentInstanceIDs: '',
+                reportId: 0,
+                roleName: quyenKySelect.value || '',
+                deptId: phongBanSelect.value ? parseInt(phongBanSelect.value) : 0,
+                fromDate: dateFrom.value,
+                toDate: dateTo.value,
+                signStatus: currentTab
+            });
+            if (myToken !== currentLoadToken) return; // Bỏ qua nếu có request mới hơn
             
-            for (let i = 0; i < documentTypes.length; i++) {
-                const dt = documentTypes[i];
-                const ids = currentTab === 0 ? (dt.ListID_ChuaKy || '') : (dt.ListID_DaKy || '');
-                
-                if (ids && ids.trim() !== '') {
-                    const req = callAgent('get-patients-by-document', {
-                        documentInstanceIDs: ids,
-                        reportId: dt.Report_Id || 0,
-                        roleName: dt.RoleName || quyenKySelect.value || '',
-                        fromDate: dateFrom.value,
-                        toDate: dateTo.value,
-                        signStatus: currentTab
-                    }).then(data => {
-                        if (data.success && data.data && data.data.data) {
-                            for (const p of data.data.data) {
-                                // Fallback to stringify if no ID is present to avoid dropping rows
-                                const key = p.DocumentInstance_Id || p.Document_Id || p.TiepNhan_Id || JSON.stringify(p);
-                                if (!seen.has(key)) {
-                                    seen.add(key);
-                                    // Gán tên trực tiếp từ danh sách documentTypes lúc fetch
-                                    p.ResolvedDocName = dt.TenGiayTo || dt.TenLoaiBaoCao || 'Tài liệu';
-                                    allPatients.push(p);
-                                }
-                            }
-                        }
-                    }).catch(err => console.error(err));
-                    promises.push(req);
-                }
+            if (data.success && data.data && data.data.data) {
+                patientsList = data.data.data;
+            } else {
+                patientsList = [];
             }
-            
-            await Promise.all(promises);
-            patientsList = allPatients;
             renderTable();
         } else {
             const dt = documentTypes[currentDocTypeIndex];
@@ -371,6 +361,8 @@ async function loadPatients() {
                 toDate: dateTo.value,
                 signStatus: currentTab
             });
+            if (myToken !== currentLoadToken) return; // Bỏ qua nếu có request mới hơn
+            
             if (data.success && data.data && data.data.data) {
                 patientsList = data.data.data;
                 // Gán tên trực tiếp từ loại giấy tờ đang chọn
@@ -483,6 +475,8 @@ document.body.addEventListener('click', (e) => {
         const ids = Array.from(checked).map(chk => chk.value);
         
         showConfirm('Bạn có chắc chắn muốn ký hàng loạt ' + ids.length + ' tài liệu đã chọn?', async () => {
+            if (loadingTitle) loadingTitle.textContent = 'Đang gửi lệnh xuống Agent...';
+            if (loadingDesc) loadingDesc.textContent = 'Vui lòng kiểm tra màn hình máy tính của bạn để thao tác.';
             loadingOverlay.classList.remove('hidden');
             let successCount = 0;
             let failCount = 0;
@@ -526,6 +520,8 @@ window.signDocument = async function(docId) {
         return;
     }
     
+    if (loadingTitle) loadingTitle.textContent = 'Đang gửi lệnh xuống Agent...';
+    if (loadingDesc) loadingDesc.textContent = 'Vui lòng kiểm tra màn hình máy tính của bạn để thao tác.';
     loadingOverlay.classList.remove('hidden');
     try {
         const data = await callAgent('sign-document', {
