@@ -217,9 +217,7 @@ async function loadFilters() {
             if (agentData.quyenKy) {
                 quyenKySelect.innerHTML = '<option value="">-- Tất cả --</option>' + 
                     agentData.quyenKy.map(q => `<option value="${q.MaQuyenKy}">${q.TenQuyenKy}</option>`).join('');
-                if (agentData.quyenKy.length > 0) {
-                    quyenKySelect.value = agentData.quyenKy[0].MaQuyenKy; // Auto select first
-                }
+                quyenKySelect.value = ""; // Auto select 'Tất cả'
             }
         }
     } catch (err) {
@@ -263,6 +261,12 @@ async function loadDocumentTypes() {
 }
 
 if(btnRefresh) btnRefresh.addEventListener('click', loadDocumentTypes);
+
+// Auto refresh on filter change
+if(dateFrom) dateFrom.addEventListener('change', loadDocumentTypes);
+if(dateTo) dateTo.addEventListener('change', loadDocumentTypes);
+if(phongBanSelect) phongBanSelect.addEventListener('change', loadDocumentTypes);
+if(quyenKySelect) quyenKySelect.addEventListener('change', loadDocumentTypes);
 
 if(docTypeSelect) {
     docTypeSelect.addEventListener('change', (e) => {
