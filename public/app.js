@@ -333,6 +333,8 @@ async function loadPatients() {
                                 const key = p.DocumentInstance_Id || p.Document_Id;
                                 if (key && !seen.has(key)) {
                                     seen.add(key);
+                                    // Gán tên trực tiếp từ danh sách documentTypes lúc fetch
+                                    p.ResolvedDocName = dt.TenGiayTo || dt.TenLoaiBaoCao || 'Tài liệu';
                                     allPatients.push(p);
                                 }
                             }
@@ -369,6 +371,10 @@ async function loadPatients() {
             });
             if (data.success && data.data && data.data.data) {
                 patientsList = data.data.data;
+                // Gán tên trực tiếp từ loại giấy tờ đang chọn
+                for (const p of patientsList) {
+                    p.ResolvedDocName = dt.TenGiayTo || dt.TenLoaiBaoCao || 'Tài liệu';
+                }
                 renderTable();
             } else {
                 patientsList = [];
@@ -412,8 +418,8 @@ function renderTable() {
             ? `<button class="btn-sign" onclick="signDocument('${doc.DocumentInstance_Id}')">Ký số</button>`
             : `<button class="btn-sign" onclick="previewDocument('${doc.DocumentInstance_Id}')">Xem</button>`;
             
-        let docName = 'Tài liệu (Khác)';
-        if (documentTypes) {
+        let docName = doc.ResolvedDocName || 'Tài liệu (Khác)';
+        if (!doc.ResolvedDocName && documentTypes) {
             // Match bằng cả Report_Id + RoleName cho chính xác
             let matchingDoc = documentTypes.find(d => d.Report_Id == doc.Report_Id && d.RoleName == doc.RoleName);
             if (!matchingDoc) matchingDoc = documentTypes.find(d => d.Report_Id == doc.Report_Id);
