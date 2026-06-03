@@ -1,5 +1,7 @@
 const { NodeSSH } = require('node-ssh');
 const path = require('path');
+const { execSync } = require('child_process');
+
 const ssh = new NodeSSH();
 
 const config = {
@@ -12,53 +14,65 @@ const config = {
 const remoteDir = '/home/n8n/KySoServer';
 
 async function deploy() {
-  try {
-    console.log(`Connecting to ${config.host}...`);
-    await ssh.connect(config);
-    console.log('Connected!');
+  console.log('🚀 Bắt đầu quá trình Deploy...');
 
-    // Create remote directory
+  console.log('🛠️ Kiểm tra và tự động Commit code lên Github trước khi Deploy...');
+  try {
+    execSync('git add .', { stdio: 'inherit' });
+    const status = execSync('git status --porcelain').toString();
+    if (status.trim().length > 0) {
+      const commitMsg = `Auto commit before deploy: ${new Date().toLocaleString('vi-VN')}`;
+      execSync(`git commit -m "${commitMsg}"`, { stdio: 'inherit' });
+      console.log('📤 Đang đẩy lên Github...');
+      execSync('git push origin master', { stdio: 'inherit' });
+      console.log('✅ Đã commit và push code an toàn!');
+    } else {
+      console.log('⚠️ Không có thay đổi nào cần commit.');
+    }
+  } catch (e) {
+    console.error('❌ Lỗi trong quá trình commit/push code. Huỷ deploy để đảm bảo an toàn:', e.message);
+    process.exit(1);
+  }
+
+  try {
+    console.log(`🔌 Đang kết nối tới ${config.host}...`);
+    await ssh.connect(config);
+    console.log('✅ Đã kết nối thành công!');
+
+    console.log(`📁 Đang tạo thư mục ${remoteDir} (nếu chưa có)...`);
     await ssh.execCommand(`mkdir -p ${remoteDir}`);
 
-    // Upload files and folders
-    console.log('Uploading files...');
-    await ssh.putDirectory(path.join(__dirname, 'public'), `${remoteDir}/public`, {
+    console.log('📤 Đang đẩy Source Code lên Server (bao gồm thư mục public)...');
+    await ssh.putDirectory(__dirname, remoteDir, {
       recursive: true,
-      concurrency: 10
+      concurrency: 5,
+      validate: function(itemPath) {
+        const baseName = path.basename(itemPath);
+        return baseName !== 'node_modules' && baseName !== '.git' && baseName !== 'deploy.js';
+      }
     });
-    
-    const filesToUpload = ['package.json', 'server.js'].map(file => ({
-      local: path.join(__dirname, file),
-      remote: `${remoteDir}/${file}`
-    }));
-    await ssh.putFiles(filesToUpload);
-    console.log('Upload complete!');
+    console.log('✅ Đã tải file lên xong!');
 
-    // Install dependencies and restart server
-    console.log('Installing dependencies on remote server (npm install)...');
+    console.log('🔄 Đang cài đặt thư viện và khởi động lại dịch vụ bằng PM2...');
     const npmRes = await ssh.execCommand('npm install --production', { cwd: remoteDir });
     console.log(npmRes.stdout);
     if (npmRes.stderr) console.error(npmRes.stderr);
 
-    console.log('Starting/Restarting KySoServer using PM2 or Node...');
-    // We try to use pm2 if installed, otherwise nohup node
     const runRes = await ssh.execCommand('pm2 restart KySoServer || pm2 start server.js --name KySoServer', { cwd: remoteDir });
     
-    // If pm2 is not found, fallback to nohup
     if (runRes.stderr && runRes.stderr.includes('pm2: command not found')) {
-      console.log('PM2 not found. Falling back to nohup...');
+      console.log('⚠️ PM2 không tìm thấy. Khởi động bằng nohup...');
       await ssh.execCommand('pkill -f "node server.js" || true');
       await ssh.execCommand('nohup node server.js > server.log 2>&1 &', { cwd: remoteDir });
-      console.log('KySoServer started in background using nohup.');
     } else {
       console.log(runRes.stdout);
       if (runRes.stderr) console.error(runRes.stderr);
     }
 
-    console.log('Deploy successful!');
+    console.log('🎉 Hoàn tất quá trình Deploy KySoServer!');
     ssh.dispose();
   } catch (error) {
-    console.error('Deploy failed:', error);
+    console.error('❌ Deploy failed:', error);
     ssh.dispose();
   }
 }
