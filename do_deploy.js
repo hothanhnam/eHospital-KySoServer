@@ -1,10 +1,30 @@
 const { NodeSSH } = require('node-ssh');
 const path = require('path');
+const { execSync } = require('child_process');
 
 const ssh = new NodeSSH();
 
 async function deploy() {
     console.log("🚀 Bắt đầu quá trình Deploy...");
+    
+    console.log("🛠️ Kiểm tra và Commit code lên Github...");
+    try {
+        execSync('git add .', { stdio: 'inherit' });
+        const status = execSync('git status --porcelain').toString();
+        if (status.trim().length > 0) {
+            const commitMsg = `Auto commit before deploy: ${new Date().toLocaleString('vi-VN')}`;
+            execSync(`git commit -m "${commitMsg}"`, { stdio: 'inherit' });
+            console.log("📤 Đang đẩy lên Github...");
+            execSync('git push origin master', { stdio: 'inherit' });
+            console.log("✅ Đã commit và push code an toàn!");
+        } else {
+            console.log("⚠️ Không có thay đổi nào cần commit.");
+        }
+    } catch (e) {
+        console.error("❌ Lỗi trong quá trình commit/push code. Huỷ deploy để đảm bảo an toàn:", e.message);
+        return;
+    }
+
     try {
         console.log("🔌 Đang kết nối tới 192.168.99.150...");
         await ssh.connect({
