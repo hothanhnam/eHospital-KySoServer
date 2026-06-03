@@ -242,7 +242,7 @@ async function loadDocumentTypes() {
                 documentTypes.forEach((dt, idx) => {
                     const opt = document.createElement('option');
                     opt.value = idx;
-                    opt.textContent = (dt.TenGiayTo || dt.TenLoaiBaoCao || 'Tài liệu') + ' (' + (dt.SoLuong_ChuaKy || dt.CountChuaKy || 0) + ' chưa ký)';
+                    opt.textContent = (dt.TenGiayTo || dt.TenLoaiBaoCao || 'Tài liệu') + ' (Chưa ký: ' + (dt.SoLuong_ChuaKy || dt.CountChuaKy || 0) + ' / Đã ký: ' + (dt.SoLuong_DaKy || dt.CountDaKy || 0) + ')';
                     docTypeSelect.appendChild(opt);
                 });
                 docTypeSelect.value = "-1";
