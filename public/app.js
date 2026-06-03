@@ -36,6 +36,9 @@ const badgeChuaKy = document.getElementById('badge-chua-ky');
 const badgeDaKy = document.getElementById('badge-da-ky');
 
 function init() {
+    if(document.getElementById("agent-select")) document.getElementById("agent-select").value = "";
+    if(document.getElementById("search-input")) document.getElementById("search-input").value = "";
+    if(document.getElementById("page-size-select")) document.getElementById("page-size-select").value = "50";
     const storedUser = localStorage.getItem('kyso_user');
     if (storedUser) {
         currentUser = JSON.parse(storedUser);

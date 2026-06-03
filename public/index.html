@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>eHospital - Cổng Ký Số Điện Tử</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=1.0.7">
+    <link rel="stylesheet" href="style.css?v=1.0.8">
     <style>
         .filter-row { display: flex; gap: 15px; margin-bottom: 15px; flex-wrap: wrap; }
         .filter-row .input-group { flex: 1; min-width: 200px; margin-bottom: 0; }
@@ -44,7 +44,7 @@
                 <div class="input-group">
                     <label>Chọn máy ký số (Agent)</label>
                     <div class="agent-select-wrapper" style="display: flex; gap: 8px;">
-                        <select id="agent-select" class="form-control" required style="flex-grow: 1;">
+                        <select autocomplete="off" id="agent-select" class="form-control" required style="flex-grow: 1;">
                             <option value="">Đang tải danh sách Agent...</option>
                         </select>
                         <button type="button" id="btn-refresh-agents" class="btn-secondary" style="padding: 12px;" title="Làm mới danh sách">
@@ -54,11 +54,11 @@
                 </div>
                 <div class="input-group">
                     <label>Tên đăng nhập</label>
-                    <input type="text" id="username" class="form-control" placeholder="Nhập tài khoản" required>
+                    <input autocomplete="off" type="text" id="username" class="form-control" placeholder="Nhập tài khoản" required>
                 </div>
                 <div class="input-group">
                     <label>Mật khẩu</label>
-                    <input type="password" id="password" class="form-control" placeholder="Nhập mật khẩu" required>
+                    <input autocomplete="off" type="password" id="password" class="form-control" placeholder="Nhập mật khẩu" required>
                 </div>
                 <div id="login-error" class="error-msg"></div>
                 <button type="submit" class="btn-primary">
@@ -91,19 +91,19 @@
                     <div class="filter-row">
                         <div class="input-group">
                             <label>🏢 PHÒNG BAN</label>
-                            <select id="phong-ban-select" class="form-control">
+                            <select autocomplete="off" id="phong-ban-select" class="form-control">
                                 <option value="">-- Tất cả --</option>
                             </select>
                         </div>
                         <div class="input-group">
                             <label>👤 QUYỀN KÝ</label>
-                            <select id="quyen-ky-select" class="form-control">
+                            <select autocomplete="off" id="quyen-ky-select" class="form-control">
                                 <option value="">-- Tất cả --</option>
                             </select>
                         </div>
                         <div class="input-group">
                             <label>📄 LOẠI GIẤY TỜ</label>
-                            <select id="doc-type-select" class="form-control">
+                            <select autocomplete="off" id="doc-type-select" class="form-control">
                                 <option value="">-- Tất cả loại giấy tờ --</option>
                             </select>
                         </div>
@@ -111,11 +111,11 @@
                     <div class="filter-row">
                         <div class="input-group">
                             <label>📅 TỪ NGÀY</label>
-                            <input type="date" id="date-from" class="form-control">
+                            <input autocomplete="off" type="date" id="date-from" class="form-control">
                         </div>
                         <div class="input-group">
                             <label>📅 ĐẾN NGÀY</label>
-                            <input type="date" id="date-to" class="form-control">
+                            <input autocomplete="off" type="date" id="date-to" class="form-control">
                         </div>
                         <div class="filter-actions" style="display: flex; align-items: flex-end;">
                             <button id="btn-refresh" class="btn-primary" style="padding: 12px 24px; display: flex; align-items: center; gap: 8px;">
@@ -141,7 +141,7 @@
                     <table id="docs-table">
                         <thead>
                             <tr>
-                                <th style="width: 40px; text-align: center;"><input type="checkbox" id="chk-select-all" style="transform: scale(1.2); cursor: pointer;"></th>
+                                <th style="width: 40px; text-align: center;"><input autocomplete="off" type="checkbox" id="chk-select-all" style="transform: scale(1.2); cursor: pointer;"></th>
                                 <th>STT</th>
                                 <th>Bệnh Nhân</th>
                                 <th>Loại Giấy Tờ</th>
@@ -161,7 +161,7 @@
                 <div class="pagination">
                     <div style="display: flex; align-items: center; gap: 15px;">
                         <span id="page-info" style="font-size: 0.9em; opacity: 0.8;">Hiển thị 0 - 0/0 bản ghi</span>
-                        <select id="page-size-select" style="background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; padding: 4px 8px; cursor: pointer; outline: none; font-size: 0.9em;">
+                        <select autocomplete="off" id="page-size-select" style="background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; padding: 4px 8px; cursor: pointer; outline: none; font-size: 0.9em;">
                             <option value="10" style="color: black;">10 dòng/trang</option>
                             <option value="20" style="color: black;" selected>20 dòng/trang</option>
                             <option value="50" style="color: black;">50 dòng/trang</option>
@@ -225,6 +225,6 @@
         </div>
     </div>
 
-    <script src="app.js?v=1.0.7"></script>
+    <script src="app.js?v=1.0.8"></script>
 </body>
 </html>
