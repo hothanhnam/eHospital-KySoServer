@@ -414,7 +414,7 @@ function renderTable() {
         
         let actionBtn = currentTab === 0 
             ? `<button class="btn-sign" onclick="openSignPreview('${docIdForAction}')">Ký số</button>`
-            : `<button class="btn-sign" onclick="openPreview('${docIdForAction}')">Xem</button>`;
+            : `<div style="display: flex; gap: 5px;"><button class="btn-sign" onclick="openPreview('${docIdForAction}')">Xem</button><button class="btn-cancel" style="padding: 6px 12px; font-size: 0.85rem;" onclick="cancelSignDocument('${docIdForAction}')">Hủy ký</button></div>`;
             
         let docName = doc.ResolvedDocName || 'Tài liệu (Khác)';
         if (!doc.ResolvedDocName && documentTypes) {
@@ -554,6 +554,34 @@ window.openSignPreview = async function(docId) {
     await fetchAndShowPdf(docId, true);
 }
 
+window.cancelSignDocument = async function(docId) {
+    const doc = patientsList.find(d => (d.DocumentInstance_Id || d.Document_Id) == docId);
+    if (!doc) return;
+
+    showConfirm('Bạn có chắc chắn muốn HỦY KÝ tài liệu này?', async () => {
+        if (loadingTitle) loadingTitle.textContent = 'Đang gửi lệnh Hủy ký...';
+        if (loadingDesc) loadingDesc.textContent = 'Vui lòng chờ trong giây lát.';
+        loadingOverlay.classList.remove('hidden');
+        document.getElementById('pdf-modal').classList.add('hidden'); // Close modal if open
+        
+        try {
+            const data = await callAgent('cancel-sign-document', {
+                documentId: docId
+            });
+            
+            if (data.success && data.data && data.data.success) {
+                showToast('Đã hủy ký thành công!', 'success');
+                loadPatients();
+            } else {
+                showToast(data.message || data?.data?.message || 'Lỗi khi hủy ký', 'error');
+            }
+        } catch (err) {
+            showToast('Lỗi khi kết nối với Agent để hủy ký', 'error');
+        }
+        loadingOverlay.classList.add('hidden');
+    });
+}
+
 async function fetchAndShowPdf(docId, isSigning) {
     // Tìm doc trong patientsList
     const doc = patientsList.find(d => (d.DocumentInstance_Id || d.Document_Id) == docId);
@@ -580,13 +608,18 @@ async function fetchAndShowPdf(docId, isSigning) {
             // Hiện modal
             document.getElementById('pdf-modal').classList.remove('hidden');
             
-            // Xử lý nút Ký số
+            // Xử lý nút Ký số & Hủy ký
             const btnSign = document.getElementById('btn-pdf-sign');
+            const btnCancelSign = document.getElementById('btn-pdf-cancel-sign');
+            
             if (isSigning) {
                 btnSign.style.display = 'block';
                 btnSign.onclick = () => window.signDocument(docId);
+                btnCancelSign.style.display = 'none';
             } else {
                 btnSign.style.display = 'none';
+                btnCancelSign.style.display = 'block';
+                btnCancelSign.onclick = () => window.cancelSignDocument(docId);
             }
         } else {
             showToast(data?.data?.message || 'Không thể xem trước tài liệu', 'error');
