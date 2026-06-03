@@ -50,7 +50,7 @@ async function callAgent(type, payload) {
         body: JSON.stringify({
             agentId: currentUser.activeAgentId,
             type: type,
-            payload: Object.assign({ uid: currentUser.uid || currentUser.id }, payload)
+            payload: Object.assign({ uid: currentUser.uid || currentUser.id, nhanVienId: currentUser.nhanVienId || currentUser.nhanVien_Id || 0 }, payload)
         })
     });
     return await res.json();
