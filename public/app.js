@@ -447,15 +447,15 @@ function renderTable() {
         }
             
         tr.innerHTML = `
-            <td style="text-align:center" data-label="Chá» n">${chkHtml}</td>
+            <td style="text-align:center" data-label="Chọn">${chkHtml}</td>
             <td data-label="STT">${idx + 1}</td>
-            <td data-label="Bá»‡nh NhÃ¢n"><strong>${doc.TenBenhNhan || ''}</strong></td>
-            <td data-label="Loáº¡i Giáº¥y Tá» "><span style="font-size: 0.9em; color: var(--primary); background: rgba(14,165,233,0.1); padding: 4px 8px; border-radius: 6px;">${docName}</span></td>
-            <td data-label="NÄƒm Sinh">${doc.NamSinh || doc.Tuoi || ''}</td>
-            <td data-label="Giá»›i TÃ­nh">${doc.GioiTinh || ''}</td>
-            <td data-label="Sá»‘ Bá»‡nh Ã n">${doc.BenhAn_Id || doc.TiepNhan_Id || ''}</td>
-            <td data-label="Tráº¡ng ThÃ¡i">${statusHtml}</td>
-            <td data-label="Thao TÃ¡c" class="td-actions">${actionBtn}</td>
+            <td data-label="Bệnh Nhân"><strong>${doc.TenBenhNhan || ''}</strong></td>
+            <td data-label="Loại Giấy Tờ"><span style="font-size: 0.9em; color: var(--primary); background: rgba(14,165,233,0.1); padding: 4px 8px; border-radius: 6px;">${docName}</span></td>
+            <td data-label="Năm Sinh">${doc.NamSinh || doc.Tuoi || ''}</td>
+            <td data-label="Giới Tính">${doc.GioiTinh || ''}</td>
+            <td data-label="Số Bệnh Án">${doc.BenhAn_Id || doc.TiepNhan_Id || ''}</td>
+            <td data-label="Trạng Thái">${statusHtml}</td>
+            <td data-label="Thao Tác" class="td-actions">${actionBtn}</td>
         `;
         docsBody.appendChild(tr);
     });
