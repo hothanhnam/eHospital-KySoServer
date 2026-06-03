@@ -4,13 +4,43 @@
     --bg-gradient-1: #0f172a;
     --bg-gradient-2: #1e293b;
     --glass-bg: rgba(30, 41, 59, 0.7);
-    --glass-border: rgba(255, 255, 255, 0.1);
+    --glass-border: var(--input-border);
     --text-main: #f8fafc;
     --text-muted: #94a3b8;
     --danger: #ef4444;
     --success: #10b981;
     --warning: #f59e0b;
+
+  --input-bg: var(--input-bg);
+  --input-border: var(--input-border);
+  --input-focus: var(--input-border);
+  --table-border: var(--input-bg);
+  --table-hover: var(--table-hover);
+  --modal-bg: rgba(15, 23, 42, 0.95);
+  --modal-border: var(--input-border);
+  --overlay-bg: var(--overlay-bg);
+  --card-bg: var(--card-bg);
 }
+
+[data-theme="light"] {
+  --bg-gradient-1: #f8fafc;
+  --bg-gradient-2: #e2e8f0;
+  --glass-bg: rgba(255, 255, 255, 0.85);
+  --glass-border: rgba(0, 0, 0, 0.1);
+  --text-main: #0f172a;
+  --text-muted: #475569;
+  
+  --input-bg: rgba(0, 0, 0, 0.03);
+  --input-border: rgba(0, 0, 0, 0.1);
+  --input-focus: rgba(0, 0, 0, 0.08);
+  --table-border: rgba(0, 0, 0, 0.05);
+  --table-hover: rgba(0, 0, 0, 0.02);
+  --modal-bg: rgba(255, 255, 255, 0.95);
+  --modal-border: rgba(0, 0, 0, 0.1);
+  --overlay-bg: rgba(255, 255, 255, 0.6);
+  --card-bg: rgba(255, 255, 255, 0.8);
+}
+
 
 * {
     margin: 0;
@@ -127,9 +157,9 @@ body {
     width: 100%;
     padding: 12px 16px;
     border-radius: 12px;
-    background: rgba(15, 23, 42, 0.6);
+    background: var(--card-bg);
     border: 1px solid var(--glass-border);
-    color: white;
+    color: var(--text-main);
     font-size: 1rem;
     transition: all 0.3s ease;
     box-sizing: border-box;
@@ -144,7 +174,7 @@ body {
 }
 .form-control option {
     background: var(--bg-gradient-2); /* Dark background for options */
-    color: white;
+    color: var(--text-main);
 }
 
 /* Agent Select Custom Styles */
@@ -170,7 +200,7 @@ body {
     padding: 12px;
     border: 1px solid var(--glass-border);
     border-radius: 12px;
-    background: rgba(255,255,255,0.05);
+    background: var(--input-bg);
     color: var(--text-main);
     cursor: pointer;
     transition: background 0.2s;
@@ -179,7 +209,7 @@ body {
     justify-content: center;
 }
 .btn-refresh-icon:hover {
-    background: rgba(255,255,255,0.1);
+    background: var(--input-border);
 }
 
 .btn-primary {
@@ -188,7 +218,7 @@ body {
     border: none;
     border-radius: 12px;
     background: linear-gradient(135deg, var(--primary), #3b82f6);
-    color: white;
+    color: var(--text-main);
     font-size: 1rem;
     font-weight: 600;
     cursor: pointer;
@@ -207,13 +237,13 @@ body {
     padding: 8px 16px;
     border: 1px solid var(--glass-border);
     border-radius: 8px;
-    background: rgba(255,255,255,0.05);
+    background: var(--input-bg);
     color: var(--text-main);
     cursor: pointer;
     transition: background 0.2s;
 }
 .btn-secondary:hover {
-    background: rgba(255,255,255,0.1);
+    background: var(--input-border);
 }
 
 .error-msg {
@@ -290,11 +320,11 @@ th {
 }
 td {
     padding: 16px;
-    border-bottom: 1px solid rgba(255,255,255,0.05);
+    border-bottom: 1px solid var(--input-bg);
     font-size: 0.95rem;
 }
 tr:hover td {
-    background: rgba(255,255,255,0.02);
+    background: var(--table-hover);
 }
 
 .status-badge {
@@ -312,7 +342,7 @@ tr:hover td {
     border: none;
     border-radius: 6px;
     background: var(--primary);
-    color: white;
+    color: var(--text-main);
     cursor: pointer;
     font-size: 0.85em;
     font-weight: 500;
@@ -332,7 +362,7 @@ tr:hover td {
     border: none;
     border-radius: 6px;
     background: var(--danger, #ef4444);
-    color: white;
+    color: var(--text-main);
     cursor: pointer;
     font-size: 0.85em;
     font-weight: 500;
@@ -344,7 +374,7 @@ tr:hover td {
 
 .btn-batch-action {
     background: linear-gradient(135deg, #10b981, #059669);
-    color: white;
+    color: var(--text-main);
     border: none;
     padding: 8px 16px;
     border-radius: 8px;
@@ -369,7 +399,7 @@ tr:hover td {
 .overlay {
     position: fixed;
     top: 0; left: 0; width: 100vw; height: 100vh;
-    background: rgba(0,0,0,0.6);
+    background: var(--overlay-bg);
     backdrop-filter: blur(4px);
     display: flex;
     justify-content: center;
@@ -418,10 +448,10 @@ tr:hover td {
     gap: 15px;
 }
 .toast {
-    background: rgba(15, 23, 42, 0.9);
+    background: var(--modal-bg);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--input-border);
     color: var(--text-main);
     padding: 16px 20px;
     border-radius: 16px;
@@ -469,8 +499,8 @@ tr:hover td {
     padding: 30px;
     text-align: center;
     max-width: 380px;
-    background: rgba(15, 23, 42, 0.85);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: var(--modal-bg);
+    border: 1px solid var(--input-border);
     border-radius: 20px;
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
 }
@@ -522,11 +552,11 @@ tr:hover td {
     color: var(--text-main);
 }
 .confirm-actions .btn-cancel:hover {
-    background: rgba(255,255,255,0.05);
+    background: var(--input-bg);
 }
 .confirm-actions .btn-danger {
     background: #ef4444;
-    color: white;
+    color: var(--text-main);
 }
 .confirm-actions .btn-danger:hover {
     background: #dc2626;
@@ -591,7 +621,7 @@ tr:hover td {
     }
     .table-container tr {
         margin-bottom: 15px;
-        background: rgba(15,23,42,0.6);
+        background: var(--card-bg);
         border: 1px solid var(--glass-border);
         border-radius: 12px;
         padding: 10px;
@@ -601,7 +631,7 @@ tr:hover td {
         justify-content: space-between;
         align-items: center;
         padding: 8px 5px;
-        border-bottom: 1px solid rgba(255,255,255,0.05);
+        border-bottom: 1px solid var(--input-bg);
         text-align: right;
     }
     .table-container td:last-child {
@@ -652,4 +682,28 @@ tr:hover td {
         justify-content: center;
         width: 100%;
     }
+}
+
+.theme-toggle {
+    cursor: pointer;
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    color: var(--text-main);
+    opacity: 0.7;
+    transition: all 0.3s ease;
+}
+.theme-toggle:hover {
+    opacity: 1;
+    transform: scale(1.1);
+}
+.header-right .theme-toggle {
+    position: relative;
+    top: 0;
+    right: 0;
+    margin-right: 15px;
+}
+
+.btn-sign, .btn-cancel, .btn-batch-action, .btn-danger {
+    color: white !important;
 }
