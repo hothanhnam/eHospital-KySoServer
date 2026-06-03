@@ -50,7 +50,7 @@ async function callAgent(type, payload) {
         body: JSON.stringify({
             agentId: currentUser.activeAgentId,
             type: type,
-            payload: payload
+            payload: Object.assign({ uid: currentUser.uid || currentUser.id }, payload)
         })
     });
     return await res.json();
@@ -59,7 +59,7 @@ async function callAgent(type, payload) {
 async function fetchAgents() {
     try {
         const res = await fetch('/api/agents');
-        const data = await res.json();
+        const data = res; // callAgent already does res.json()
         agentSelect.innerHTML = '';
         if (data.data.length === 0) {
             agentSelect.innerHTML = '<option value="">-- Chưa có máy ký số nào đang bật --</option>';
@@ -200,19 +200,11 @@ async function loadFilters() {
 async function loadDocumentTypes() {
     loadingOverlay.classList.remove('hidden');
     try {
-        const res = await fetch('/api/agent/request', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                agentId: currentUser.activeAgentId,
-                type: 'get-document-types',
-                payload: { 
-                    fromDate: dateFrom.value, 
-                    toDate: dateTo.value,
-                    deptId: phongBanSelect.value ? parseInt(phongBanSelect.value) : 0,
-                    roleName: quyenKySelect.value || ''
-                }
-            })
+        const res = await callAgent('get-document-types', {
+            fromDate: dateFrom.value, 
+            toDate: dateTo.value,
+            deptId: phongBanSelect.value ? parseInt(phongBanSelect.value) : 0,
+            roleName: quyenKySelect.value || ''
         });
         const data = await res.json();
         if (data.success && data.data && data.data.data) {
@@ -302,23 +294,14 @@ async function loadPatients() {
     }
     
     try {
-        const res = await fetch('/api/agent/request', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                agentId: currentUser.activeAgentId,
-                type: 'get-patients-by-document',
-                payload: {
-                    documentInstanceIDs: ids,
-                    reportId: dt ? (dt.Report_Id || 0) : 0,
-                    roleName: quyenKySelect.value || '',
-                    fromDate: dateFrom.value,
-                    toDate: dateTo.value,
-                    signStatus: currentTab
-                }
-            })
+        const data = await callAgent('get-patients-by-document', {
+            documentInstanceIDs: ids,
+            reportId: dt ? (dt.Report_Id || 0) : 0,
+            roleName: quyenKySelect.value || '',
+            fromDate: dateFrom.value,
+            toDate: dateTo.value,
+            signStatus: currentTab
         });
-        const data = await res.json();
         if (data.success && data.data && data.data.data) {
             patientsList = data.data.data;
             renderTable();
@@ -407,16 +390,7 @@ document.body.addEventListener('click', (e) => {
             
             for (const id of ids) {
                 try {
-                    const res = await fetch('/api/agent/request', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            agentId: currentUser.activeAgentId,
-                            type: 'sign-document',
-                            payload: { documentInstanceID: id }
-                        })
-                    });
-                    const data = await res.json();
+                    const data = await callAgent('sign-document', { documentInstanceID: id });
                     if (data.success && data.data && data.data.success) {
                         successCount++;
                     } else failCount++;
@@ -435,16 +409,7 @@ document.body.addEventListener('click', (e) => {
 window.signDocument = async function(docId) {
     loadingOverlay.classList.remove('hidden');
     try {
-        const res = await fetch('/api/agent/request', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                agentId: currentUser.activeAgentId,
-                type: 'sign-document',
-                payload: { documentInstanceID: docId }
-            })
-        });
-        const data = await res.json();
+        const data = await callAgent('sign-document', { documentInstanceID: docId });
         if (data.success && data.data && data.data.success) {
             showToast('Đã ký thành công!', 'success');
             loadDocumentTypes();
