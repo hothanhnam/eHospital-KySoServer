@@ -161,9 +161,12 @@ function showToast(message, type = 'info') {
     }, 3000);
 }
 
-function showConfirm(message, onConfirm) {
+function showConfirm(message, onConfirm, title = 'Xác nhận thao tác', okText = 'Xác nhận') {
     const modal = document.getElementById('confirm-modal');
+    const titleEl = document.getElementById('confirm-title');
+    if (titleEl) titleEl.textContent = title;
     document.getElementById('confirm-msg').textContent = message;
+    document.getElementById('btn-confirm-ok').textContent = okText;
     modal.classList.remove('hidden');
     
     const btnCancel = document.getElementById('btn-confirm-cancel');
@@ -195,7 +198,7 @@ btnLogout.addEventListener('click', () => {
         loginView.classList.add('active');
         dashboardView.classList.remove('active');
         fetchAgents();
-    });
+    }, 'Xác nhận Đăng xuất', 'Đăng xuất');
 });
 
 function showDashboard() {
@@ -478,7 +481,7 @@ document.body.addEventListener('click', (e) => {
         const ids = Array.from(checked).map(chk => chk.value);
         
         showConfirm('Bạn có chắc chắn muốn ký hàng loạt ' + ids.length + ' tài liệu đã chọn?', async () => {
-            if (loadingTitle) loadingTitle.textContent = 'Đang gửi lệnh xuống Agent...';
+            if (loadingTitle) loadingTitle.textContent = 'Đang xử lý ký hàng loạt...';
             if (loadingDesc) loadingDesc.textContent = 'Vui lòng kiểm tra màn hình máy tính của bạn để thao tác.';
             loadingOverlay.classList.remove('hidden');
             let successCount = 0;
@@ -510,7 +513,7 @@ document.body.addEventListener('click', (e) => {
             loadingOverlay.classList.add('hidden');
             showToast('Đã ký xong. Thành công: ' + successCount + ', Thất bại: ' + failCount, successCount > 0 ? 'success' : 'error');
             loadDocumentTypes(); 
-        });
+        }, 'Xác nhận Ký số', 'Ký số');
     }
 });
 
@@ -579,7 +582,7 @@ window.cancelSignDocument = async function(docId) {
             showToast('Lỗi khi kết nối với Agent để hủy ký', 'error');
         }
         loadingOverlay.classList.add('hidden');
-    });
+    }, 'Xác nhận Hủy ký', 'Hủy ký');
 }
 
 async function fetchAndShowPdf(docId, isSigning) {
