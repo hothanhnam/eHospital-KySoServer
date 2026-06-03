@@ -5,7 +5,7 @@ let documentTypes = [];
 let patientsList = [];
 let currentTab = 0; // 0: Chưa ký, 1: Đã ký
 let currentPage = 1;
-let pageSize = 10;
+let pageSize = 20;
 let currentDocTypeIndex = 0;
 let totalItems = 0;
 let currentLoadToken = 0;
@@ -664,6 +664,15 @@ document.getElementById('btn-next-page').addEventListener('click', () => {
         renderTable();
     }
 });
+
+const pageSizeSelect = document.getElementById('page-size-select');
+if (pageSizeSelect) {
+    pageSizeSelect.addEventListener('change', (e) => {
+        pageSize = parseInt(e.target.value) || 20;
+        currentPage = 1;
+        renderTable();
+    });
+}
 
 phongBanSelect.addEventListener('change', loadDocumentTypes);
 quyenKySelect.addEventListener('change', loadDocumentTypes);
