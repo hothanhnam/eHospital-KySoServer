@@ -206,24 +206,27 @@ async function loadDocumentTypes() {
             body: JSON.stringify({
                 agentId: currentUser.activeAgentId,
                 type: 'get-document-types',
-                payload: { TuNgay: dateFrom.value, DenNgay: dateTo.value }
+                payload: { 
+                    fromDate: dateFrom.value, 
+                    toDate: dateTo.value,
+                    deptId: phongBanSelect.value ? parseInt(phongBanSelect.value) : 0,
+                    roleName: quyenKySelect.value || ''
+                }
             })
         });
         const data = await res.json();
         if (data.success && data.data && data.data.data) {
             documentTypes = data.data.data;
             if(docTypeSelect) {
-                docTypeSelect.innerHTML = '';
+                docTypeSelect.innerHTML = '<option value="-1">-- Tất cả loại giấy tờ --</option>';
                 documentTypes.forEach((dt, idx) => {
                     const opt = document.createElement('option');
                     opt.value = idx;
-                    opt.textContent = dt.TenLoaiBaoCao + ' (' + dt.CountChuaKy + ' chưa ký)';
+                    opt.textContent = (dt.TenGiayTo || dt.TenLoaiBaoCao || 'Tài liệu') + ' (' + (dt.SoLuong_ChuaKy || dt.CountChuaKy || 0) + ' chưa ký)';
                     docTypeSelect.appendChild(opt);
                 });
-                if(documentTypes.length > 0) {
-                    docTypeSelect.selectedIndex = 0;
-                    currentDocTypeIndex = 0;
-                }
+                docTypeSelect.value = "-1";
+                currentDocTypeIndex = -1;
             }
             updateBadges();
             loadPatients();
@@ -256,30 +259,46 @@ tabBtns.forEach(btn => {
 });
 
 function updateBadges() {
-    if(documentTypes.length > 0) {
+    if (currentDocTypeIndex == -1) {
+        let countChuaKy = 0;
+        let countDaKy = 0;
+        documentTypes.forEach(dt => {
+            countChuaKy += (dt.SoLuong_ChuaKy || dt.CountChuaKy || 0);
+            countDaKy += (dt.SoLuong_DaKy || dt.CountDaKy || 0);
+        });
+        if(badgeChuaKy) badgeChuaKy.textContent = countChuaKy;
+        if(badgeDaKy) badgeDaKy.textContent = countDaKy;
+    } else if (documentTypes.length > 0 && currentDocTypeIndex >= 0) {
         const dt = documentTypes[currentDocTypeIndex];
-        if(badgeChuaKy) badgeChuaKy.textContent = dt.CountChuaKy || 0;
-        if(badgeDaKy) badgeDaKy.textContent = dt.CountDaKy || 0;
+        if(badgeChuaKy) badgeChuaKy.textContent = dt.SoLuong_ChuaKy || dt.CountChuaKy || 0;
+        if(badgeDaKy) badgeDaKy.textContent = dt.SoLuong_DaKy || dt.CountDaKy || 0;
     }
 }
 
 async function loadPatients() {
-    if(documentTypes.length === 0) {
-        loadingOverlay.classList.add('hidden');
-        renderTable();
-        return;
-    }
-    
     updateBadges();
     loadingOverlay.classList.remove('hidden');
-    const dt = documentTypes[currentDocTypeIndex];
-    const ids = currentTab === 0 ? dt.ListID_ChuaKy : dt.ListID_DaKy;
     
-    if(!ids || ids.trim() === '') {
-        patientsList = [];
-        renderTable();
-        loadingOverlay.classList.add('hidden');
-        return;
+    let dt = null;
+    let ids = '';
+    
+    if (currentDocTypeIndex == -1) {
+        // "Tất cả loại giấy tờ"
+        dt = null;
+        ids = ''; // C# Backend tự xử lý khi reportId == 0
+    } else {
+        dt = documentTypes[currentDocTypeIndex];
+        if (!dt) {
+            loadingOverlay.classList.add('hidden');
+            return;
+        }
+        ids = currentTab === 0 ? (dt.ListID_ChuaKy || '') : (dt.ListID_DaKy || '');
+        if(!ids || ids.trim() === '') {
+            patientsList = [];
+            renderTable();
+            loadingOverlay.classList.add('hidden');
+            return;
+        }
     }
     
     try {
@@ -291,7 +310,11 @@ async function loadPatients() {
                 type: 'get-patients-by-document',
                 payload: {
                     documentInstanceIDs: ids,
-                    loaiVanBan: dt.LoaiVanBan
+                    reportId: dt ? (dt.Report_Id || 0) : 0,
+                    roleName: quyenKySelect.value || '',
+                    fromDate: dateFrom.value,
+                    toDate: dateTo.value,
+                    signStatus: currentTab
                 }
             })
         });
