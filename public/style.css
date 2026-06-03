@@ -123,6 +123,7 @@ body {
     align-items: center;
 }
 .login-box {
+    position: relative;
     width: 100%;
     max-width: 400px;
     padding: 40px;
@@ -697,11 +698,18 @@ tr:hover td {
     opacity: 1;
     transform: scale(1.1);
 }
-.header-right .theme-toggle {
+.nav-user .theme-toggle {
     position: relative;
     top: 0;
     right: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     margin-right: 15px;
+}
+.nav-user {
+    display: flex;
+    align-items: center;
 }
 
 .btn-sign, .btn-cancel, .btn-batch-action, .btn-danger {

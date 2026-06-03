@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>eHospital - Cổng Ký Số Điện Tử</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=1.0.11">
+    <link rel="stylesheet" href="style.css?v=1.0.13">
     <style>
         .filter-row { display: flex; gap: 15px; margin-bottom: 15px; flex-wrap: wrap; }
         .filter-row .input-group { flex: 1; min-width: 200px; margin-bottom: 0; }
@@ -34,6 +34,19 @@
     <!-- MÀN HÌNH LOGIN -->
     <div id="login-view" class="view active">
         <div class="glass-panel login-box">
+            <div onclick="toggleTheme()" class="theme-toggle" title="Đổi giao diện">
+    <svg id="theme-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="5"></circle>
+        <line x1="12" y1="1" x2="12" y2="3"></line>
+        <line x1="12" y1="21" x2="12" y2="23"></line>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+        <line x1="1" y1="12" x2="3" y2="12"></line>
+        <line x1="21" y1="12" x2="23" y2="12"></line>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+</div>
             <div class="logo">
                 
                 <div style="margin-bottom:10px;"><img src="https://vinhduchospital.com/wp-content/uploads/2023/04/Logo_Benh-Vien.png" style="height: 60px; object-fit: contain;" alt="Logo Bệnh Viện"></div>
@@ -76,6 +89,19 @@
                 <img src="https://vinhduchospital.com/wp-content/uploads/2023/04/Logo_Benh-Vien.png" style="height: 35px; object-fit: contain;" alt="Logo">
             </div>
             <div class="nav-user">
+                <div onclick="toggleTheme()" class="theme-toggle" title="Đổi giao diện">
+    <svg id="theme-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="5"></circle>
+        <line x1="12" y1="1" x2="12" y2="3"></line>
+        <line x1="12" y1="21" x2="12" y2="23"></line>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+        <line x1="1" y1="12" x2="3" y2="12"></line>
+        <line x1="21" y1="12" x2="23" y2="12"></line>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+</div>
                 <span id="user-greeting">Xin chào, Bác sĩ</span>
                 <button id="btn-logout" class="btn-secondary">Đăng xuất</button>
             </div>
@@ -225,6 +251,6 @@
         </div>
     </div>
 
-    <script src="app.js?v=1.0.11"></script>
+    <script src="app.js?v=1.0.13"></script>
 </body>
 </html>
