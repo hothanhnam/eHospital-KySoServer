@@ -1,4 +1,4 @@
-// app.js - Logic Frontend cho KySoServer Web Portal
+﻿// app.js - Logic Frontend cho KySoServer Web Portal
 
 // State
 let currentUser = null;
@@ -238,7 +238,7 @@ function renderTable() {
         }
 
         tr.innerHTML = `
-            <td>#${doc.id}</td>
+            <td><input type="checkbox" class="chk-item" value="${doc.id}" style="transform: scale(1.2); cursor: pointer;" onclick="event.stopPropagation(); window.updateBatchSignState()"></td><td>#${doc.id}</td>
             <td><strong>${doc.title}</strong></td>
             <td>${doc.date}</td>
             <td>${statusHtml}</td>
@@ -298,3 +298,73 @@ window.signDocument = async function(docId) {
 
 // Chạy Init
 init();
+
+// --- Batch Sign Logic ---
+window.updateBatchSignState = function() {
+    const chkItems = document.querySelectorAll('.chk-item');
+    const checked = document.querySelectorAll('.chk-item:checked');
+    const chkSelectAll = document.getElementById('chk-select-all');
+    const btnBatchSign = document.getElementById('btn-batch-sign');
+    const batchCount = document.getElementById('batch-count');
+    
+    if (chkSelectAll && chkItems.length > 0) {
+        chkSelectAll.checked = (checked.length === chkItems.length);
+    }
+    if (batchCount) batchCount.textContent = checked.length;
+    if (btnBatchSign) btnBatchSign.style.display = checked.length > 0 ? 'block' : 'none';
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+    document.body.addEventListener('click', (e) => {
+        if (e.target.id === 'chk-select-all') {
+            const isChecked = e.target.checked;
+            document.querySelectorAll('.chk-item').forEach(chk => {
+                if(!chk.disabled) chk.checked = isChecked;
+            });
+            window.updateBatchSignState();
+        }
+        
+        if (e.target.id === 'btn-batch-sign' || e.target.closest('#btn-batch-sign')) {
+            const checked = document.querySelectorAll('.chk-item:checked');
+            if (checked.length === 0) return;
+            const ids = Array.from(checked).map(chk => chk.value);
+            
+            showConfirm(Bạn có chắc chắn muốn ký hàng loạt  + ids.length +  tài liệu đã chọn?, async () => {
+                loadingOverlay.classList.remove('hidden');
+                let successCount = 0;
+                let failCount = 0;
+                
+                for (const id of ids) {
+                    try {
+                        const doc = documents.find(d => d.id == id);
+                        const res = await fetch('/api/sign/request', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                agentId: currentUser.activeAgentId,
+                                docId: id,
+                                payload: {
+                                    action: 'SIGN_DOCUMENT',
+                                    documentId: id,
+                                    title: doc ? doc.title : 'Tài liệu',
+                                    timestamp: new Date().toISOString()
+                                }
+                            })
+                        });
+                        const data = await res.json();
+                        if (data.success) successCount++;
+                        else failCount++;
+                    } catch (err) {
+                        failCount++;
+                    }
+                }
+                
+                setTimeout(() => {
+                    loadingOverlay.classList.add('hidden');
+                    showToast(Đã gửi lệnh ký xong. Thành công:  + successCount + , Thất bại:  + failCount, successCount > 0 ? 'success' : 'error');
+                    loadDocuments();
+                }, 1000);
+            });
+        }
+    });
+});
