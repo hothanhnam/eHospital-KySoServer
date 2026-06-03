@@ -179,16 +179,17 @@ function showDashboard() {
 async function loadFilters() {
     try {
         const res = await callAgent('get-filters', {});
-        if (res && res.data) {
-            if (res.data.phongBan) {
+        const agentData = res?.data?.data;
+        if (agentData) {
+            if (agentData.phongBan) {
                 phongBanSelect.innerHTML = '<option value="">-- Tất cả --</option>' + 
-                    res.data.phongBan.map(p => `<option value="${p.MaPhongBan}">${p.TenPhongBan}</option>`).join('');
+                    agentData.phongBan.map(p => `<option value="${p.MaPhongBan}">${p.TenPhongBan}</option>`).join('');
             }
-            if (res.data.quyenKy) {
+            if (agentData.quyenKy) {
                 quyenKySelect.innerHTML = '<option value="">-- Tất cả --</option>' + 
-                    res.data.quyenKy.map(q => `<option value="${q.MaQuyenKy}">${q.TenQuyenKy}</option>`).join('');
-                if (res.data.quyenKy.length > 0) {
-                    quyenKySelect.value = res.data.quyenKy[0].MaQuyenKy; // Auto select first
+                    agentData.quyenKy.map(q => `<option value="${q.MaQuyenKy}">${q.TenQuyenKy}</option>`).join('');
+                if (agentData.quyenKy.length > 0) {
+                    quyenKySelect.value = agentData.quyenKy[0].MaQuyenKy; // Auto select first
                 }
             }
         }
@@ -206,7 +207,7 @@ async function loadDocumentTypes() {
             deptId: phongBanSelect.value ? parseInt(phongBanSelect.value) : 0,
             roleName: quyenKySelect.value || ''
         });
-        const data = await res.json();
+        const data = res;
         if (data.success && data.data && data.data.data) {
             documentTypes = data.data.data;
             if(docTypeSelect) {
