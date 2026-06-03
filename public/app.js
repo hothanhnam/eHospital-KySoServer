@@ -414,7 +414,9 @@ function renderTable() {
             
         let docName = 'Tài liệu (Khác)';
         if (documentTypes) {
-            const matchingDoc = documentTypes.find(d => d.Report_Id == doc.Report_Id);
+            // Match bằng cả Report_Id + RoleName cho chính xác
+            let matchingDoc = documentTypes.find(d => d.Report_Id == doc.Report_Id && d.RoleName == doc.RoleName);
+            if (!matchingDoc) matchingDoc = documentTypes.find(d => d.Report_Id == doc.Report_Id);
             if (matchingDoc) {
                 docName = matchingDoc.TenGiayTo || matchingDoc.TenLoaiBaoCao || 'Tài liệu';
             }
