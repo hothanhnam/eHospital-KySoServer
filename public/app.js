@@ -280,7 +280,7 @@ tabBtns.forEach(btn => {
         tabBtns.forEach(b => b.classList.remove('active'));
         e.target.closest('button').classList.add('active');
         currentTab = parseInt(e.target.closest('button').dataset.tab);
-        loadPatients();
+        loadDocumentTypes();
     });
 });
 
@@ -423,11 +423,24 @@ function renderTable() {
             
         let docName = doc.ResolvedDocName || 'Tài liệu (Khác)';
         if (!doc.ResolvedDocName && documentTypes) {
-            // Match bằng cả Report_Id + RoleName cho chính xác
-            let matchingDoc = documentTypes.find(d => d.Report_Id == doc.Report_Id && d.RoleName == doc.RoleName);
-            if (!matchingDoc) matchingDoc = documentTypes.find(d => d.Report_Id == doc.Report_Id);
+            let rId = doc.Report_Id;
+            let rName = doc.RoleName;
+            
+            if (rId === undefined) {
+                const key = Object.keys(doc).find(k => k.toLowerCase() === 'report_id');
+                if (key) rId = doc[key];
+            }
+            if (rName === undefined) {
+                const key = Object.keys(doc).find(k => k.toLowerCase() === 'rolename');
+                if (key) rName = doc[key];
+            }
+            
+            let matchingDoc = documentTypes.find(d => d.Report_Id == rId && (rName ? d.RoleName == rName : true));
+            if (!matchingDoc) matchingDoc = documentTypes.find(d => d.Report_Id == rId);
             if (matchingDoc) {
                 docName = matchingDoc.TenGiayTo || matchingDoc.TenLoaiBaoCao || 'Tài liệu';
+                doc.ResolvedDocName = docName;
+                doc.ResolvedRoleName = matchingDoc.RoleName;
             }
         }
             
@@ -481,14 +494,17 @@ document.body.addEventListener('click', (e) => {
                     
                     const data = await callAgent('sign-document', {
                         documentId: doc.Document_Id,
-                        roleName: doc.RoleName || quyenKySelect.value || '',
+                        roleName: doc.ResolvedRoleName || doc.RoleName || quyenKySelect.value || '',
                         filePath: doc.File_Path || '',
                         reportCode: doc.Report_Code || '',
                         reportParameter: doc.ReportParameter || ''
                     });
-                    if (data.success && data.data) {
+                    if (data.success && data.data && data.data.ok) {
                         successCount++;
-                    } else failCount++;
+                    } else {
+                        failCount++;
+                        console.error('Lỗi ký số:', data.data?.message);
+                    }
                 } catch (err) {
                     failCount++;
                 }
@@ -514,16 +530,16 @@ window.signDocument = async function(docId) {
     try {
         const data = await callAgent('sign-document', {
             documentId: doc.Document_Id,
-            roleName: doc.RoleName || quyenKySelect.value || '',
+            roleName: doc.ResolvedRoleName || doc.RoleName || quyenKySelect.value || '',
             filePath: doc.File_Path || '',
             reportCode: doc.Report_Code || '',
             reportParameter: doc.ReportParameter || ''
         });
-        if (data.success && data.data) {
+        if (data.success && data.data && data.data.ok) {
             showToast('Đã ký thành công!', 'success');
             loadDocumentTypes();
         } else {
-            showToast('Lỗi ký số: ' + (data.data?.message || ''), 'error');
+            showToast(data.data?.message || 'Lỗi khi ký số', 'error');
         }
     } catch(err) {
         showToast('Lỗi kết nối tới Agent', 'error');
@@ -556,8 +572,8 @@ async function fetchAndShowPdf(docId, isSigning) {
             reportParameter: doc.ReportParameter || ''
         });
         
-        if (data.success && data.data && data.data.base64) {
-            const pdfDataUri = 'data:application/pdf;base64,' + data.data.base64;
+        if (data.success && data.data && data.data.data && data.data.data.base64) {
+            const pdfDataUri = 'data:application/pdf;base64,' + data.data.data.base64;
             document.getElementById('pdf-viewer').src = pdfDataUri;
             
             // Hiện modal
@@ -572,7 +588,7 @@ async function fetchAndShowPdf(docId, isSigning) {
                 btnSign.style.display = 'none';
             }
         } else {
-            showToast('Không thể xem trước tài liệu', 'error');
+            showToast(data?.data?.message || 'Không thể xem trước tài liệu', 'error');
         }
     } catch (err) {
         showToast('Lỗi khi tải file xem trước', 'error');
