@@ -380,10 +380,19 @@ function renderTable() {
             ? `<button class="btn-sign" onclick="signDocument('${doc.DocumentInstance_Id}')">Ký số</button>`
             : `<button class="btn-sign" onclick="previewDocument('${doc.DocumentInstance_Id}')">Xem</button>`;
             
+        let docName = 'Tài liệu (Khác)';
+        if (documentTypes) {
+            const matchingDoc = documentTypes.find(d => d.Report_Id == doc.Report_Id);
+            if (matchingDoc) {
+                docName = matchingDoc.TenGiayTo || matchingDoc.TenLoaiBaoCao || 'Tài liệu';
+            }
+        }
+            
         tr.innerHTML = `
             <td style="text-align:center">${chkHtml}</td>
             <td>${idx + 1}</td>
             <td><strong>${doc.TenBenhNhan || ''}</strong></td>
+            <td><span style="font-size: 0.9em; color: var(--primary); background: rgba(14,165,233,0.1); padding: 4px 8px; border-radius: 6px;">${docName}</span></td>
             <td>${doc.NamSinh || doc.Tuoi || ''}</td>
             <td>${doc.GioiTinh || ''}</td>
             <td>${doc.BenhAn_Id || doc.TiepNhan_Id || ''}</td>

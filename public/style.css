@@ -314,9 +314,9 @@ tr:hover td {
     background: var(--primary);
     color: white;
     cursor: pointer;
+    font-size: 0.85em;
     font-weight: 500;
-    font-size: 0.85rem;
-    transition: background 0.2s;
+    transition: all 0.2s ease;
 }
 .btn-sign:hover {
     background: var(--primary-dark);
@@ -325,6 +325,29 @@ tr:hover td {
     background: var(--glass-border);
     color: var(--text-muted);
     cursor: not-allowed;
+}
+
+.btn-batch-action {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 0.9em;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+    transition: all 0.2s ease;
+}
+.btn-batch-action:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(16, 185, 129, 0.3);
+}
+.btn-batch-action:active {
+    transform: translateY(0);
 }
 
 /* Overlay & Loading */
