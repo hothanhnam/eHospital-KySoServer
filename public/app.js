@@ -79,7 +79,16 @@ function forceLogout() {
 async function fetchAgents() {
     try {
         const res = await fetch('/api/agents');
-        const data = res; // callAgent already does res.json()
+        const data = await res.json();
+        
+        if (currentUser && currentUser.activeAgentId) {
+            if (!data.data.includes(currentUser.activeAgentId)) {
+                showToast('Máy ký số của bạn đã ngắt kết nối!', 'error');
+                setTimeout(forceLogout, 1500);
+                // Continue to update the dropdown for the login screen
+            }
+        }
+        
         agentSelect.innerHTML = '';
         if (data.data.length === 0) {
             agentSelect.innerHTML = '<option value="">-- Chưa có máy ký số nào đang bật --</option>';
@@ -100,7 +109,7 @@ btnRefreshAgents.addEventListener('click', fetchAgents);
 
 const evtSource = new EventSource('/api/events');
 evtSource.addEventListener('agents_update', () => {
-    if (loginView.classList.contains('active')) fetchAgents();
+    fetchAgents();
 });
 
 loginForm.addEventListener('submit', async (e) => {
