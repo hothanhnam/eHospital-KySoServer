@@ -7,6 +7,7 @@ let currentTab = 0; // 0: Chưa ký, 1: Đã ký
 let currentPage = 1;
 let pageSize = 10;
 let currentDocTypeIndex = 0;
+let totalItems = 0;
 
 const loginView = document.getElementById('login-view');
 const dashboardView = document.getElementById('dashboard-view');
@@ -20,6 +21,8 @@ const loadingOverlay = document.getElementById('loading-overlay');
 const agentSelect = document.getElementById('agent-select');
 const btnRefreshAgents = document.getElementById('btn-refresh-agents');
 
+const phongBanSelect = document.getElementById('phong-ban-select');
+const quyenKySelect = document.getElementById('quyen-ky-select');
 const docTypeSelect = document.getElementById('doc-type-select');
 const dateFrom = document.getElementById('date-from');
 const dateTo = document.getElementById('date-to');
@@ -37,6 +40,20 @@ function init() {
     } else {
         fetchAgents();
     }
+}
+
+
+async function callAgent(type, payload) {
+    const res = await fetch('/api/agent/request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            agentId: currentUser.activeAgentId,
+            type: type,
+            payload: payload
+        })
+    });
+    return await res.json();
 }
 
 async function fetchAgents() {
@@ -156,7 +173,28 @@ function showDashboard() {
     if(dateFrom) dateFrom.value = today;
     if(dateTo) dateTo.value = today;
     
-    loadDocumentTypes();
+    loadFilters().then(() => loadDocumentTypes());
+}
+
+async function loadFilters() {
+    try {
+        const res = await callAgent('get-filters', {});
+        if (res && res.data) {
+            if (res.data.phongBan) {
+                phongBanSelect.innerHTML = '<option value="">-- Tất cả --</option>' + 
+                    res.data.phongBan.map(p => `<option value="${p.MaPhongBan}">${p.TenPhongBan}</option>`).join('');
+            }
+            if (res.data.quyenKy) {
+                quyenKySelect.innerHTML = '<option value="">-- Tất cả --</option>' + 
+                    res.data.quyenKy.map(q => `<option value="${q.MaQuyenKy}">${q.TenQuyenKy}</option>`).join('');
+                if (res.data.quyenKy.length > 0) {
+                    quyenKySelect.value = res.data.quyenKy[0].MaQuyenKy; // Auto select first
+                }
+            }
+        }
+    } catch (err) {
+        console.error("Lỗi tải bộ lọc:", err);
+    }
 }
 
 async function loadDocumentTypes() {
@@ -277,12 +315,22 @@ function renderTable() {
     if(btnBatchSign) btnBatchSign.style.display = 'none';
     if(document.getElementById('chk-select-all')) document.getElementById('chk-select-all').checked = false;
     
+    
+    totalItems = patientsList.length;
+    const startIdx = (currentPage - 1) * pageSize;
+    const endIdx = startIdx + pageSize;
+    const pagedList = patientsList.slice(startIdx, endIdx);
+    
+    document.getElementById('page-info').innerText = `Hiển thị ${totalItems > 0 ? startIdx + 1 : 0} - ${Math.min(endIdx, totalItems)}/${totalItems} bản ghi`;
+    document.getElementById('current-page-num').innerText = currentPage;
+    
     if (patientsList.length === 0) {
         docsBody.innerHTML = '<tr><td colspan="8" style="text-align:center">Không có tài liệu nào</td></tr>';
         return;
     }
     
-    patientsList.forEach((doc, idx) => {
+    pagedList.forEach((doc, i) => {
+        const idx = startIdx + i;
         const tr = document.createElement('tr');
         const statusHtml = currentTab === 0 ? '<span class="status-badge status-pending">Chưa ký</span>' : '<span class="status-badge status-signed">Đã ký</span>';
         
@@ -296,9 +344,9 @@ function renderTable() {
             <td style="text-align:center">${chkHtml}</td>
             <td>${idx + 1}</td>
             <td><strong>${doc.TenBenhNhan || ''}</strong></td>
-            <td>${doc.NamSinh || ''}</td>
-            <td>${doc.TenPhieu || ''}</td>
-            <td>${doc.DocumentInstance_Id}</td>
+            <td>${doc.NamSinh || doc.Tuoi || ''}</td>
+            <td>${doc.GioiTinh || ''}</td>
+            <td>${doc.BenhAn_Id || doc.TiepNhan_Id || ''}</td>
             <td>${statusHtml}</td>
             <td>${actionBtn}</td>
         `;
@@ -391,3 +439,22 @@ window.previewDocument = function(docId) {
 }
 
 init();
+
+
+document.getElementById('btn-prev-page').addEventListener('click', () => {
+    if (currentPage > 1) {
+        currentPage--;
+        renderTable();
+    }
+});
+document.getElementById('btn-next-page').addEventListener('click', () => {
+    if (currentPage * pageSize < totalItems) {
+        currentPage++;
+        renderTable();
+    }
+});
+
+phongBanSelect.addEventListener('change', loadDocumentTypes);
+quyenKySelect.addEventListener('change', loadDocumentTypes);
+dateFrom.addEventListener('change', loadDocumentTypes);
+dateTo.addEventListener('change', loadDocumentTypes);

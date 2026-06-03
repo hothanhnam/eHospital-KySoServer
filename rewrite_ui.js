@@ -1,4 +1,8 @@
-<!DOCTYPE html>
+function createAdvancedUI() {
+    const fs = require('fs');
+    const path = require('path');
+    
+    const indexHtmlContent = `<!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
@@ -200,4 +204,11 @@
 
     <script src="app.js?v=12"></script>
 </body>
-</html>
+</html>`;
+
+    const publicDir = path.join(__dirname, 'public');
+    fs.writeFileSync(path.join(publicDir, 'index.html'), indexHtmlContent);
+    console.log("Written index.html");
+}
+
+createAdvancedUI();
