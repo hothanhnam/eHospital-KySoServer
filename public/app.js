@@ -569,10 +569,12 @@ window.cancelSignDocument = async function(docId) {
         
         try {
             const data = await callAgent('cancel-sign-document', {
-                documentId: docId
+                documentId: docId,
+                roleName: doc.RoleName || currentRole || '',
+                filePath: doc.File_Path || ''
             });
             
-            if (data.success && data.data && data.data.success) {
+            if (data.success && data.data && data.data.ok) {
                 showToast('Đã hủy ký thành công!', 'success');
                 loadPatients();
             } else {
