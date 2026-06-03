@@ -1,4 +1,4 @@
-﻿// app.js - Logic Frontend cho KySoServer Web Portal
+// app.js - Logic Frontend cho KySoServer Web Portal
 
 let currentUser = null;
 let documentTypes = [];
@@ -289,19 +289,19 @@ function renderTable() {
         let chkHtml = currentTab === 0 ? '<input type="checkbox" class="chk-item" value="' + doc.DocumentInstance_Id + '" style="transform: scale(1.2); cursor: pointer;" onclick="event.stopPropagation(); window.updateBatchSignState()">' : '';
         
         let actionBtn = currentTab === 0 
-            ? '<button class="btn-sign" onclick="signDocument(\\'' + doc.DocumentInstance_Id + '\\')">Ký số</button>'
-            : '<button class="btn-sign" onclick="previewDocument(\\'' + doc.DocumentInstance_Id + '\\')">Xem</button>';
+            ? `<button class="btn-sign" onclick="signDocument('${doc.DocumentInstance_Id}')">Ký số</button>`
+            : `<button class="btn-sign" onclick="previewDocument('${doc.DocumentInstance_Id}')">Xem</button>`;
             
-        tr.innerHTML = 
-            <td style="text-align:center"></td>
-            <td></td>
-            <td><strong></strong></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-        ;
+        tr.innerHTML = `
+            <td style="text-align:center">${chkHtml}</td>
+            <td>${idx + 1}</td>
+            <td><strong>${doc.TenBenhNhan || ''}</strong></td>
+            <td>${doc.NamSinh || ''}</td>
+            <td>${doc.TenPhieu || ''}</td>
+            <td>${doc.DocumentInstance_Id}</td>
+            <td>${statusHtml}</td>
+            <td>${actionBtn}</td>
+        `;
         docsBody.appendChild(tr);
     });
 }
