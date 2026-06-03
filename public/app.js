@@ -559,6 +559,8 @@ async function fetchAndShowPdf(docId, isSigning) {
         return;
     }
     
+    if (loadingTitle) loadingTitle.textContent = 'Đang tải tài liệu...';
+    if (loadingDesc) loadingDesc.textContent = 'Vui lòng chờ trong giây lát.';
     loadingOverlay.classList.remove('hidden');
     
     try {
