@@ -50,13 +50,14 @@ wss.on('connection', (ws, req) => {
             }
 
             // Handle ACK from Agent
-            if (data.type === 'legacy-login-ack' && data.reqId) {
+            if (data.type && data.type.endsWith("-ack") && data.reqId) {
                 const pending = pendingRequests.get(data.reqId);
                 if (pending) {
                     clearTimeout(pending.timeout);
                     pendingRequests.delete(data.reqId);
                     
-                    if (data.ok) {
+                    if (data.type === "legacy-login-ack") {
+                        if (data.ok) {
                         pending.res.json({
                             success: true,
                             user: { 
@@ -175,6 +176,31 @@ app.get('/api/documents', (req, res) => {
 app.get('/api/agents', (req, res) => {
     const agents = Array.from(connectedAgents.keys());
     res.json({ success: true, data: agents });
+});
+
+
+// API: Generic Request to Agent
+app.post("/api/agent/request", (req, res) => {
+    const { agentId, type, payload } = req.body;
+    if (!agentId || !connectedAgents.has(agentId)) {
+        return res.json({ success: false, message: "Agent không khả dụng hoặc đã mất kết nối!" });
+    }
+    const ws = connectedAgents.get(agentId);
+    const reqId = Date.now().toString() + Math.random().toString(36).substring(7);
+    const timeout = setTimeout(() => {
+        if (pendingRequests.has(reqId)) {
+            pendingRequests.delete(reqId);
+            res.json({ success: false, message: "Máy ký số không phản hồi (Timeout)!" });
+        }
+    }, 30000);
+    pendingRequests.set(reqId, { res, timeout });
+    const requestPayload = {
+        type: type,
+        reqId: reqId,
+        uid: payload?.uid || reqId,
+        payload: payload
+    };
+    ws.send(JSON.stringify(requestPayload));
 });
 
 // API for Web HIS to trigger signing (or triggered from Portal)

@@ -1,10 +1,13 @@
 ﻿// app.js - Logic Frontend cho KySoServer Web Portal
 
-// State
 let currentUser = null;
-let documents = [];
+let documentTypes = [];
+let patientsList = [];
+let currentTab = 0; // 0: Chưa ký, 1: Đã ký
+let currentPage = 1;
+let pageSize = 10;
+let currentDocTypeIndex = 0;
 
-// DOM Elements
 const loginView = document.getElementById('login-view');
 const dashboardView = document.getElementById('dashboard-view');
 const loginForm = document.getElementById('login-form');
@@ -17,9 +20,16 @@ const loadingOverlay = document.getElementById('loading-overlay');
 const agentSelect = document.getElementById('agent-select');
 const btnRefreshAgents = document.getElementById('btn-refresh-agents');
 
-// --- Initialization ---
+const docTypeSelect = document.getElementById('doc-type-select');
+const dateFrom = document.getElementById('date-from');
+const dateTo = document.getElementById('date-to');
+const tabBtns = document.querySelectorAll('.tab-btn');
+const btnBatchSign = document.getElementById('btn-batch-sign');
+const batchCount = document.getElementById('batch-count');
+const badgeChuaKy = document.getElementById('badge-chua-ky');
+const badgeDaKy = document.getElementById('badge-da-ky');
+
 function init() {
-    // Check if already logged in (localStorage)
     const storedUser = localStorage.getItem('kyso_user');
     if (storedUser) {
         currentUser = JSON.parse(storedUser);
@@ -29,59 +39,42 @@ function init() {
     }
 }
 
-// --- Fetch Active Agents ---
 async function fetchAgents() {
     try {
         const res = await fetch('/api/agents');
         const data = await res.json();
-        
         agentSelect.innerHTML = '';
         if (data.data.length === 0) {
-            const opt = document.createElement('option');
-            opt.value = '';
-            opt.textContent = '-- Chưa có máy ký số nào đang bật --';
-            agentSelect.appendChild(opt);
+            agentSelect.innerHTML = '<option value="">-- Chưa có máy ký số nào đang bật --</option>';
         } else {
             data.data.forEach(agentId => {
                 const opt = document.createElement('option');
                 opt.value = agentId;
-                opt.textContent = agentId; // Bỏ chữ "Máy: "
+                opt.textContent = agentId;
                 agentSelect.appendChild(opt);
             });
-            // Tự động chọn Agent đầu tiên
             agentSelect.selectedIndex = 0;
         }
     } catch (err) {
         agentSelect.innerHTML = '<option value="">Lỗi tải danh sách Agent</option>';
     }
 }
-
 btnRefreshAgents.addEventListener('click', fetchAgents);
 
-// --- Realtime SSE for Agent Updates ---
 const evtSource = new EventSource('/api/events');
 evtSource.addEventListener('agents_update', () => {
-    // Chỉ auto-refresh nếu người dùng đang ở trang đăng nhập
-    if (loginView.classList.contains('active')) {
-        fetchAgents();
-    }
+    if (loginView.classList.contains('active')) fetchAgents();
 });
 
-// --- Login Logic ---
 loginForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const selectedAgent = agentSelect.value;
     const username = document.getElementById('username').value;
     const password = document.getElementById('password').value;
-    
     loginError.textContent = '';
     
     if (!selectedAgent) {
-        if (agentSelect.options.length <= 1) {
-            loginError.textContent = 'Không có agent nào đang hoạt động, vui lòng liên hệ quản trị để được xử lý!';
-        } else {
-            loginError.textContent = 'Vui lòng chọn Máy ký số!';
-        }
+        loginError.textContent = 'Vui lòng chọn Máy ký số!';
         return;
     }
     
@@ -91,7 +84,6 @@ loginForm.addEventListener('submit', async (e) => {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username, password, agentId: selectedAgent })
         });
-        
         const data = await res.json();
         if (data.success) {
             currentUser = { ...data.user, activeAgentId: selectedAgent };
@@ -105,34 +97,13 @@ loginForm.addEventListener('submit', async (e) => {
     }
 });
 
-// --- UI Components ---
 function showToast(message, type = 'info') {
     const container = document.getElementById('toast-container');
     const toast = document.createElement('div');
-    toast.className = `toast ${type}`;
-    
-    let iconSvg = '';
-    if (type === 'success') {
-        iconSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>`;
-    } else if (type === 'error') {
-        iconSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>`;
-    } else if (type === 'warning') {
-        iconSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>`;
-    } else {
-        iconSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`;
-    }
-
-    toast.innerHTML = `
-        <div class="toast-icon">${iconSvg}</div>
-        <div class="toast-content">${message}</div>
-    `;
-    
+    toast.className = 'toast ' + type;
+    toast.innerHTML = '<div class="toast-content">' + message + '</div>';
     container.appendChild(toast);
-    
-    // Trigger animation
     setTimeout(() => toast.classList.add('show'), 10);
-    
-    // Remove after 3s
     setTimeout(() => {
         toast.classList.remove('show');
         setTimeout(() => toast.remove(), 400);
@@ -141,23 +112,18 @@ function showToast(message, type = 'info') {
 
 function showConfirm(message, onConfirm) {
     const modal = document.getElementById('confirm-modal');
-    const msgEl = document.getElementById('confirm-msg');
+    document.getElementById('confirm-msg').textContent = message;
+    modal.classList.remove('hidden');
+    
     const btnCancel = document.getElementById('btn-confirm-cancel');
     const btnOk = document.getElementById('btn-confirm-ok');
     
-    msgEl.textContent = message;
-    modal.classList.remove('hidden');
-    
-    // Cleanup old listeners to prevent multiple triggers
     const newBtnOk = btnOk.cloneNode(true);
     const newBtnCancel = btnCancel.cloneNode(true);
     btnOk.parentNode.replaceChild(newBtnOk, btnOk);
     btnCancel.parentNode.replaceChild(newBtnCancel, btnCancel);
     
-    newBtnCancel.addEventListener('click', () => {
-        modal.classList.add('hidden');
-    });
-    
+    newBtnCancel.addEventListener('click', () => modal.classList.add('hidden'));
     newBtnOk.addEventListener('click', () => {
         modal.classList.add('hidden');
         onConfirm();
@@ -170,143 +136,180 @@ btnLogout.addEventListener('click', () => {
             await fetch('/api/logout', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                // Fallback id if uid is missing (for old cached user data)
                 body: JSON.stringify({ uid: currentUser.uid || currentUser.id, agentId: currentUser.activeAgentId })
             });
-        } catch (err) {
-            console.error('Lỗi khi logout:', err);
-        }
-        
+        } catch (err) {}
         currentUser = null;
         localStorage.removeItem('kyso_user');
         loginView.classList.add('active');
         dashboardView.classList.remove('active');
-        showToast('Đã đăng xuất thành công', 'success');
     });
 });
 
-// --- View Transition ---
 function showDashboard() {
     loginView.classList.remove('active');
     dashboardView.classList.add('active');
-    userGreeting.textContent = `Xin chào, ${currentUser.name}`;
-    loadDocuments();
+    userGreeting.textContent = 'Xin chào, ' + currentUser.name;
+    
+    // Set date default to today
+    const today = new Date().toISOString().split('T')[0];
+    if(dateFrom) dateFrom.value = today;
+    if(dateTo) dateTo.value = today;
+    
+    loadDocumentTypes();
 }
 
-// --- Dashboard Logic ---
-async function loadDocuments() {
+async function loadDocumentTypes() {
+    loadingOverlay.classList.remove('hidden');
     try {
-        const res = await fetch('/api/documents');
+        const res = await fetch('/api/agent/request', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                agentId: currentUser.activeAgentId,
+                type: 'get-document-types',
+                payload: { TuNgay: dateFrom.value, DenNgay: dateTo.value }
+            })
+        });
         const data = await res.json();
-        if (data.success) {
-            documents = data.data;
-            renderTable();
+        if (data.success && data.data && data.data.data) {
+            documentTypes = data.data.data;
+            if(docTypeSelect) {
+                docTypeSelect.innerHTML = '';
+                documentTypes.forEach((dt, idx) => {
+                    const opt = document.createElement('option');
+                    opt.value = idx;
+                    opt.textContent = dt.TenLoaiBaoCao + ' (' + dt.CountChuaKy + ' chưa ký)';
+                    docTypeSelect.appendChild(opt);
+                });
+                if(documentTypes.length > 0) {
+                    docTypeSelect.selectedIndex = 0;
+                    currentDocTypeIndex = 0;
+                }
+            }
+            updateBadges();
+            loadPatients();
+        } else {
+            showToast('Không tải được danh sách loại tài liệu', 'error');
+            loadingOverlay.classList.add('hidden');
         }
     } catch (err) {
-        console.error('Failed to load documents', err);
+        showToast('Lỗi kết nối tới Agent', 'error');
+        loadingOverlay.classList.add('hidden');
     }
 }
 
-btnRefresh.addEventListener('click', loadDocuments);
+if(btnRefresh) btnRefresh.addEventListener('click', loadDocumentTypes);
+
+if(docTypeSelect) {
+    docTypeSelect.addEventListener('change', (e) => {
+        currentDocTypeIndex = e.target.value;
+        loadPatients();
+    });
+}
+
+tabBtns.forEach(btn => {
+    btn.addEventListener('click', (e) => {
+        tabBtns.forEach(b => b.classList.remove('active'));
+        e.target.closest('button').classList.add('active');
+        currentTab = parseInt(e.target.closest('button').dataset.tab);
+        loadPatients();
+    });
+});
+
+function updateBadges() {
+    if(documentTypes.length > 0) {
+        const dt = documentTypes[currentDocTypeIndex];
+        if(badgeChuaKy) badgeChuaKy.textContent = dt.CountChuaKy || 0;
+        if(badgeDaKy) badgeDaKy.textContent = dt.CountDaKy || 0;
+    }
+}
+
+async function loadPatients() {
+    if(documentTypes.length === 0) {
+        loadingOverlay.classList.add('hidden');
+        renderTable();
+        return;
+    }
+    
+    updateBadges();
+    loadingOverlay.classList.remove('hidden');
+    const dt = documentTypes[currentDocTypeIndex];
+    const ids = currentTab === 0 ? dt.ListID_ChuaKy : dt.ListID_DaKy;
+    
+    if(!ids || ids.trim() === '') {
+        patientsList = [];
+        renderTable();
+        loadingOverlay.classList.add('hidden');
+        return;
+    }
+    
+    try {
+        const res = await fetch('/api/agent/request', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                agentId: currentUser.activeAgentId,
+                type: 'get-patients-by-document',
+                payload: {
+                    documentInstanceIDs: ids,
+                    loaiVanBan: dt.LoaiVanBan
+                }
+            })
+        });
+        const data = await res.json();
+        if (data.success && data.data && data.data.data) {
+            patientsList = data.data.data;
+            renderTable();
+        } else {
+            patientsList = [];
+            renderTable();
+        }
+    } catch (err) {
+        showToast('Lỗi tải danh sách hồ sơ', 'error');
+    }
+    loadingOverlay.classList.add('hidden');
+}
 
 function renderTable() {
     docsBody.innerHTML = '';
     
-    if (documents.length === 0) {
-        docsBody.innerHTML = `<tr><td colspan="5" style="text-align:center">Không có tài liệu nào cần ký</td></tr>`;
+    if(btnBatchSign) btnBatchSign.style.display = 'none';
+    if(document.getElementById('chk-select-all')) document.getElementById('chk-select-all').checked = false;
+    
+    if (patientsList.length === 0) {
+        docsBody.innerHTML = '<tr><td colspan="8" style="text-align:center">Không có tài liệu nào</td></tr>';
         return;
     }
     
-    documents.forEach(doc => {
+    patientsList.forEach((doc, idx) => {
         const tr = document.createElement('tr');
+        const statusHtml = currentTab === 0 ? '<span class="status-badge status-pending">Chưa ký</span>' : '<span class="status-badge status-signed">Đã ký</span>';
         
-        // Status formatting
-        let statusHtml = '';
-        let btnDisabled = '';
-        let btnText = 'Ký số';
+        let chkHtml = currentTab === 0 ? '<input type="checkbox" class="chk-item" value="' + doc.DocumentInstance_Id + '" style="transform: scale(1.2); cursor: pointer;" onclick="event.stopPropagation(); window.updateBatchSignState()">' : '';
         
-        if (doc.status === 'pending') {
-            statusHtml = `<span class="status-badge status-pending">Chờ ký</span>`;
-        } else if (doc.status === 'signing') {
-            statusHtml = `<span class="status-badge status-signing">Đang xử lý</span>`;
-            btnDisabled = 'disabled';
-            btnText = 'Đang xử lý...';
-        } else if (doc.status === 'signed') {
-            statusHtml = `<span class="status-badge status-signed">Đã ký</span>`;
-            btnDisabled = 'disabled';
-            btnText = 'Đã hoàn tất';
-        }
-
-        tr.innerHTML = `
-            <td><input type="checkbox" class="chk-item" value="${doc.id}" style="transform: scale(1.2); cursor: pointer;" onclick="event.stopPropagation(); window.updateBatchSignState()"></td><td>#${doc.id}</td>
-            <td><strong>${doc.title}</strong></td>
-            <td>${doc.date}</td>
-            <td>${statusHtml}</td>
-            <td>
-                <button class="btn-sign" onclick="signDocument('${doc.id}')" ${btnDisabled}>
-                    ${btnText}
-                </button>
-            </td>
-        `;
+        let actionBtn = currentTab === 0 
+            ? '<button class="btn-sign" onclick="signDocument(\\'' + doc.DocumentInstance_Id + '\\')">Ký số</button>'
+            : '<button class="btn-sign" onclick="previewDocument(\\'' + doc.DocumentInstance_Id + '\\')">Xem</button>';
+            
+        tr.innerHTML = 
+            <td style="text-align:center"></td>
+            <td></td>
+            <td><strong></strong></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        ;
         docsBody.appendChild(tr);
     });
 }
 
-// --- Ký số (Trigger Agent) ---
-window.signDocument = async function(docId) {
-    const doc = documents.find(d => d.id === docId);
-    if (!doc) return;
-    
-    // Show Loading Modal
-    loadingOverlay.classList.remove('hidden');
-    
-    try {
-        // Gửi lệnh xuống Server, truyền ID của Agent đã chọn lúc Login
-        const res = await fetch('/api/sign/request', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                agentId: currentUser.activeAgentId, 
-                docId: docId,
-                payload: {
-                    action: 'SIGN_DOCUMENT',
-                    documentId: docId,
-                    title: doc.title,
-                    timestamp: new Date().toISOString()
-                }
-            })
-        });
-        
-        const data = await res.json();
-        
-        // Dừng Loading Modal sau 2 giây mô phỏng (Trong thực tế sẽ dùng WebSocket để nhận kết quả từ Agent)
-        setTimeout(() => {
-            loadingOverlay.classList.add('hidden');
-            if (data.success) {
-                showToast(`Đã gửi lệnh ký tới USB Token thành công! Vui lòng kiểm tra màn hình máy tính.`, 'success');
-                loadDocuments(); // Refresh to see "Đang xử lý" status
-            } else {
-                showToast(`Lỗi: ${data.error}`, 'error');
-            }
-        }, 1000);
-        
-    } catch (err) {
-        loadingOverlay.classList.add('hidden');
-        showToast('Có lỗi xảy ra khi kết nối tới Server!', 'error');
-    }
-}
-
-// Chạy Init
-init();
-
-// --- Batch Sign Logic ---
 window.updateBatchSignState = function() {
     const chkItems = document.querySelectorAll('.chk-item');
     const checked = document.querySelectorAll('.chk-item:checked');
     const chkSelectAll = document.getElementById('chk-select-all');
-    const btnBatchSign = document.getElementById('btn-batch-sign');
-    const batchCount = document.getElementById('batch-count');
-    
     if (chkSelectAll && chkItems.length > 0) {
         chkSelectAll.checked = (checked.length === chkItems.length);
     }
@@ -314,57 +317,77 @@ window.updateBatchSignState = function() {
     if (btnBatchSign) btnBatchSign.style.display = checked.length > 0 ? 'block' : 'none';
 };
 
-document.addEventListener('DOMContentLoaded', () => {
-    document.body.addEventListener('click', (e) => {
-        if (e.target.id === 'chk-select-all') {
-            const isChecked = e.target.checked;
-            document.querySelectorAll('.chk-item').forEach(chk => {
-                if(!chk.disabled) chk.checked = isChecked;
-            });
-            window.updateBatchSignState();
-        }
+document.body.addEventListener('click', (e) => {
+    if (e.target.id === 'chk-select-all') {
+        const isChecked = e.target.checked;
+        document.querySelectorAll('.chk-item').forEach(chk => chk.checked = isChecked);
+        window.updateBatchSignState();
+    }
+    
+    if (e.target.id === 'btn-batch-sign' || e.target.closest('#btn-batch-sign')) {
+        const checked = document.querySelectorAll('.chk-item:checked');
+        if (checked.length === 0) return;
+        const ids = Array.from(checked).map(chk => chk.value);
         
-        if (e.target.id === 'btn-batch-sign' || e.target.closest('#btn-batch-sign')) {
-            const checked = document.querySelectorAll('.chk-item:checked');
-            if (checked.length === 0) return;
-            const ids = Array.from(checked).map(chk => chk.value);
+        showConfirm('Bạn có chắc chắn muốn ký hàng loạt ' + ids.length + ' tài liệu đã chọn?', async () => {
+            loadingOverlay.classList.remove('hidden');
+            let successCount = 0;
+            let failCount = 0;
             
-            showConfirm(Bạn có chắc chắn muốn ký hàng loạt  + ids.length +  tài liệu đã chọn?, async () => {
-                loadingOverlay.classList.remove('hidden');
-                let successCount = 0;
-                let failCount = 0;
-                
-                for (const id of ids) {
-                    try {
-                        const doc = documents.find(d => d.id == id);
-                        const res = await fetch('/api/sign/request', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                agentId: currentUser.activeAgentId,
-                                docId: id,
-                                payload: {
-                                    action: 'SIGN_DOCUMENT',
-                                    documentId: id,
-                                    title: doc ? doc.title : 'Tài liệu',
-                                    timestamp: new Date().toISOString()
-                                }
-                            })
-                        });
-                        const data = await res.json();
-                        if (data.success) successCount++;
-                        else failCount++;
-                    } catch (err) {
-                        failCount++;
-                    }
+            for (const id of ids) {
+                try {
+                    const res = await fetch('/api/agent/request', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            agentId: currentUser.activeAgentId,
+                            type: 'sign-document',
+                            payload: { documentInstanceID: id }
+                        })
+                    });
+                    const data = await res.json();
+                    if (data.success && data.data && data.data.success) {
+                        successCount++;
+                    } else failCount++;
+                } catch (err) {
+                    failCount++;
                 }
-                
-                setTimeout(() => {
-                    loadingOverlay.classList.add('hidden');
-                    showToast(Đã gửi lệnh ký xong. Thành công:  + successCount + , Thất bại:  + failCount, successCount > 0 ? 'success' : 'error');
-                    loadDocuments();
-                }, 1000);
-            });
-        }
-    });
+            }
+            
+            loadingOverlay.classList.add('hidden');
+            showToast('Đã ký xong. Thành công: ' + successCount + ', Thất bại: ' + failCount, successCount > 0 ? 'success' : 'error');
+            loadDocumentTypes(); 
+        });
+    }
 });
+
+window.signDocument = async function(docId) {
+    loadingOverlay.classList.remove('hidden');
+    try {
+        const res = await fetch('/api/agent/request', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                agentId: currentUser.activeAgentId,
+                type: 'sign-document',
+                payload: { documentInstanceID: docId }
+            })
+        });
+        const data = await res.json();
+        if (data.success && data.data && data.data.success) {
+            showToast('Đã ký thành công!', 'success');
+            loadDocumentTypes();
+        } else {
+            showToast('Lỗi ký số: ' + (data.data?.message || ''), 'error');
+        }
+    } catch(err) {
+        showToast('Lỗi kết nối tới Agent', 'error');
+    }
+    loadingOverlay.classList.add('hidden');
+}
+
+window.previewDocument = function(docId) {
+    showToast('Chức năng xem trước PDF chưa được implement mock up', 'warning');
+}
+
+init();
