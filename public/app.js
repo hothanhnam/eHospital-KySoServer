@@ -77,6 +77,8 @@ function forceLogout() {
     localStorage.removeItem('kyso_user');
     loginView.classList.add('active');
     dashboardView.classList.remove('active');
+    // Ensure the agent list is refreshed when returning to the login page
+    fetchAgents();
 }
 
 async function fetchAgents() {
@@ -192,6 +194,7 @@ btnLogout.addEventListener('click', () => {
         localStorage.removeItem('kyso_user');
         loginView.classList.add('active');
         dashboardView.classList.remove('active');
+        fetchAgents();
     });
 });
 
