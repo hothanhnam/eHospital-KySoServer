@@ -302,6 +302,7 @@ function updateBadges() {
 }
 
 async function loadPatients() {
+    currentPage = 1;
     updateBadges();
     loadingOverlay.classList.remove('hidden');
     
@@ -330,8 +331,9 @@ async function loadPatients() {
                     }).then(data => {
                         if (data.success && data.data && data.data.data) {
                             for (const p of data.data.data) {
-                                const key = p.DocumentInstance_Id || p.Document_Id;
-                                if (key && !seen.has(key)) {
+                                // Fallback to stringify if no ID is present to avoid dropping rows
+                                const key = p.DocumentInstance_Id || p.Document_Id || p.TiepNhan_Id || JSON.stringify(p);
+                                if (!seen.has(key)) {
                                     seen.add(key);
                                     // Gán tên trực tiếp từ danh sách documentTypes lúc fetch
                                     p.ResolvedDocName = dt.TenGiayTo || dt.TenLoaiBaoCao || 'Tài liệu';
@@ -412,11 +414,12 @@ function renderTable() {
         const tr = document.createElement('tr');
         const statusHtml = currentTab === 0 ? '<span class="status-badge status-pending">Chưa ký</span>' : '<span class="status-badge status-signed">Đã ký</span>';
         
-        let chkHtml = currentTab === 0 ? '<input type="checkbox" class="chk-item" value="' + doc.DocumentInstance_Id + '" style="transform: scale(1.2); cursor: pointer;" onclick="event.stopPropagation(); window.updateBatchSignState()">' : '';
+        const docIdForAction = doc.DocumentInstance_Id || doc.Document_Id || '';
+        let chkHtml = currentTab === 0 ? '<input type="checkbox" class="chk-item" value="' + docIdForAction + '" style="transform: scale(1.2); cursor: pointer;" onclick="event.stopPropagation(); window.updateBatchSignState()">' : '';
         
         let actionBtn = currentTab === 0 
-            ? `<button class="btn-sign" onclick="signDocument('${doc.DocumentInstance_Id}')">Ký số</button>`
-            : `<button class="btn-sign" onclick="previewDocument('${doc.DocumentInstance_Id}')">Xem</button>`;
+            ? `<button class="btn-sign" onclick="signDocument('${docIdForAction}')">Ký số</button>`
+            : `<button class="btn-sign" onclick="previewDocument('${docIdForAction}')">Xem</button>`;
             
         let docName = doc.ResolvedDocName || 'Tài liệu (Khác)';
         if (!doc.ResolvedDocName && documentTypes) {
