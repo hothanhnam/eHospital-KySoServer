@@ -418,8 +418,8 @@ function renderTable() {
         let chkHtml = currentTab === 0 ? '<input type="checkbox" class="chk-item" value="' + docIdForAction + '" style="transform: scale(1.2); cursor: pointer;" onclick="event.stopPropagation(); window.updateBatchSignState()">' : '';
         
         let actionBtn = currentTab === 0 
-            ? `<button class="btn-sign" onclick="signDocument('${docIdForAction}')">Ký số</button>`
-            : `<button class="btn-sign" onclick="previewDocument('${docIdForAction}')">Xem</button>`;
+            ? `<button class="btn-sign" onclick="openSignPreview('${docIdForAction}')">Ký số</button>`
+            : `<button class="btn-sign" onclick="openPreview('${docIdForAction}')">Xem</button>`;
             
         let docName = doc.ResolvedDocName || 'Tài liệu (Khác)';
         if (!doc.ResolvedDocName && documentTypes) {
@@ -476,8 +476,17 @@ document.body.addEventListener('click', (e) => {
             
             for (const id of ids) {
                 try {
-                    const data = await callAgent('sign-document', { documentInstanceID: id });
-                    if (data.success && data.data && data.data.success) {
+                    const doc = patientsList.find(d => (d.DocumentInstance_Id || d.Document_Id) == id);
+                    if (!doc) continue;
+                    
+                    const data = await callAgent('sign-document', {
+                        documentId: doc.Document_Id,
+                        roleName: doc.RoleName || quyenKySelect.value || '',
+                        filePath: doc.File_Path || '',
+                        reportCode: doc.Report_Code || '',
+                        reportParameter: doc.ReportParameter || ''
+                    });
+                    if (data.success && data.data) {
                         successCount++;
                     } else failCount++;
                 } catch (err) {
@@ -493,10 +502,24 @@ document.body.addEventListener('click', (e) => {
 });
 
 window.signDocument = async function(docId) {
+    document.getElementById('pdf-modal').classList.add('hidden');
+    
+    const doc = patientsList.find(d => (d.DocumentInstance_Id || d.Document_Id) == docId);
+    if (!doc) {
+        showToast('Không tìm thấy thông tin tài liệu để ký', 'error');
+        return;
+    }
+    
     loadingOverlay.classList.remove('hidden');
     try {
-        const data = await callAgent('sign-document', { documentInstanceID: docId });
-        if (data.success && data.data && data.data.success) {
+        const data = await callAgent('sign-document', {
+            documentId: doc.Document_Id,
+            roleName: doc.RoleName || quyenKySelect.value || '',
+            filePath: doc.File_Path || '',
+            reportCode: doc.Report_Code || '',
+            reportParameter: doc.ReportParameter || ''
+        });
+        if (data.success && data.data) {
             showToast('Đã ký thành công!', 'success');
             loadDocumentTypes();
         } else {
@@ -508,9 +531,64 @@ window.signDocument = async function(docId) {
     loadingOverlay.classList.add('hidden');
 }
 
-window.previewDocument = function(docId) {
-    showToast('Chức năng xem trước PDF chưa được implement mock up', 'warning');
+window.openPreview = async function(docId) {
+    await fetchAndShowPdf(docId, false);
 }
+
+window.openSignPreview = async function(docId) {
+    await fetchAndShowPdf(docId, true);
+}
+
+async function fetchAndShowPdf(docId, isSigning) {
+    // Tìm doc trong patientsList
+    const doc = patientsList.find(d => (d.DocumentInstance_Id || d.Document_Id) == docId);
+    if (!doc) {
+        showToast('Không tìm thấy thông tin tài liệu', 'error');
+        return;
+    }
+    
+    loadingOverlay.classList.remove('hidden');
+    
+    try {
+        const data = await callAgent('preview-file', {
+            filePath: doc.File_Path || '',
+            reportCode: doc.Report_Code || '',
+            reportParameter: doc.ReportParameter || ''
+        });
+        
+        if (data.success && data.data && data.data.base64) {
+            const pdfDataUri = 'data:application/pdf;base64,' + data.data.base64;
+            document.getElementById('pdf-viewer').src = pdfDataUri;
+            
+            // Hiện modal
+            document.getElementById('pdf-modal').classList.remove('hidden');
+            
+            // Xử lý nút Ký số
+            const btnSign = document.getElementById('btn-pdf-sign');
+            if (isSigning) {
+                btnSign.style.display = 'block';
+                btnSign.onclick = () => window.signDocument(docId);
+            } else {
+                btnSign.style.display = 'none';
+            }
+        } else {
+            showToast('Không thể xem trước tài liệu', 'error');
+        }
+    } catch (err) {
+        showToast('Lỗi khi tải file xem trước', 'error');
+    }
+    loadingOverlay.classList.add('hidden');
+}
+
+document.getElementById('btn-close-pdf').addEventListener('click', () => {
+    document.getElementById('pdf-modal').classList.add('hidden');
+    document.getElementById('pdf-viewer').src = '';
+});
+
+document.getElementById('btn-pdf-cancel').addEventListener('click', () => {
+    document.getElementById('pdf-modal').classList.add('hidden');
+    document.getElementById('pdf-viewer').src = '';
+});
 
 init();
 
