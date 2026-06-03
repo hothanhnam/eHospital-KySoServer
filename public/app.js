@@ -305,43 +305,64 @@ async function loadPatients() {
     updateBadges();
     loadingOverlay.classList.remove('hidden');
     
-    let dt = null;
-    let ids = '';
-    
-    if (currentDocTypeIndex == -1) {
-        // "Tất cả loại giấy tờ"
-        dt = null;
-        ids = ''; // C# Backend tự xử lý khi reportId == 0
-    } else {
-        dt = documentTypes[currentDocTypeIndex];
-        if (!dt) {
-            loadingOverlay.classList.add('hidden');
-            return;
-        }
-        ids = currentTab === 0 ? (dt.ListID_ChuaKy || '') : (dt.ListID_DaKy || '');
-        if(!ids || ids.trim() === '') {
-            patientsList = [];
-            renderTable();
-            loadingOverlay.classList.add('hidden');
-            return;
-        }
-    }
-    
     try {
-        const data = await callAgent('get-patients-by-document', {
-            documentInstanceIDs: ids,
-            reportId: dt ? (dt.Report_Id || 0) : 0,
-            roleName: quyenKySelect.value || '',
-            fromDate: dateFrom.value,
-            toDate: dateTo.value,
-            signStatus: currentTab
-        });
-        if (data.success && data.data && data.data.data) {
-            patientsList = data.data.data;
+        if (currentDocTypeIndex == -1) {
+            // "Tất cả loại giấy tờ" -> Fetch cho TỪNG LOẠI trong danh sách đã được filter
+            let allPatients = [];
+            const promises = [];
+            
+            for (let i = 0; i < documentTypes.length; i++) {
+                const dt = documentTypes[i];
+                const ids = currentTab === 0 ? (dt.ListID_ChuaKy || '') : (dt.ListID_DaKy || '');
+                if (ids && ids.trim() !== '') {
+                    const req = callAgent('get-patients-by-document', {
+                        documentInstanceIDs: ids,
+                        reportId: dt.Report_Id || 0,
+                        roleName: quyenKySelect.value || '',
+                        fromDate: dateFrom.value,
+                        toDate: dateTo.value,
+                        signStatus: currentTab
+                    }).then(data => {
+                        if (data.success && data.data && data.data.data) {
+                            allPatients = allPatients.concat(data.data.data);
+                        }
+                    }).catch(err => console.error(err));
+                    promises.push(req);
+                }
+            }
+            
+            await Promise.all(promises);
+            patientsList = allPatients;
             renderTable();
         } else {
-            patientsList = [];
-            renderTable();
+            const dt = documentTypes[currentDocTypeIndex];
+            if (!dt) {
+                loadingOverlay.classList.add('hidden');
+                return;
+            }
+            const ids = currentTab === 0 ? (dt.ListID_ChuaKy || '') : (dt.ListID_DaKy || '');
+            if(!ids || ids.trim() === '') {
+                patientsList = [];
+                renderTable();
+                loadingOverlay.classList.add('hidden');
+                return;
+            }
+            
+            const data = await callAgent('get-patients-by-document', {
+                documentInstanceIDs: ids,
+                reportId: dt.Report_Id || 0,
+                roleName: quyenKySelect.value || '',
+                fromDate: dateFrom.value,
+                toDate: dateTo.value,
+                signStatus: currentTab
+            });
+            if (data.success && data.data && data.data.data) {
+                patientsList = data.data.data;
+                renderTable();
+            } else {
+                patientsList = [];
+                renderTable();
+            }
         }
     } catch (err) {
         showToast('Lỗi tải danh sách hồ sơ', 'error');
