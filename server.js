@@ -180,12 +180,12 @@ app.post('/api/agent/request', (req, res) => {
         }
     }, 30000);
     pendingRequests.set(reqId, { res, timeout });
-    const requestPayload = {
+    // Flatten payload vào root level vì Agent C# đọc trực tiếp root["reportId"], root["roleName"], v.v.
+    const requestPayload = Object.assign({}, payload || {}, {
         type: type,
         reqId: reqId,
-        uid: payload?.uid || reqId,
-        payload: payload
-    };
+        uid: payload?.uid || reqId
+    });
     ws.send(JSON.stringify(requestPayload));
 });
 
