@@ -391,7 +391,11 @@ function renderTable() {
     docsBody.innerHTML = '';
     
     if(btnBatchSign) btnBatchSign.style.display = 'none';
-    if(document.getElementById('chk-select-all')) document.getElementById('chk-select-all').checked = false;
+    const chkSelectAll = document.getElementById('chk-select-all');
+    if(chkSelectAll) {
+        chkSelectAll.checked = false;
+        chkSelectAll.style.display = currentTab === 0 ? 'inline-block' : 'none';
+    }
     
     
     totalItems = patientsList.length;
