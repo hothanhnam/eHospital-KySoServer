@@ -53,7 +53,27 @@ async function callAgent(type, payload) {
             payload: Object.assign({ uid: currentUser.uid || currentUser.id, nhanVienId: currentUser.nhanVienId || currentUser.nhanVien_Id || 0 }, payload)
         })
     });
-    return await res.json();
+    const data = await res.json();
+    
+    // Auto logout if agent is missing/disconnected or session expired
+    if (!data.success && data.message && (data.message.includes('không khả dụng') || data.message.includes('mất kết nối'))) {
+        showToast('Mất kết nối với Máy ký số. Đang đăng xuất...', 'error');
+        setTimeout(forceLogout, 1500);
+        throw new Error('Agent disconnected');
+    }
+    if (data.success && data.data && data.data.error === 'UNAUTHORIZED') {
+        showToast('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.', 'error');
+        setTimeout(forceLogout, 1500);
+        throw new Error('Unauthorized');
+    }
+    return data;
+}
+
+function forceLogout() {
+    currentUser = null;
+    localStorage.removeItem('kyso_user');
+    loginView.classList.add('active');
+    dashboardView.classList.remove('active');
 }
 
 async function fetchAgents() {
