@@ -566,6 +566,11 @@ tr:hover td {
 
 /* Mobile Responsive */
 @media (max-width: 768px) {
+    .tab-btn {
+        font-size: 0.9rem !important;
+        padding: 6px 12px !important;
+    }
+
     /* Login */
     .login-box {
         padding: 20px;
