@@ -1,6 +1,6 @@
 {
   "name": "kysoserver",
-  "version": "1.0.16",
+  "version": "1.0.17",
   "description": "WebSocket Hub for eHospital Digital Signing",
   "main": "server.js",
   "scripts": {

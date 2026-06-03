@@ -547,10 +547,11 @@ tr:hover td {
     border: none;
     outline: none;
 }
+
 .confirm-actions .btn-cancel {
     background: transparent;
     border: 1px solid var(--glass-border);
-    color: var(--text-main);
+    color: var(--text-main) !important;
 }
 .confirm-actions .btn-cancel:hover {
     background: var(--input-bg);
