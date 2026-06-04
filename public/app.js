@@ -138,7 +138,9 @@ async function fetchAgents() {
         agentSelect.innerHTML = '<option value="">Lỗi tải danh sách Agent</option>';
     }
 }
-btnRefreshAgents.addEventListener('click', fetchAgents);
+if (btnRefreshAgents) {
+    btnRefreshAgents.addEventListener('click', fetchAgents);
+}
 
 const evtSource = new EventSource('/api/events');
 evtSource.addEventListener('agents_update', () => {
