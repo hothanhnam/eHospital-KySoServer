@@ -250,6 +250,13 @@ function showDashboard() {
     dashboardView.classList.add('active');
     userGreeting.textContent = 'Xin chào, ' + currentUser.name;
     
+    // Reset tab to "Chưa ký" (0)
+    currentTab = 0;
+    tabBtns.forEach(b => {
+        if(b.dataset.tab === "0") b.classList.add('active');
+        else b.classList.remove('active');
+    });
+    
     // Set date default to today
     const today = new Date().toISOString().split('T')[0];
     if(dateFrom) dateFrom.value = today;
