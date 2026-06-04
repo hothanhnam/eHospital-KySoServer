@@ -105,6 +105,11 @@ function forceLogout() {
     localStorage.removeItem('kyso_user');
     loginView.classList.add('active');
     dashboardView.classList.remove('active');
+    
+    if(document.getElementById('username')) document.getElementById('username').value = '';
+    if(document.getElementById('password')) document.getElementById('password').value = '';
+    if(loginError) loginError.textContent = '';
+    
     // Ensure the agent list is refreshed when returning to the login page
     fetchAgents();
 }
@@ -221,11 +226,7 @@ btnLogout.addEventListener('click', () => {
                 body: JSON.stringify({ uid: currentUser.uid || currentUser.id, agentId: currentUser.activeAgentId })
             });
         } catch (err) {}
-        currentUser = null;
-        localStorage.removeItem('kyso_user');
-        loginView.classList.add('active');
-        dashboardView.classList.remove('active');
-        fetchAgents();
+        forceLogout();
     }, 'Xác nhận Đăng xuất', 'Đăng xuất');
 });
 
