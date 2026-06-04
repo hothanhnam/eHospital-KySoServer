@@ -108,6 +108,7 @@ function forceLogout() {
     
     if(document.getElementById('username')) document.getElementById('username').value = '';
     if(document.getElementById('password')) document.getElementById('password').value = '';
+    if(loginForm) loginForm.reset();
     if(loginError) loginError.textContent = '';
     
     // Ensure the agent list is refreshed when returning to the login page
