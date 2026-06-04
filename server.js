@@ -184,6 +184,7 @@ app.post('/api/login', (req, res) => {
     const loginPayload = {
         type: 'legacy-login',
         reqId: reqId,
+        uid: reqId,
         username: username,
         password: password
     };
