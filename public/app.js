@@ -153,8 +153,7 @@ evtSource.addEventListener('agents_update', () => {
     fetchAgents();
 });
 
-loginForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
+async function handleLogin() {
     const usernameInput = document.getElementById('username');
     const passwordInput = document.getElementById('password');
     const username = usernameInput.value;
@@ -164,7 +163,7 @@ loginForm.addEventListener('submit', async (e) => {
     usernameInput.value = '';
     passwordInput.value = '';
     
-    loginError.textContent = '';
+    if(loginError) loginError.textContent = '';
     
     try {
         const res = await fetch('/api/login', {
@@ -182,12 +181,20 @@ loginForm.addEventListener('submit', async (e) => {
             localStorage.setItem('kyso_user', JSON.stringify(currentUser));
             showDashboard();
         } else {
-            loginError.textContent = data.message;
+            if(loginError) loginError.textContent = data.message || 'Đăng nhập thất bại!';
         }
     } catch (err) {
-        loginError.textContent = 'Lỗi kết nối đến máy chủ!';
+        if(loginError) loginError.textContent = 'Lỗi kết nối đến máy chủ!';
     }
-});
+}
+
+const btnLogin = document.getElementById('btn-login');
+if(btnLogin) btnLogin.addEventListener('click', handleLogin);
+
+const usernameInputEl = document.getElementById('username');
+const passwordInputEl = document.getElementById('password');
+if(usernameInputEl) usernameInputEl.addEventListener('keydown', (e) => { if (e.key === 'Enter') handleLogin(); });
+if(passwordInputEl) passwordInputEl.addEventListener('keydown', (e) => { if (e.key === 'Enter') handleLogin(); });
 
 function showToast(message, type = 'info') {
     const container = document.getElementById('toast-container');

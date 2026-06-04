@@ -53,7 +53,7 @@
             </div>
             <p class="subtitle">Hệ thống Ký số Từ xa</p>
             
-            <form id="login-form">
+            <div id="login-form">
                 <!-- <div class="input-group" style="display: none;">
                     <label>Máy chủ</label>
                     <div class="agent-select-wrapper" style="display: flex; gap: 8px;">
@@ -67,17 +67,17 @@
                 </div> -->
                   <div class="input-group">
                       <label>Tài khoản</label>
-                      <input autocomplete="new-password" type="text" id="username" class="form-control" placeholder="Nhập tên tài khoản" required>
+                      <input autocomplete="off" type="text" id="username" class="form-control" placeholder="Nhập tên tài khoản" required>
                   </div>
                   <div class="input-group">
                       <label>Mật khẩu</label>
-                      <input autocomplete="new-password" type="password" id="password" class="form-control" placeholder="Nhập mật khẩu" required>
+                      <input autocomplete="off" type="password" id="password" class="form-control" placeholder="Nhập mật khẩu" required>
                   </div>
                 <div id="login-error" class="error-msg"></div>
-                <button type="submit" class="btn-primary">
+                <button type="button" id="btn-login" class="btn-primary">
                     <span>Đăng Nhập</span>
                 </button>
-            </form>
+            </div>
         </div>
     </div>
 
@@ -251,7 +251,7 @@
         </div>
     </div>
 
-    <script src="app.js?v=1.0.25"></script>
+    <script src="app.js?v=1.0.26"></script>
 </body>
 </html>
 
