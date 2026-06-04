@@ -147,25 +147,23 @@ evtSource.addEventListener('agents_update', () => {
 
 loginForm.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const selectedAgent = agentSelect.value;
     const username = document.getElementById('username').value;
     const password = document.getElementById('password').value;
     loginError.textContent = '';
-    
-    if (!selectedAgent) {
-        loginError.textContent = 'Vui lòng chọn Máy ký số!';
-        return;
-    }
     
     try {
         const res = await fetch('/api/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username, password, agentId: selectedAgent })
+            body: JSON.stringify({ username, password })
         });
         const data = await res.json();
         if (data.success) {
-            currentUser = { ...data.user, activeAgentId: selectedAgent };
+            currentUser = { ...data.user };
+            if(data.data?.selectedAgent) currentUser.activeAgentId = data.data.selectedAgent;
+            else if(data.selectedAgent) currentUser.activeAgentId = data.selectedAgent;
+            else if(data.user.activeAgentId) currentUser.activeAgentId = data.user.activeAgentId;
+            
             localStorage.setItem('kyso_user', JSON.stringify(currentUser));
             showDashboard();
         } else {

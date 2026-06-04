@@ -79,7 +79,11 @@ wss.on('connection', (ws, req) => {
                         }
                     } else {
                         // Generic response
-                        pending.res.json({ success: true, data: data });
+                        // Login requires a special intercept to inject the selected agent ID
+                    if (data.type === 'legacy-login' && data.ok) {
+                        data.selectedAgent = pending.agentId;
+                    }
+                    pending.res.json({ success: true, data: data });
                     }
                 }
             }
@@ -127,13 +131,38 @@ app.get('/api/events', (req, res) => {
 
 // API: Login Endpoint (Forwards to Agent)
 app.post('/api/login', (req, res) => {
-    const { username, password, agentId } = req.body;
+    const { username, password } = req.body;
     
-    if (!agentId || !connectedAgents.has(agentId)) {
-        return res.json({ success: false, message: 'Agent không khả dụng hoặc đã mất kết nối!' });
+    const agents = Array.from(connectedAgents.keys());
+    if (agents.length === 0) {
+        return res.json({ success: false, message: 'Không tìm thấy Máy chủ Ký số từ xa nào đang hoạt động. Vui lòng liên hệ IT để được hỗ trợ!' });
     }
 
-    const ws = connectedAgents.get(agentId);
+    // Tính tải từng agent (dựa trên số request đang pending)
+    const agentLoad = {};
+    agents.forEach(id => agentLoad[id] = 0);
+    for (const reqObj of pendingRequests.values()) {
+        if (reqObj.agentId && agentLoad[reqObj.agentId] !== undefined) {
+            agentLoad[reqObj.agentId]++;
+        }
+    }
+
+    // Chọn agent rảnh nhất
+    let minLoad = Infinity;
+    let minAgents = [];
+    for (const [id, load] of Object.entries(agentLoad)) {
+        if (load < minLoad) {
+            minLoad = load;
+            minAgents = [id];
+        } else if (load === minLoad) {
+            minAgents.push(id);
+        }
+    }
+
+    // Chọn ngẫu nhiên trong số các agent rảnh nhất để chia đều tải
+    const selectedAgent = minAgents[Math.floor(Math.random() * minAgents.length)];
+
+    const ws = connectedAgents.get(selectedAgent);
     const reqId = Date.now().toString() + Math.random().toString(36).substring(7);
 
     // Lưu request vào danh sách chờ
@@ -144,17 +173,19 @@ app.post('/api/login', (req, res) => {
         }
     }, 15000); // 15 seconds timeout
 
-    pendingRequests.set(reqId, { res, timeout });
+    pendingRequests.set(reqId, { res, timeout, agentId: selectedAgent });
 
     // Gửi lệnh xuống Agent C#
     const loginPayload = {
         type: 'legacy-login',
         reqId: reqId,
-        uid: reqId, // Dùng reqId làm uid tạm thời
         username: username,
         password: password
     };
     
+    // Lưu agentId vào đối tượng req để sau khi login thành công có thể trả về cho client
+    req.selectedAgent = selectedAgent;
+
     ws.send(JSON.stringify(loginPayload));
 });
 
@@ -189,7 +220,7 @@ app.post('/api/agent/request', (req, res) => {
             res.json({ success: false, message: 'Máy ký số không phản hồi (Timeout)!' });
         }
     }, 30000);
-    pendingRequests.set(reqId, { res, timeout });
+    pendingRequests.set(reqId, { res, timeout, agentId });
     // Flatten payload vào root level vì Agent C# đọc trực tiếp root["reportId"], root["roleName"], v.v.
     const requestPayload = Object.assign({}, payload || {}, {
         type: type,
