@@ -70,7 +70,8 @@ wss.on('connection', (ws, req) => {
                                     uid: data.uid,
                                     username: data.data?.userCode, 
                                     name: data.data?.userName, 
-                                    role: 'doctor' 
+                                    role: 'doctor',
+                                    activeAgentId: pending.agentId
                                 },
                                 token: 'mock-jwt-token-12345'
                             });
@@ -79,11 +80,7 @@ wss.on('connection', (ws, req) => {
                         }
                     } else {
                         // Generic response
-                        // Login requires a special intercept to inject the selected agent ID
-                    if (data.type === 'legacy-login' && data.ok) {
-                        data.selectedAgent = pending.agentId;
-                    }
-                    pending.res.json({ success: true, data: data });
+                        pending.res.json({ success: true, data: data });
                     }
                 }
             }
@@ -105,7 +102,15 @@ wss.on('connection', (ws, req) => {
 });
 
 // Serve static files from 'public' folder
-app.use(express.static('public'));
+app.use(express.static('public', {
+    setHeaders: (res, path) => {
+        if (path.endsWith('.html')) {
+            res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+            res.setHeader('Pragma', 'no-cache');
+            res.setHeader('Expires', '0');
+        }
+    }
+}));
 
 // Map to hold pending requests
 const pendingRequests = new Map();
