@@ -155,8 +155,15 @@ evtSource.addEventListener('agents_update', () => {
 
 loginForm.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const username = document.getElementById('username').value;
-    const password = document.getElementById('password').value;
+    const usernameInput = document.getElementById('username');
+    const passwordInput = document.getElementById('password');
+    const username = usernameInput.value;
+    const password = passwordInput.value;
+    
+    // Clear the form fields immediately upon submit
+    usernameInput.value = '';
+    passwordInput.value = '';
+    
     loginError.textContent = '';
     
     try {
