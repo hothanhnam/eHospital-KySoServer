@@ -31,7 +31,7 @@ let patientsList = [];
 let currentTab = 0; // 0: Chưa ký, 1: Đã ký
 let currentPage = 1;
 let pageSize = 20;
-let currentDocTypeIndex = 0;
+let currentDocTypeIndex = -1;
 let totalItems = 0;
 let currentLoadToken = 0;
 
