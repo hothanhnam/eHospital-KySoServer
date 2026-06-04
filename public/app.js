@@ -550,7 +550,8 @@ document.body.addEventListener('click', (e) => {
             
             loadingOverlay.classList.add('hidden');
             showToast('Đã ký xong. Thành công: ' + successCount + ', Thất bại: ' + failCount, successCount > 0 ? 'success' : 'error');
-            loadDocumentTypes(); 
+            await new Promise(r => setTimeout(r, 1500));
+            await loadDocumentTypes(); 
         }, 'Xác nhận Ký số', 'Ký số');
     }
 });
@@ -577,7 +578,8 @@ window.signDocument = async function(docId) {
         });
         if (data.success && data.data && data.data.ok) {
             showToast('Đã ký thành công!', 'success');
-            loadDocumentTypes();
+            await new Promise(r => setTimeout(r, 1500));
+            await loadDocumentTypes();
         } else {
             showToast(data.data?.message || 'Lỗi khi ký số', 'error');
         }
@@ -614,7 +616,8 @@ window.cancelSignDocument = async function(docId) {
             
             if (data.success && data.data && data.data.ok) {
                 showToast('Đã hủy ký thành công!', 'success');
-                loadDocumentTypes();
+                await new Promise(r => setTimeout(r, 1500));
+                await loadDocumentTypes();
             } else {
                 showToast(data.message || data?.data?.message || 'Lỗi khi hủy ký', 'error');
             }
