@@ -30,6 +30,11 @@ function broadcastAgentUpdate() {
 wss.on('connection', (ws, req) => {
     console.log(`[WS] New connection from ${req.socket.remoteAddress}`);
     let currentAgentId = null;
+    
+    ws.isAlive = true;
+    ws.on('pong', () => {
+        ws.isAlive = true;
+    });
 
     ws.on('message', (message) => {
         try {
@@ -110,6 +115,10 @@ app.get('/api/events', (req, res) => {
     res.flushHeaders();
 
     webClients.add(res);
+    
+    // Gửi ngay 1 event để client đồng bộ lại danh sách
+    res.write(`event: agents_update\n`);
+    res.write(`data: ${JSON.stringify({ timestamp: Date.now() })}\n\n`);
 
     req.on('close', () => {
         webClients.delete(res);
@@ -193,6 +202,33 @@ app.post('/api/agent/request', (req, res) => {
 // Healthcheck
 app.get('/health', (req, res) => {
     res.json({ status: 'OK', activeAgents: connectedAgents.size });
+});
+
+// WebSocket Heartbeat
+const interval = setInterval(() => {
+    wss.clients.forEach((ws) => {
+        if (ws.isAlive === false) {
+            let droppedAgentId = null;
+            for (let [id, s] of connectedAgents.entries()) {
+                if (s === ws) {
+                    droppedAgentId = id;
+                    break;
+                }
+            }
+            if (droppedAgentId) {
+                connectedAgents.delete(droppedAgentId);
+                console.log(`[WS] Agent Disconnected (Ping Timeout): ${droppedAgentId}`);
+                broadcastAgentUpdate();
+            }
+            return ws.terminate();
+        }
+        ws.isAlive = false;
+        ws.ping();
+    });
+}, 15000);
+
+wss.on('close', () => {
+    clearInterval(interval);
 });
 
 const PORT = process.env.PORT || 7000;

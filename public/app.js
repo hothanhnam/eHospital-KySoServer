@@ -277,6 +277,7 @@ async function loadDocumentTypes() {
         if (data.success && data.data && data.data.data) {
             documentTypes = data.data.data;
             if(docTypeSelect) {
+                const prevSelection = currentDocTypeIndex;
                 docTypeSelect.innerHTML = '<option value="-1">-- Tất cả loại giấy tờ --</option>';
                 documentTypes.forEach((dt, idx) => {
                     const opt = document.createElement('option');
@@ -284,8 +285,13 @@ async function loadDocumentTypes() {
                     opt.textContent = (dt.TenGiayTo || dt.TenLoaiBaoCao || 'Tài liệu') + ' (Chưa ký: ' + (dt.SoLuong_ChuaKy || dt.CountChuaKy || 0) + ' / Đã ký: ' + (dt.SoLuong_DaKy || dt.CountDaKy || 0) + ')';
                     docTypeSelect.appendChild(opt);
                 });
-                docTypeSelect.value = "-1";
-                currentDocTypeIndex = -1;
+                if (prevSelection >= 0 && prevSelection < documentTypes.length) {
+                    docTypeSelect.value = prevSelection;
+                    currentDocTypeIndex = prevSelection;
+                } else {
+                    docTypeSelect.value = "-1";
+                    currentDocTypeIndex = -1;
+                }
             }
             updateBadges();
             loadPatients();
@@ -608,7 +614,7 @@ window.cancelSignDocument = async function(docId) {
             
             if (data.success && data.data && data.data.ok) {
                 showToast('Đã hủy ký thành công!', 'success');
-                loadPatients();
+                loadDocumentTypes();
             } else {
                 showToast(data.message || data?.data?.message || 'Lỗi khi hủy ký', 'error');
             }
