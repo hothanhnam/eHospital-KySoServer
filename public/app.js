@@ -232,6 +232,46 @@ function showConfirm(message, onConfirm, title = 'Xác nhận thao tác', okText
     });
 }
 
+function showPrompt(title, message, onConfirm) {
+    const modal = document.getElementById('prompt-modal');
+    document.getElementById('prompt-title').textContent = title;
+    document.getElementById('prompt-msg').innerHTML = message;
+    
+    const inputEl = document.getElementById('prompt-input');
+    inputEl.value = '';
+    const errorEl = document.getElementById('prompt-error');
+    errorEl.textContent = '';
+    
+    modal.classList.remove('hidden');
+    inputEl.focus();
+    
+    const btnCancel = document.getElementById('btn-prompt-cancel');
+    const btnOk = document.getElementById('btn-prompt-ok');
+    
+    const newBtnOk = btnOk.cloneNode(true);
+    const newBtnCancel = btnCancel.cloneNode(true);
+    btnOk.parentNode.replaceChild(newBtnOk, btnOk);
+    btnCancel.parentNode.replaceChild(newBtnCancel, btnCancel);
+    
+    newBtnOk.addEventListener('click', () => {
+        onConfirm(inputEl.value, (errorMsg) => {
+            if(errorMsg) {
+                errorEl.textContent = errorMsg;
+            } else {
+                modal.classList.add('hidden');
+            }
+        });
+    });
+    
+    inputEl.addEventListener('keydown', (e) => {
+        if(e.key === 'Enter') newBtnOk.click();
+    });
+    
+    newBtnCancel.addEventListener('click', () => {
+        modal.classList.add('hidden');
+    });
+}
+
 btnLogout.addEventListener('click', () => {
     showConfirm('Bạn có chắc chắn muốn thoát phiên làm việc hiện tại?', async () => {
         try {
@@ -550,46 +590,43 @@ document.body.addEventListener('click', (e) => {
         const yy = String(today.getFullYear()).slice(-2);
         const expectedPasscode = `${dd}${mm}${yy}`;
         
-        const userPasscode = prompt('Vui lòng nhập mã xác nhận (passcode) để ký hàng loạt:');
-        if (userPasscode !== expectedPasscode) {
-            if (userPasscode !== null) {
-                showToast('Mã xác nhận không chính xác!', 'error');
+        showPrompt('Bảo mật', 'Vui lòng nhập mã xác nhận (passcode) để ký hàng loạt:', (userPasscode, done) => {
+            if (userPasscode !== expectedPasscode) {
+                done('Mã xác nhận không chính xác!');
+                return;
             }
-            return;
-        }
-
-        const ids = Array.from(checked).map(chk => chk.value);
-        
-        showConfirm('Bạn có chắc chắn muốn ký hàng loạt ' + ids.length + ' tài liệu đã chọn?', async () => {
-            if (loadingTitle) loadingTitle.textContent = 'Đang xử lý ký hàng loạt...';
-            if (loadingDesc) loadingDesc.textContent = 'Vui lòng kiểm tra màn hình máy tính của bạn để thao tác.';
-            loadingOverlay.classList.remove('hidden');
-            let successCount = 0;
-            let failCount = 0;
+            done(); // hide prompt
             
-            for (const id of ids) {
-                try {
-                    const doc = patientsList.find(d => (d.DocumentInstance_Id || d.Document_Id) == id);
-                    if (!doc) continue;
-                    
-                    const data = await callAgent('sign-document', {
-                        documentId: doc.Document_Id,
-                        roleName: doc.ResolvedRoleName || doc.RoleName || quyenKySelect.value || '',
-                        filePath: doc.File_Path || '',
-                        reportCode: doc.Report_Code || '',
-                        reportParameter: doc.ReportParameter || ''
-                    });
-                    if (data.success && data.data && data.data.ok) {
-                        successCount++;
-                    } else {
+            const ids = Array.from(checked).map(chk => chk.value);
+            
+            showConfirm('Bạn có chắc chắn muốn ký hàng loạt ' + ids.length + ' tài liệu đã chọn?', async () => {
+                if (loadingTitle) loadingTitle.textContent = 'Đang xử lý ký hàng loạt...';
+                if (loadingDesc) loadingDesc.textContent = 'Vui lòng kiểm tra màn hình máy tính của bạn để thao tác.';
+                loadingOverlay.classList.remove('hidden');
+                let successCount = 0;
+                let failCount = 0;
+                
+                for (const id of ids) {
+                    try {
+                        const doc = patientsList.find(d => (d.DocumentInstance_Id || d.Document_Id) == id);
+                        if (!doc) continue;
+                        
+                        const data = await callAgent('sign-document', {
+                            documentId: doc.Document_Id,
+                            roleName: doc.ResolvedRoleName || doc.RoleName || quyenKySelect.value || '',
+                            filePath: doc.File_Path || '',
+                            reportCode: doc.Report_Code || '',
+                            reportParameter: doc.ReportParameter || ''
+                        });
+                        if (data.success && data.data && data.data.ok) {
+                            successCount++;
+                        } else {
+                            failCount++;
+                            console.error('Lỗi ký số:', data.data?.message);
+                        }
+                    } catch (err) {
                         failCount++;
-                        console.error('Lỗi ký số:', data.data?.message);
                     }
-                } catch (err) {
-                    failCount++;
-                }
-            }
-            
             loadingOverlay.classList.add('hidden');
             showToast('Đã ký xong. Thành công: ' + successCount + ', Thất bại: ' + failCount, successCount > 0 ? 'success' : 'error');
             await new Promise(r => setTimeout(r, 1500));

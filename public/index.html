@@ -224,6 +224,20 @@
         </div>
     </div>
 
+    <!-- Custom Prompt Modal -->
+    <div id="prompt-modal" class="overlay hidden" style="z-index: 3000;">
+        <div class="glass-panel confirm-box">
+            <h3 id="prompt-title">Nhập mã xác nhận</h3>
+            <p id="prompt-msg">Vui lòng nhập mã xác nhận (passcode) để ký hàng loạt:</p>
+            <input type="password" id="prompt-input" class="form-control" style="margin-top: 15px; margin-bottom: 20px; text-align: center; font-size: 1.2rem; letter-spacing: 5px;" placeholder="******">
+            <div id="prompt-error" class="error-msg" style="margin-bottom: 15px;"></div>
+            <div class="confirm-actions">
+                <button id="btn-prompt-cancel" class="btn-cancel">Hủy</button>
+                <button id="btn-prompt-ok" class="btn-primary">Xác nhận</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Màn hình chờ (Modal) -->
     <div id="loading-overlay" class="overlay hidden">
         <div class="glass-panel loading-box">
@@ -251,7 +265,7 @@
         </div>
     </div>
 
-    <script src="app.js?v=1.0.31"></script>
+    <script src="app.js?v=1.0.32"></script>
 </body>
 </html>
 
