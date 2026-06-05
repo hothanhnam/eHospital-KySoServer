@@ -627,11 +627,14 @@ document.body.addEventListener('click', (e) => {
                     } catch (err) {
                         failCount++;
                     }
-            loadingOverlay.classList.add('hidden');
-            showToast('Đã ký xong. Thành công: ' + successCount + ', Thất bại: ' + failCount, successCount > 0 ? 'success' : 'error');
-            await new Promise(r => setTimeout(r, 1500));
-            await loadDocumentTypes(); 
-        }, 'Xác nhận Ký số', 'Ký số');
+                }
+                
+                loadingOverlay.classList.add('hidden');
+                showToast('Đã ký xong. Thành công: ' + successCount + ', Thất bại: ' + failCount, successCount > 0 ? 'success' : 'error');
+                await new Promise(r => setTimeout(r, 1500));
+                await loadDocumentTypes(); 
+            }, 'Xác nhận Ký số', 'Ký số');
+        });
     }
 });
 
