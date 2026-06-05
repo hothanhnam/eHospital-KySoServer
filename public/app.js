@@ -257,6 +257,8 @@ function showPrompt(title, message, onConfirm) {
         onConfirm(inputEl.value, (errorMsg) => {
             if(errorMsg) {
                 errorEl.textContent = errorMsg;
+                inputEl.value = '';
+                inputEl.focus();
             } else {
                 modal.classList.add('hidden');
             }
