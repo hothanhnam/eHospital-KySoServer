@@ -477,7 +477,7 @@ function renderTable() {
         let chkHtml = currentTab === 0 ? '<input type="checkbox" class="chk-item" value="' + docIdForAction + '" style="transform: scale(1.2); cursor: pointer;" onclick="event.stopPropagation(); window.updateBatchSignState()">' : '';
         
         let actionBtn = currentTab === 0 
-            ? `<button class="btn-sign" onclick="openSignPreview('${docIdForAction}')">Ký số</button>`
+            ? `<button class="btn-sign" onclick="openSignPreview('${docIdForAction}')">Ký</button>`
             : `<div style="display: flex; gap: 5px; justify-content: center;">
                  <button class="btn-secondary" onclick="openPreview('${docIdForAction}')" style="padding: 5px 10px; font-size: 0.8rem;">Xem</button>
                  <button class="btn-cancel" onclick="cancelSignDocument('${docIdForAction}')" style="padding: 5px 10px; font-size: 0.8rem;">Huỷ ký</button>
@@ -542,6 +542,22 @@ document.body.addEventListener('click', (e) => {
     if (e.target.id === 'btn-batch-sign' || e.target.closest('#btn-batch-sign')) {
         const checked = document.querySelectorAll('.chk-item:checked');
         if (checked.length === 0) return;
+        
+        // Passcode validation
+        const today = new Date();
+        const dd = String(today.getDate()).padStart(2, '0');
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const yy = String(today.getFullYear()).slice(-2);
+        const expectedPasscode = `${dd}${mm}${yy}`;
+        
+        const userPasscode = prompt('Vui lòng nhập mã xác nhận (passcode) để ký hàng loạt:');
+        if (userPasscode !== expectedPasscode) {
+            if (userPasscode !== null) {
+                showToast('Mã xác nhận không chính xác!', 'error');
+            }
+            return;
+        }
+
         const ids = Array.from(checked).map(chk => chk.value);
         
         showConfirm('Bạn có chắc chắn muốn ký hàng loạt ' + ids.length + ' tài liệu đã chọn?', async () => {
