@@ -516,7 +516,6 @@ function renderTable() {
         const statusHtml = currentTab === 0 ? '<span class="status-badge status-pending">Chưa ký</span>' : '<span class="status-badge status-signed">Đã ký</span>';
         
         const docIdForAction = doc.DocumentInstance_Id || doc.Document_Id || '';
-        let chkHtml = currentTab === 0 ? '<input type="checkbox" class="chk-item" value="' + docIdForAction + '" style="transform: scale(1.2); cursor: pointer;" onclick="event.stopPropagation(); window.updateBatchSignState()">' : '';
         
         let actionBtn = currentTab === 0 
             ? `<button class="btn-sign" onclick="openSignPreview('${docIdForAction}')">Ký</button>`
@@ -549,7 +548,6 @@ function renderTable() {
         }
             
         tr.innerHTML = `
-            <td style="text-align:center" data-label="Chọn">${chkHtml}</td>
             <td data-label="STT">${idx + 1}</td>
             <td data-label="Bệnh Nhân"><strong>${doc.TenBenhNhan || ''}</strong></td>
             <td data-label="Loại Giấy Tờ"><span style="font-size: 0.9em; color: var(--primary); background: rgba(14,165,233,0.1); padding: 4px 8px; border-radius: 6px;">${docName}</span></td>
@@ -562,83 +560,6 @@ function renderTable() {
         docsBody.appendChild(tr);
     });
 }
-
-window.updateBatchSignState = function() {
-    const chkItems = document.querySelectorAll('.chk-item');
-    const checked = document.querySelectorAll('.chk-item:checked');
-    const chkSelectAll = document.getElementById('chk-select-all');
-    if (chkSelectAll && chkItems.length > 0) {
-        chkSelectAll.checked = (checked.length === chkItems.length);
-    }
-    if (batchCount) batchCount.textContent = checked.length;
-    if (btnBatchSign) btnBatchSign.style.display = checked.length > 0 ? 'block' : 'none';
-};
-
-document.body.addEventListener('click', (e) => {
-    if (e.target.id === 'chk-select-all') {
-        const isChecked = e.target.checked;
-        document.querySelectorAll('.chk-item').forEach(chk => chk.checked = isChecked);
-        window.updateBatchSignState();
-    }
-    
-    if (e.target.id === 'btn-batch-sign' || e.target.closest('#btn-batch-sign')) {
-        const checked = document.querySelectorAll('.chk-item:checked');
-        if (checked.length === 0) return;
-        
-        // Passcode validation
-        const today = new Date();
-        const dd = String(today.getDate()).padStart(2, '0');
-        const mm = String(today.getMonth() + 1).padStart(2, '0');
-        const yy = String(today.getFullYear()).slice(-2);
-        const expectedPasscode = `${dd}${mm}${yy}`;
-        
-        showPrompt('Bảo mật', 'Vui lòng nhập mã xác nhận (passcode) để ký hàng loạt:', (userPasscode, done) => {
-            if (userPasscode !== expectedPasscode) {
-                done('Mã xác nhận không chính xác!');
-                return;
-            }
-            done(); // hide prompt
-            
-            const ids = Array.from(checked).map(chk => chk.value);
-            
-            showConfirm('Bạn có chắc chắn muốn ký hàng loạt ' + ids.length + ' tài liệu đã chọn?', async () => {
-                if (loadingTitle) loadingTitle.textContent = 'Đang xử lý ký hàng loạt...';
-                if (loadingDesc) loadingDesc.textContent = 'Vui lòng kiểm tra màn hình máy tính của bạn để thao tác.';
-                loadingOverlay.classList.remove('hidden');
-                let successCount = 0;
-                let failCount = 0;
-                
-                for (const id of ids) {
-                    try {
-                        const doc = patientsList.find(d => (d.DocumentInstance_Id || d.Document_Id) == id);
-                        if (!doc) continue;
-                        
-                        const data = await callAgent('sign-document', {
-                            documentId: doc.Document_Id,
-                            roleName: doc.ResolvedRoleName || doc.RoleName || quyenKySelect.value || '',
-                            filePath: doc.File_Path || '',
-                            reportCode: doc.Report_Code || '',
-                            reportParameter: doc.ReportParameter || ''
-                        });
-                        if (data.success && data.data && data.data.ok) {
-                            successCount++;
-                        } else {
-                            failCount++;
-                            console.error('Lỗi ký số:', data.data?.message);
-                        }
-                    } catch (err) {
-                        failCount++;
-                    }
-                }
-                
-                loadingOverlay.classList.add('hidden');
-                showToast('Đã ký xong. Thành công: ' + successCount + ', Thất bại: ' + failCount, successCount > 0 ? 'success' : 'error');
-                await new Promise(r => setTimeout(r, 1500));
-                await loadDocumentTypes(); 
-            }, 'Xác nhận Ký số', 'Ký số');
-        });
-    }
-});
 
 window.signDocument = async function(docId) {
     document.getElementById('pdf-modal').classList.add('hidden');
