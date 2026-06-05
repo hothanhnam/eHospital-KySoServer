@@ -626,8 +626,11 @@ window.openSignPreview = async function(docId) {
 window.cancelSignDocument = async function(docId) {
     const doc = patientsList.find(d => (d.DocumentInstance_Id || d.Document_Id) == docId);
     if (!doc) return;
+    
+    const docName = doc.ResolvedDocName || 'Tài liệu';
+    const patientName = doc.TenBenhNhan || doc.PatientName || 'Không rõ';
 
-    showConfirm('Bạn có chắc chắn muốn HỦY KÝ tài liệu này?', async () => {
+    showConfirm(`Bạn có chắc chắn muốn HỦY KÝ <b>${docName}</b> của bệnh nhân <b>${patientName}</b>?`, async () => {
         if (loadingTitle) loadingTitle.textContent = 'Đang gửi lệnh Hủy ký...';
         if (loadingDesc) loadingDesc.textContent = 'Vui lòng chờ trong giây lát.';
         loadingOverlay.classList.remove('hidden');
