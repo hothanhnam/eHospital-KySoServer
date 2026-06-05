@@ -213,7 +213,7 @@ function showConfirm(message, onConfirm, title = 'Xác nhận thao tác', okText
     const modal = document.getElementById('confirm-modal');
     const titleEl = document.getElementById('confirm-title');
     if (titleEl) titleEl.textContent = title;
-    document.getElementById('confirm-msg').textContent = message;
+    document.getElementById('confirm-msg').innerHTML = message;
     document.getElementById('btn-confirm-ok').textContent = okText;
     modal.classList.remove('hidden');
     
