@@ -478,7 +478,10 @@ function renderTable() {
         
         let actionBtn = currentTab === 0 
             ? `<button class="btn-sign" onclick="openSignPreview('${docIdForAction}')">Ký số</button>`
-            : `<button class="btn-cancel" onclick="openPreview('${docIdForAction}')">Huỷ ký</button>`;
+            : `<div style="display: flex; gap: 5px; justify-content: center;">
+                 <button class="btn-secondary" onclick="openPreview('${docIdForAction}')" style="padding: 5px 10px; font-size: 0.8rem;">Xem</button>
+                 <button class="btn-cancel" onclick="cancelSignDocument('${docIdForAction}')" style="padding: 5px 10px; font-size: 0.8rem;">Huỷ ký</button>
+               </div>`;
             
         let docName = doc.ResolvedDocName || 'Tài liệu (Khác)';
         if (!doc.ResolvedDocName && documentTypes) {
