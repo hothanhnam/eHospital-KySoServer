@@ -23,6 +23,30 @@ function updateThemeIcon() {
     });
 }
 
+// Theme management
+let currentTheme = localStorage.getItem('theme') || 'dark';
+document.documentElement.setAttribute('data-theme', currentTheme);
+updateThemeIcon();
+
+function toggleTheme() {
+    currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    localStorage.setItem('theme', currentTheme);
+    updateThemeIcon();
+}
+
+function updateThemeIcon() {
+    document.querySelectorAll('#theme-icon').forEach(icon => {
+        if (currentTheme === 'light') {
+            // Moon icon for light mode (to switch to dark)
+            icon.innerHTML = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>';
+        } else {
+            // Sun icon for dark mode (to switch to light)
+            icon.innerHTML = '<circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>';
+        }
+    });
+}
+
 // app.js - Logic Frontend cho KySoServer Web Portal
 
 let currentUser = null;
@@ -30,7 +54,7 @@ let documentTypes = [];
 let patientsList = [];
 let currentTab = 0; // 0: Chưa ký, 1: Đã ký
 let currentPage = 1;
-let pageSize = 10;
+let pageSize = parseInt(localStorage.getItem('kyso_pageSize') || '10');
 let currentDocTypeIndex = -1;
 let totalItems = 0;
 let currentLoadToken = 0;
@@ -63,7 +87,7 @@ const badgeDaKy = document.getElementById('badge-da-ky');
 function init() {
     if(document.getElementById("agent-select")) document.getElementById("agent-select").value = "";
     if(document.getElementById("search-input")) document.getElementById("search-input").value = "";
-    if(document.getElementById("page-size-select")) document.getElementById("page-size-select").value = "50";
+    if(document.getElementById("page-size-select")) document.getElementById("page-size-select").value = pageSize.toString();
     const storedUser = localStorage.getItem('kyso_user');
     if (storedUser) {
         currentUser = JSON.parse(storedUser);
@@ -260,7 +284,7 @@ function showPrompt(title, message, onConfirm) {
                 inputEl.value = '';
                 inputEl.focus();
             } else {
-                modal.classList.add('hidden');
+                modal.classList.remove('hidden');
             }
         });
     });
@@ -885,7 +909,8 @@ document.getElementById('btn-next-page').addEventListener('click', () => {
 const pageSizeSelect = document.getElementById('page-size-select');
 if (pageSizeSelect) {
     pageSizeSelect.addEventListener('change', (e) => {
-        pageSize = parseInt(e.target.value) || 20;
+        pageSize = parseInt(e.target.value) || 10;
+        localStorage.setItem('kyso_pageSize', pageSize);
         currentPage = 1;
         renderTable();
     });
