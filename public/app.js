@@ -335,7 +335,7 @@ async function loadDocumentTypes() {
         const res = await callAgent('get-document-types', {
             fromDate: dateFrom.value, 
             toDate: dateTo.value,
-            deptId: phongBanSelect.value ? parseInt(phongBanSelect.value) : 0,
+            deptId: phongBanSelect.value ? parseInt(phongBanSelect.value) : null,
             roleName: quyenKySelect.value || ''
         });
         const data = res;
@@ -431,7 +431,7 @@ async function loadPatients() {
                 documentInstanceIDs: '',
                 reportId: 0,
                 roleName: quyenKySelect.value || '',
-                deptId: phongBanSelect.value ? parseInt(phongBanSelect.value) : 0,
+                deptId: phongBanSelect.value ? parseInt(phongBanSelect.value) : null,
                 fromDate: dateFrom.value,
                 toDate: dateTo.value,
                 signStatus: currentTab
