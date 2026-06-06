@@ -21,18 +21,15 @@
         .status-badge { padding: 4px 12px; border-radius: 12px; font-size: 0.85rem; font-weight: 600; }
         .status-chua-ky { background: rgba(234, 179, 8, 0.2); color: #facc15; border: 1px solid rgba(234, 179, 8, 0.3); }
 
-        /* Bố cục cuộn tự nhiên (Native Scroll) & Sticky Header */
-        .view.active#dashboard-view { display: block; min-height: 100vh; padding-bottom: 30px; }
+        /* Bố cục PC: App-like với thanh cuộn bên trong bảng */
+        html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; width: 100%; }
+        .view.active#dashboard-view { display: flex; flex-direction: column; height: 100%; width: 100%; position: absolute; top: 0; left: 0; right: 0; bottom: 0; overflow: hidden; }
+        .dashboard-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; padding-bottom: 10px; min-height: 0; }
+        .main-panel { display: flex; flex-direction: column; flex: 1; overflow: hidden; padding: 10px 15px; min-height: 0; }
+        .table-container { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; min-height: 0; padding-right: 5px; height: 100%; }
+        .sticky-toolbar { flex-shrink: 0; margin-bottom: 10px; }
         
-        .sticky-toolbar {
-            position: sticky; top: 0; z-index: 100;
-            background: var(--card-bg);
-            backdrop-filter: blur(20px);
-            padding: 15px;
-            border-bottom: 1px solid var(--glass-border);
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-            margin-bottom: 15px;
-        }
+        thead th { position: sticky; top: 0; z-index: 10; background: var(--table-header) !important; }
 
         .filters-container {
             display: none;
@@ -46,22 +43,38 @@
         }
         @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
 
-        .table-container { padding: 0 15px; }
-
         @media (max-width: 768px) {
+            /* Bố cục Mobile: Native Scroll với Sticky Header */
+            html, body { height: auto; overflow: auto; position: static; }
+            .view.active#dashboard-view { display: block; height: auto; overflow: visible; min-height: 100vh; position: static; }
+            .dashboard-content { display: block; height: auto; overflow: visible; }
+            
             .main-panel {
+                display: block;
+                height: auto;
+                overflow: visible;
                 border-radius: 0;
                 margin: 0;
                 border: none;
                 background: transparent;
+                padding: 0;
             }
             .sticky-toolbar { 
+                position: sticky; top: 0; z-index: 100;
+                background: var(--card-bg);
+                backdrop-filter: blur(20px);
+                border-bottom: 1px solid var(--glass-border);
+                box-shadow: 0 4px 20px rgba(0,0,0,0.1);
                 padding: 15px 10px; 
                 margin: 0;
                 border-radius: 0;
-                border-left: none; border-right: none; border-top: none;
             }
-            .table-container { padding: 0 10px; }
+            .table-container { 
+                display: block;
+                height: auto;
+                overflow: visible;
+                padding: 0 10px; 
+            }
             
             .pdf-box {
                 width: 100vw !important;
@@ -158,10 +171,23 @@
         <main class="dashboard-content">
             <div class="glass-panel main-panel">
                 <div class="sticky-toolbar">
-                    <div class="panel-header" style="margin-bottom: 15px;">
+                    <div class="panel-header" style="margin-bottom: 10px;">
                         <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
                             <h3 style="margin: 0; font-size: 1.2rem;">📄 Danh sách văn bản</h3>
                         </div>
+                    </div>
+
+                    <!-- Ngày tháng (Luôn hiện) -->
+                    <div class="date-filter-always-visible" style="display: flex; gap: 10px; margin-bottom: 10px; align-items: flex-end; flex-wrap: wrap;">
+                        <div class="input-group" style="flex: 1; min-width: 130px; margin-bottom: 0;">
+                            <label style="font-size: 0.8rem; color: #8892b0; margin-bottom: 2px; display: block;">📅 TỪ NGÀY</label>
+                            <input autocomplete="off" type="date" id="date-from" class="form-control" style="padding: 6px 10px; font-size: 0.9rem; border-radius: 8px;">
+                        </div>
+                        <div class="input-group" style="flex: 1; min-width: 130px; margin-bottom: 0;">
+                            <label style="font-size: 0.8rem; color: #8892b0; margin-bottom: 2px; display: block;">📅 ĐẾN NGÀY</label>
+                            <input autocomplete="off" type="date" id="date-to" class="form-control" style="padding: 6px 10px; font-size: 0.9rem; border-radius: 8px;">
+                        </div>
+                        <button id="btn-refresh" class="btn-primary" style="display: none;">Tải lại</button>
                     </div>
 
                     <!-- Thanh tìm kiếm và nút Lọc -->
@@ -184,19 +210,6 @@
                     </div>
                     
                     <div class="filters-container" id="filters-container">
-                        <div class="date-filter-always-visible" style="display: flex; gap: 10px; margin-bottom: 10px; align-items: flex-end; flex-wrap: wrap;">
-                            <div class="input-group" style="flex: 1; min-width: 130px; margin-bottom: 0;">
-                                <label style="font-size: 0.8rem; color: #8892b0; margin-bottom: 2px; display: block;">📅 TỪ NGÀY</label>
-                                <input autocomplete="off" type="date" id="date-from" class="form-control" style="padding: 6px 10px; font-size: 0.9rem; border-radius: 8px;">
-                            </div>
-                            <div class="input-group" style="flex: 1; min-width: 130px; margin-bottom: 0;">
-                                <label style="font-size: 0.8rem; color: #8892b0; margin-bottom: 2px; display: block;">📅 ĐẾN NGÀY</label>
-                                <input autocomplete="off" type="date" id="date-to" class="form-control" style="padding: 6px 10px; font-size: 0.9rem; border-radius: 8px;">
-                            </div>
-                            <button id="btn-refresh" class="btn-primary" style="display: none;">
-                                Tải lại
-                            </button>
-                        </div>
 
                         <div class="filter-row">
                             <div class="input-group">
@@ -333,7 +346,7 @@
 
     <script src="pdf-lib.min.js"></script>
     <script src="pdf.min.js"></script>
-    <script src="app.js?v=1.0.55"></script>
+    <script src="app.js?v=1.0.56"></script>
 </body>
 </html>
 
