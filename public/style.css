@@ -721,3 +721,5 @@ tr:hover td {
 .btn-sign, .btn-cancel, .btn-batch-action, .btn-danger {
     color: white !important;
 }
+
+body.modal-open { overflow: hidden; height: 100vh; touch-action: none; }

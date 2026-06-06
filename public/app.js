@@ -563,6 +563,7 @@ function renderTable() {
 
 window.signDocument = async function(docId) {
     document.getElementById('pdf-modal').classList.add('hidden');
+    document.body.classList.remove('modal-open');
     
     const doc = patientsList.find(d => (d.DocumentInstance_Id || d.Document_Id) == docId);
     if (!doc) {
@@ -614,6 +615,7 @@ window.cancelSignDocument = async function(docId) {
         if (loadingDesc) loadingDesc.textContent = 'Vui lòng chờ trong giây lát.';
         loadingOverlay.classList.remove('hidden');
         document.getElementById('pdf-modal').classList.add('hidden'); // Close modal if open
+        document.body.classList.remove('modal-open');
         
         try {
             const data = await callAgent('cancel-sign-document', {
@@ -703,6 +705,7 @@ async function fetchAndShowPdf(docId, isSigning) {
             
             // Hiện modal
             document.getElementById('pdf-modal').classList.remove('hidden');
+            document.body.classList.add('modal-open');
             
             // Xử lý nút Ký số & Hủy ký
             const btnSign = document.getElementById('btn-pdf-sign');
@@ -728,6 +731,7 @@ async function fetchAndShowPdf(docId, isSigning) {
 
 document.getElementById('btn-close-pdf').addEventListener('click', () => {
     document.getElementById('pdf-modal').classList.add('hidden');
+    document.body.classList.remove('modal-open');
     document.getElementById('pdf-viewer').src = '';
     const container = document.getElementById('pdf-viewer-container');
     if(container) container.innerHTML = '';
@@ -735,6 +739,7 @@ document.getElementById('btn-close-pdf').addEventListener('click', () => {
 
 document.getElementById('btn-pdf-cancel').addEventListener('click', () => {
     document.getElementById('pdf-modal').classList.add('hidden');
+    document.body.classList.remove('modal-open');
     document.getElementById('pdf-viewer').src = '';
     const container = document.getElementById('pdf-viewer-container');
     if(container) container.innerHTML = '';
