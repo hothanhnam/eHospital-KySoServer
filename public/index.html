@@ -71,12 +71,10 @@
             overflow-y: auto !important;
             -webkit-overflow-scrolling: touch !important;
             transform: translateZ(0);
+            touch-action: pan-y !important;
         }
-        .table-container tr {
-            cursor: pointer;
-            -webkit-user-select: none;
-            user-select: none;
-            transform: translateZ(0);
+        .table-container * {
+            touch-action: pan-y !important;
         }
 
         @media (max-width: 768px) {
@@ -367,7 +365,7 @@
 
     <script src="pdf-lib.min.js"></script>
     <script src="pdf.min.js"></script>
-    <script src="app.js?v=1.0.52"></script>
+    <script src="app.js?v=1.0.53"></script>
 </body>
 </html>
 
