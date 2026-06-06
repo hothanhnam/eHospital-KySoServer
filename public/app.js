@@ -938,17 +938,13 @@ if(btnClearSearch) {
 
 const btnMobileFilter = document.getElementById('btn-mobile-filter');
 const filtersContainer = document.getElementById('filters-container');
-const filterOverlay = document.getElementById('filter-overlay');
-const btnCloseFilter = document.getElementById('btn-close-filter');
+
 function toggleMobileFilter() {
-    if(filtersContainer && filterOverlay) {
+    if(filtersContainer) {
         filtersContainer.classList.toggle('show');
-        filterOverlay.classList.toggle('show');
     }
 }
 if(btnMobileFilter) btnMobileFilter.addEventListener('click', toggleMobileFilter);
-if(btnCloseFilter) btnCloseFilter.addEventListener('click', toggleMobileFilter);
-if(filterOverlay) filterOverlay.addEventListener('click', toggleMobileFilter);
 const btnRefreshMobile = document.getElementById('btn-refresh');
 if(btnRefreshMobile) btnRefreshMobile.addEventListener('click', () => {
     if (filtersContainer && filtersContainer.classList.contains('show')) { toggleMobileFilter(); }
