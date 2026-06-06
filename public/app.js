@@ -561,6 +561,84 @@ function renderTable() {
     });
 }
 
+let currentPdfBase64 = null;
+let currentPdfDocName = null;
+let currentZoomLevel = 100;
+
+function updateZoom() {
+    const zoomSpan = document.getElementById('zoom-level');
+    if(zoomSpan) zoomSpan.textContent = currentZoomLevel + '%';
+    const canvases = document.querySelectorAll('#pdf-viewer-container canvas');
+    canvases.forEach(canvas => {
+        canvas.style.width = currentZoomLevel + '%';
+    });
+}
+
+document.getElementById('btn-zoom-in')?.addEventListener('click', () => {
+    if (currentZoomLevel < 300) { currentZoomLevel += 25; updateZoom(); }
+});
+document.getElementById('btn-zoom-out')?.addEventListener('click', () => {
+    if (currentZoomLevel > 50) { currentZoomLevel -= 25; updateZoom(); }
+});
+
+document.getElementById('btn-download-pdf')?.addEventListener('click', async () => {
+    if (!currentPdfBase64) return;
+    const btn = document.getElementById('btn-download-pdf');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = 'Đang xử lý...';
+    btn.disabled = true;
+    
+    try {
+        let finalBase64 = currentPdfBase64;
+        if (window.PDFLib) {
+            const { PDFDocument, rgb, degrees } = window.PDFLib;
+            const pdfDoc = await PDFDocument.load(currentPdfBase64);
+            const pages = pdfDoc.getPages();
+            
+            let fullname = 'User';
+            let username = '';
+            try {
+                const userStr = localStorage.getItem('kyso_user');
+                if (userStr) {
+                    const u = JSON.parse(userStr);
+                    fullname = u.User_Name || u.UserName || u.TenNhanVien || '';
+                    username = u.User_Id || u.UserId || u.MaNhanVien || '';
+                }
+            } catch(e){}
+            
+            const now = new Date();
+            const timeStr = `${String(now.getDate()).padStart(2,'0')}/${String(now.getMonth()+1).padStart(2,'0')}/${now.getFullYear()} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+            const watermarkText = `Downloaded by: ${fullname} (${username}) - ${timeStr}`;
+            
+            for (const page of pages) {
+                const { width, height } = page.getSize();
+                page.drawText(watermarkText, {
+                    x: 20,
+                    y: 20,
+                    size: 10,
+                    color: rgb(0.8, 0.2, 0.2),
+                    opacity: 0.6,
+                    rotate: degrees(0)
+                });
+            }
+            finalBase64 = await pdfDoc.saveAsBase64({ dataUri: false });
+        }
+        
+        const link = document.createElement('a');
+        link.href = 'data:application/pdf;base64,' + finalBase64;
+        link.download = (currentPdfDocName || 'Tai_lieu') + '.pdf';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    } catch (err) {
+        console.error('Lỗi tải PDF:', err);
+        showToast('Có lỗi xảy ra khi xử lý file', 'error');
+    }
+    
+    btn.innerHTML = originalText;
+    btn.disabled = false;
+});
+
 window.signDocument = async function(docId) {
     document.getElementById('pdf-modal').classList.add('hidden');
     document.body.classList.remove('modal-open');
@@ -583,32 +661,30 @@ window.signDocument = async function(docId) {
             reportParameter: doc.ReportParameter || ''
         });
         if (data.success && data.data && data.data.ok) {
-            showToast('Đã ký thành công!', 'success');
+            showToast('Đã gửi lệnh ký số thành công!', 'success');
             await new Promise(r => setTimeout(r, 1500));
             await loadDocumentTypes();
         } else {
-            showToast(data.data?.message || 'Lỗi khi ký số', 'error');
+            showToast(data.message || data?.data?.message || 'Lỗi ký số', 'error');
         }
     } catch(err) {
-        showToast('Lỗi kết nối tới Agent', 'error');
+        showToast('Lỗi khi gửi lệnh ký số', 'error');
     }
     loadingOverlay.classList.add('hidden');
 }
 
 window.openPreview = async function(docId) {
-    await fetchAndShowPdf(docId, false);
-}
-
-window.openSignPreview = async function(docId) {
-    await fetchAndShowPdf(docId, true);
+    await openSignPreview(docId, false);
 }
 
 window.cancelSignDocument = async function(docId) {
     const doc = patientsList.find(d => (d.DocumentInstance_Id || d.Document_Id) == docId);
-    if (!doc) return;
-    
-    const docName = doc.ResolvedDocName || 'Tài liệu';
-    const patientName = doc.TenBenhNhan || doc.PatientName || 'Không rõ';
+    if (!doc) {
+        showToast('Không tìm thấy tài liệu', 'error');
+        return;
+    }
+    const docName = doc.Report_Name || doc.Document_Name || 'Tài liệu';
+    const patientName = doc.TenBenhNhan || 'Bệnh nhân';
 
     showConfirm(`Bạn có chắc chắn muốn HỦY KÝ <b>${docName}</b> của bệnh nhân <b>${patientName}</b>?`, async () => {
         if (loadingTitle) loadingTitle.textContent = 'Đang gửi lệnh Hủy ký...';
@@ -632,21 +708,21 @@ window.cancelSignDocument = async function(docId) {
                 showToast(data.message || data?.data?.message || 'Lỗi khi hủy ký', 'error');
             }
         } catch (err) {
-            showToast('Lỗi khi kết nối với Agent để hủy ký', 'error');
+            showToast('Lỗi hệ thống khi hủy ký', 'error');
         }
         loadingOverlay.classList.add('hidden');
     }, 'Xác nhận Hủy ký', 'Hủy ký');
 }
 
-async function fetchAndShowPdf(docId, isSigning) {
-    // Tìm doc trong patientsList
+window.openSignPreview = async function(docId, isSigning = true) {
     const doc = patientsList.find(d => (d.DocumentInstance_Id || d.Document_Id) == docId);
     if (!doc) {
-        showToast('Không tìm thấy thông tin tài liệu', 'error');
+        showToast('Không tìm thấy tài liệu', 'error');
         return;
     }
+    const docName = doc.Report_Name || doc.Document_Name || 'Tài liệu';
     
-    if (loadingTitle) loadingTitle.textContent = 'Đang tải tài liệu...';
+    if (loadingTitle) loadingTitle.textContent = 'Đang tải bản xem trước...';
     if (loadingDesc) loadingDesc.textContent = 'Vui lòng chờ trong giây lát.';
     loadingOverlay.classList.remove('hidden');
     
@@ -658,17 +734,23 @@ async function fetchAndShowPdf(docId, isSigning) {
         });
         
         if (data.success && data.data && data.data.data && data.data.data.base64) {
-            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+            currentPdfBase64 = data.data.data.base64;
+            currentPdfDocName = docName;
+            currentZoomLevel = 100;
+            const zoomSpan = document.getElementById('zoom-level');
+            if(zoomSpan) zoomSpan.textContent = '100%';
+            
             const container = document.getElementById('pdf-viewer-container');
             const viewer = document.getElementById('pdf-viewer');
             
-            if (isMobile && window.pdfjsLib) {
+            // Force PDF.js for all platforms to allow custom Zoom and uniform UI
+            if (window.pdfjsLib) {
                 viewer.style.display = 'none';
                 container.style.display = 'block';
                 container.innerHTML = '<div style="padding: 20px; text-align: center;">Đang xử lý PDF...</div>';
                 
                 pdfjsLib.GlobalWorkerOptions.workerSrc = 'pdf.worker.min.js';
-                const pdfData = atob(data.data.data.base64);
+                const pdfData = atob(currentPdfBase64);
                 const uint8Array = new Uint8Array(pdfData.length);
                 for (let i = 0; i < pdfData.length; i++) {
                     uint8Array[i] = pdfData.charCodeAt(i);
@@ -680,13 +762,15 @@ async function fetchAndShowPdf(docId, isSigning) {
                         const canvas = document.createElement('canvas');
                         canvas.style.display = 'block';
                         canvas.style.margin = '0 auto 10px auto';
-                        canvas.style.maxWidth = '100%';
+                        canvas.style.width = '100%';
+                        canvas.style.maxWidth = 'none';
                         canvas.style.height = 'auto';
                         canvas.style.boxShadow = '0 2px 5px rgba(0,0,0,0.2)';
                         container.appendChild(canvas);
                         
                         pdf.getPage(pageNum).then(function(page) {
-                            const viewport = page.getViewport({scale: window.innerWidth < 600 ? 1.0 : 1.5});
+                            // Render at 2x scale for higher quality, then CSS scales down to width=100%
+                            const viewport = page.getViewport({scale: 2.0});
                             canvas.height = viewport.height;
                             canvas.width = viewport.width;
                             const context = canvas.getContext('2d');
@@ -697,10 +781,10 @@ async function fetchAndShowPdf(docId, isSigning) {
                     container.innerHTML = '<div style="color:red; padding: 20px; text-align: center;">Lỗi hiển thị PDF</div>';
                 });
             } else {
+                // Fallback if pdf.js fails to load
                 container.style.display = 'none';
                 viewer.style.display = 'block';
-                const pdfDataUri = 'data:application/pdf;base64,' + data.data.data.base64;
-                viewer.src = pdfDataUri;
+                viewer.src = 'data:application/pdf;base64,' + currentPdfBase64 + '#toolbar=0';
             }
             
             // Hiện modal
