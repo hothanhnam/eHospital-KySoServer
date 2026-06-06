@@ -656,8 +656,50 @@ async function fetchAndShowPdf(docId, isSigning) {
         });
         
         if (data.success && data.data && data.data.data && data.data.data.base64) {
-            const pdfDataUri = 'data:application/pdf;base64,' + data.data.data.base64;
-            document.getElementById('pdf-viewer').src = pdfDataUri;
+            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+            const container = document.getElementById('pdf-viewer-container');
+            const viewer = document.getElementById('pdf-viewer');
+            
+            if (isMobile && window.pdfjsLib) {
+                viewer.style.display = 'none';
+                container.style.display = 'block';
+                container.innerHTML = '<div style="padding: 20px; text-align: center;">Đang xử lý PDF...</div>';
+                
+                pdfjsLib.GlobalWorkerOptions.workerSrc = 'pdf.worker.min.js';
+                const pdfData = atob(data.data.data.base64);
+                const uint8Array = new Uint8Array(pdfData.length);
+                for (let i = 0; i < pdfData.length; i++) {
+                    uint8Array[i] = pdfData.charCodeAt(i);
+                }
+                
+                pdfjsLib.getDocument({ data: uint8Array }).promise.then(function(pdf) {
+                    container.innerHTML = '';
+                    for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+                        const canvas = document.createElement('canvas');
+                        canvas.style.display = 'block';
+                        canvas.style.margin = '0 auto 10px auto';
+                        canvas.style.maxWidth = '100%';
+                        canvas.style.height = 'auto';
+                        canvas.style.boxShadow = '0 2px 5px rgba(0,0,0,0.2)';
+                        container.appendChild(canvas);
+                        
+                        pdf.getPage(pageNum).then(function(page) {
+                            const viewport = page.getViewport({scale: window.innerWidth < 600 ? 1.0 : 1.5});
+                            canvas.height = viewport.height;
+                            canvas.width = viewport.width;
+                            const context = canvas.getContext('2d');
+                            page.render({ canvasContext: context, viewport: viewport });
+                        });
+                    }
+                }).catch(err => {
+                    container.innerHTML = '<div style="color:red; padding: 20px; text-align: center;">Lỗi hiển thị PDF</div>';
+                });
+            } else {
+                container.style.display = 'none';
+                viewer.style.display = 'block';
+                const pdfDataUri = 'data:application/pdf;base64,' + data.data.data.base64;
+                viewer.src = pdfDataUri;
+            }
             
             // Hiện modal
             document.getElementById('pdf-modal').classList.remove('hidden');
@@ -687,11 +729,15 @@ async function fetchAndShowPdf(docId, isSigning) {
 document.getElementById('btn-close-pdf').addEventListener('click', () => {
     document.getElementById('pdf-modal').classList.add('hidden');
     document.getElementById('pdf-viewer').src = '';
+    const container = document.getElementById('pdf-viewer-container');
+    if(container) container.innerHTML = '';
 });
 
 document.getElementById('btn-pdf-cancel').addEventListener('click', () => {
     document.getElementById('pdf-modal').classList.add('hidden');
     document.getElementById('pdf-viewer').src = '';
+    const container = document.getElementById('pdf-viewer-container');
+    if(container) container.innerHTML = '';
 });
 
 init();
