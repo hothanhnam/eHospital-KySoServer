@@ -598,61 +598,6 @@ document.getElementById('btn-download-pdf')?.addEventListener('click', async () 
     
     try {
         let finalBase64 = currentPdfBase64;
-        if (window.PDFLib) {
-            const { PDFDocument, rgb, degrees } = window.PDFLib;
-            const pdfDoc = await PDFDocument.load(currentPdfBase64);
-            const pages = pdfDoc.getPages();
-            
-            let fullnameRaw = currentUser?.name || 'User';
-            let usernameRaw = currentUser?.username || currentUser?.uid || currentUser?.id || currentUser?.nhanVienId || 'Unknown';
-            
-            // Remove Vietnamese accents to prevent pdf-lib WinAnsiEncoding error
-            const removeAccents = (str) => {
-                if(!str) return '';
-                return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D');
-            };
-            
-            let fullname = removeAccents(String(fullnameRaw));
-            let username = removeAccents(String(usernameRaw));
-            
-            const now = new Date();
-            const timeStr = `${String(now.getDate()).padStart(2,'0')}/${String(now.getMonth()+1).padStart(2,'0')}/${now.getFullYear()} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-            const watermarkText = `${fullname}_${username}_${timeStr}`;
-            
-            for (const page of pages) {
-                const { width, height } = page.getSize();
-                // Draw a large diagonal watermark in the center
-                page.drawText(watermarkText, {
-                    x: width / 2 - 250, // Approximate centering
-                    y: height / 2 - 50,
-                    size: 32,
-                    color: rgb(0.6, 0.6, 0.6), // xám trắng
-                    opacity: 0.3, // mờ
-                    rotate: degrees(45)
-                });
-                
-                // Draw at top
-                page.drawText(watermarkText, {
-                    x: width / 2 - 250,
-                    y: height - 150,
-                    size: 32,
-                    color: rgb(0.6, 0.6, 0.6),
-                    opacity: 0.3,
-                    rotate: degrees(45)
-                });
-                
-                // Draw at bottom
-                page.drawText(watermarkText, {
-                    x: width / 2 - 250,
-                    y: 150,
-                    size: 32,
-                    color: rgb(0.6, 0.6, 0.6),
-                    opacity: 0.3,
-                    rotate: degrees(45)
-                });
-            }
-            finalBase64 = await pdfDoc.saveAsBase64({ dataUri: false });
-        }
         
         // Use Fetch to convert base64 to Blob, which is required for mobile browsers
         const res = await fetch('data:application/pdf;base64,' + finalBase64);
@@ -751,6 +696,51 @@ window.cancelSignDocument = async function(docId) {
     }, 'Xác nhận Hủy ký', 'Hủy ký');
 }
 
+async function applyWatermark(base64) {
+    if (!window.PDFLib) return base64;
+    try {
+        const { PDFDocument, rgb, degrees } = window.PDFLib;
+        const pdfDoc = await PDFDocument.load(base64);
+        const pages = pdfDoc.getPages();
+        
+        let fullnameRaw = currentUser?.name || 'User';
+        let usernameRaw = currentUser?.username || currentUser?.uid || currentUser?.id || currentUser?.nhanVienId || 'Unknown';
+        
+        const removeAccents = (str) => {
+            if(!str) return '';
+            return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D');
+        };
+        
+        let fullname = removeAccents(String(fullnameRaw));
+        let username = removeAccents(String(usernameRaw));
+        
+        const now = new Date();
+        const timeStr = `${String(now.getDate()).padStart(2,'0')}/${String(now.getMonth()+1).padStart(2,'0')}/${now.getFullYear()} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+        const watermarkText = `${fullname}_${username}_${timeStr}`;
+        
+        for (const page of pages) {
+            const { width, height } = page.getSize();
+            // Spread watermarks evenly across the page
+            for (let x = 30; x < width; x += 250) {
+                for (let y = 30; y < height; y += 250) {
+                    page.drawText(watermarkText, {
+                        x: x,
+                        y: y,
+                        size: 16,
+                        color: rgb(0.6, 0.6, 0.6),
+                        opacity: 0.2,
+                        rotate: degrees(45)
+                    });
+                }
+            }
+        }
+        return await pdfDoc.saveAsBase64({ dataUri: false });
+    } catch (e) {
+        console.error('Lỗi tạo watermark:', e);
+        return base64;
+    }
+}
+
 window.openSignPreview = async function(docId, isSigning = true) {
     const doc = patientsList.find(d => (d.DocumentInstance_Id || d.Document_Id) == docId);
     if (!doc) {
@@ -771,7 +761,7 @@ window.openSignPreview = async function(docId, isSigning = true) {
         });
         
         if (data.success && data.data && data.data.data && data.data.data.base64) {
-            currentPdfBase64 = data.data.data.base64;
+            currentPdfBase64 = await applyWatermark(data.data.data.base64);
             currentPdfDocName = docName;
             currentZoomLevel = 100;
             const zoomSpan = document.getElementById('zoom-level');
