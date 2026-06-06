@@ -608,17 +608,38 @@ document.getElementById('btn-download-pdf')?.addEventListener('click', async () 
             
             const now = new Date();
             const timeStr = `${String(now.getDate()).padStart(2,'0')}/${String(now.getMonth()+1).padStart(2,'0')}/${now.getFullYear()} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-            const watermarkText = `Downloaded by: ${fullname} (${username}) - ${timeStr}`;
+            const watermarkText = `${fullname}_${username}_${timeStr}`;
             
             for (const page of pages) {
                 const { width, height } = page.getSize();
+                // Draw a large diagonal watermark in the center
                 page.drawText(watermarkText, {
-                    x: 20,
-                    y: 20,
-                    size: 10,
-                    color: rgb(0.8, 0.2, 0.2),
-                    opacity: 0.6,
-                    rotate: degrees(0)
+                    x: width / 2 - 250, // Approximate centering
+                    y: height / 2 - 50,
+                    size: 32,
+                    color: rgb(0.6, 0.6, 0.6), // xám trắng
+                    opacity: 0.3, // mờ
+                    rotate: degrees(45)
+                });
+                
+                // Draw at top
+                page.drawText(watermarkText, {
+                    x: width / 2 - 250,
+                    y: height - 150,
+                    size: 32,
+                    color: rgb(0.6, 0.6, 0.6),
+                    opacity: 0.3,
+                    rotate: degrees(45)
+                });
+                
+                // Draw at bottom
+                page.drawText(watermarkText, {
+                    x: width / 2 - 250,
+                    y: 150,
+                    size: 32,
+                    color: rgb(0.6, 0.6, 0.6),
+                    opacity: 0.3,
+                    rotate: degrees(45)
                 });
             }
             finalBase64 = await pdfDoc.saveAsBase64({ dataUri: false });
@@ -858,3 +879,25 @@ phongBanSelect.addEventListener('change', loadDocumentTypes);
 quyenKySelect.addEventListener('change', loadDocumentTypes);
 dateFrom.addEventListener('change', loadDocumentTypes);
 dateTo.addEventListener('change', loadDocumentTypes);
+
+let initialTouchDistance = 0;
+let initialTouchZoom = 100;
+const pdfContainer = document.getElementById('pdf-viewer-container');
+pdfContainer?.addEventListener('touchstart', (e) => {
+    if (e.touches.length === 2) {
+        initialTouchDistance = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+        initialTouchZoom = currentZoomLevel;
+    }
+}, {passive: false});
+pdfContainer?.addEventListener('touchmove', (e) => {
+    if (e.touches.length === 2) {
+        e.preventDefault();
+        const currentDistance = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+        const scale = currentDistance / initialTouchDistance;
+        let newZoom = initialTouchZoom * scale;
+        if (newZoom < 50) newZoom = 50;
+        if (newZoom > 400) newZoom = 400;
+        currentZoomLevel = Math.round(newZoom);
+        updateZoom();
+    }
+}, {passive: false});
