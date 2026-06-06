@@ -336,7 +336,7 @@ async function loadDocumentTypes() {
             fromDate: dateFrom.value, 
             toDate: dateTo.value,
             deptId: phongBanSelect.value ? parseInt(phongBanSelect.value) : null,
-            roleName: quyenKySelect.value || null
+            roleName: quyenKySelect.value || ''
         });
         const data = res;
         if (data.success && data.data && data.data.data) {
@@ -430,7 +430,7 @@ async function loadPatients() {
             const data = await callAgent('get-patients-by-document', {
                 documentInstanceIDs: '',
                 reportId: null,
-                roleName: quyenKySelect.value || null,
+                roleName: quyenKySelect.value || '',
                 deptId: phongBanSelect.value ? parseInt(phongBanSelect.value) : null,
                 fromDate: dateFrom.value,
                 toDate: dateTo.value,
@@ -461,7 +461,7 @@ async function loadPatients() {
             const data = await callAgent('get-patients-by-document', {
                 documentInstanceIDs: ids,
                 reportId: dt.Report_Id || null,
-                roleName: dt.RoleName || quyenKySelect.value || null,
+                roleName: dt.RoleName || quyenKySelect.value || '',
                 fromDate: dateFrom.value,
                 toDate: dateTo.value,
                 signStatus: currentTab
