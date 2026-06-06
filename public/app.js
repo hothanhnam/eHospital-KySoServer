@@ -496,16 +496,24 @@ function renderTable() {
         chkSelectAll.style.display = currentTab === 0 ? 'inline-block' : 'none';
     }
     
+    const searchInput = document.getElementById('grid-search');
+    const query = (searchInput?.value || '').toLowerCase().trim();
     
-    totalItems = patientsList.length;
+    const filteredList = patientsList.filter(doc => {
+        if (!query) return true;
+        const searchStr = `${doc.TenBenhNhan || ''} ${doc.SoBenhAn || ''} ${doc.TiepNhan_Id || ''} ${doc.BenhAn_Id || ''} ${doc.MaYTe || ''} ${doc.SoVaoVien || ''} ${doc.SoTiepNhan || ''} ${doc.NamSinh || ''} ${doc.Tuoi || ''}`.toLowerCase();
+        return searchStr.includes(query);
+    });
+    
+    totalItems = filteredList.length;
     const startIdx = (currentPage - 1) * pageSize;
     const endIdx = startIdx + pageSize;
-    const pagedList = patientsList.slice(startIdx, endIdx);
+    const pagedList = filteredList.slice(startIdx, endIdx);
     
     document.getElementById('page-info').innerText = `Hiển thị ${totalItems > 0 ? startIdx + 1 : 0} - ${Math.min(endIdx, totalItems)}/${totalItems} bản ghi`;
     document.getElementById('current-page-num').innerText = currentPage;
     
-    if (patientsList.length === 0) {
+    if (filteredList.length === 0) {
         docsBody.innerHTML = '<tr><td colspan="8" style="text-align:center">Không có tài liệu nào</td></tr>';
         return;
     }
@@ -902,3 +910,21 @@ pdfContainer?.addEventListener('touchmove', (e) => {
         updateZoom();
     }
 }, {passive: false});
+
+const gridSearch = document.getElementById('grid-search');
+const btnClearSearch = document.getElementById('btn-clear-search');
+if(gridSearch) {
+    gridSearch.addEventListener('input', () => {
+        if(btnClearSearch) btnClearSearch.style.display = gridSearch.value ? 'block' : 'none';
+        currentPage = 1;
+        renderTable();
+    });
+}
+if(btnClearSearch) {
+    btnClearSearch.addEventListener('click', () => {
+        if(gridSearch) gridSearch.value = '';
+        btnClearSearch.style.display = 'none';
+        currentPage = 1;
+        renderTable();
+    });
+}
