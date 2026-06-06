@@ -22,6 +22,50 @@
         .status-chua-ky { background: rgba(234, 179, 8, 0.2); color: #facc15; border: 1px solid rgba(234, 179, 8, 0.3); }
         .status-da-ky { background: rgba(34, 197, 94, 0.2); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.3); }
         .status-loi { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
+
+        /* Bố cục ghim thanh công cụ, cuộn danh sách */
+        #dashboard-view { display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        .dashboard-content { flex-grow: 1; display: flex; flex-direction: column; overflow: hidden; padding-bottom: 10px; }
+        .main-panel { display: flex; flex-direction: column; flex-grow: 1; overflow: hidden; padding: 15px 24px; }
+        .table-container { flex-grow: 1; overflow-y: auto; min-height: 0; }
+        .panel-header { margin-bottom: 10px !important; flex-shrink: 0; }
+        .filters-container { flex-shrink: 0; }
+        .tabs-container { flex-shrink: 0; }
+        .pagination { flex-shrink: 0; }
+
+        /* Responsive Mobile Bottom Sheet Filter */
+        #btn-mobile-filter { display: none; }
+        @media (max-width: 768px) {
+            #btn-mobile-filter { display: flex; align-items: center; gap: 5px; padding: 5px 12px; border-radius: 20px; font-size: 0.9rem; }
+            .filters-container {
+                display: none;
+                position: fixed;
+                bottom: 0; left: 0; right: 0;
+                background: var(--card-bg);
+                z-index: 2000;
+                padding: 20px;
+                border-top-left-radius: 20px;
+                border-top-right-radius: 20px;
+                box-shadow: 0 -5px 25px rgba(0,0,0,0.8);
+                backdrop-filter: blur(15px);
+                border-top: 1px solid var(--glass-border);
+            }
+            .filters-container.show {
+                display: block;
+                animation: slideUp 0.3s ease forwards;
+            }
+            .filter-overlay {
+                display: none;
+                position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+                background: rgba(0,0,0,0.6); z-index: 1999;
+            }
+            .filter-overlay.show { display: block; }
+            .main-panel { padding: 10px; }
+            .tabs-container { flex-wrap: wrap; margin-bottom: 10px; }
+            .search-box { width: 100%; max-width: none; }
+            #btn-refresh { width: 100%; justify-content: center; }
+        }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -109,11 +153,20 @@
 
         <main class="dashboard-content">
             <div class="glass-panel main-panel">
-                <div class="panel-header" style="margin-bottom: 20px;">
-                    <h3>📄 Danh sách văn bản</h3>
+                <div class="panel-header" style="margin-bottom: 10px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                        <h3 style="margin: 0;">📄 Danh sách văn bản</h3>
+                    </div>
                 </div>
                 
-                <div class="filters-container">
+                <div id="filter-overlay" class="filter-overlay"></div>
+                <div class="filters-container" id="filters-container">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;" class="mobile-only-header">
+                        <h3 style="margin: 0; font-size: 1.1rem;">Bộ lọc & Tìm kiếm</h3>
+                        <button id="btn-close-filter" style="background: none; border: none; color: var(--text-main); cursor: pointer;">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                        </button>
+                    </div>
                     <div class="filter-row">
                         <div class="input-group">
                             <label>🏢 PHÒNG BAN</label>
@@ -146,7 +199,7 @@
                         <div class="filter-actions" style="display: flex; align-items: flex-end;">
                             <button id="btn-refresh" class="btn-primary" style="padding: 12px 24px; display: flex; align-items: center; gap: 8px;">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 11-9-9c2.52 0 4.93 1 6.74 2.74L21 8"></path><path d="M21 3v5h-5"></path></svg>
-                                Làm mới
+                                Lọc danh sách
                             </button>
                         </div>
                     </div>
@@ -158,11 +211,17 @@
                         <button class="tab-btn" data-tab="1">✅ Đã ký <span id="badge-da-ky" class="badge">0</span></button>
                     </div>
                     
-                    <div class="search-box" style="position: relative; max-width: 350px; flex-grow: 1;">
-                        <input type="text" id="grid-search" class="form-control" placeholder="Tìm kiếm bệnh nhân, số hồ sơ..." style="padding-right: 35px; border-radius: 20px;">
-                        <button id="btn-clear-search" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #8892b0; cursor: pointer; display: none; padding: 5px;">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    <div style="display: flex; gap: 10px; flex-grow: 1; min-width: 250px;">
+                        <button id="btn-mobile-filter" class="btn-secondary">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+                            Lọc
                         </button>
+                        <div class="search-box" style="position: relative; flex-grow: 1;">
+                            <input type="text" id="grid-search" class="form-control" placeholder="Tìm kiếm bệnh nhân, số hồ sơ..." style="padding-right: 35px; border-radius: 20px;">
+                            <button id="btn-clear-search" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #8892b0; cursor: pointer; display: none; padding: 5px;">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -190,8 +249,8 @@
                     <div style="display: flex; align-items: center; gap: 15px;">
                         <span id="page-info" style="font-size: 0.9em; opacity: 0.8;">Hiển thị 0 - 0/0 bản ghi</span>
                         <select autocomplete="off" id="page-size-select" style="background: var(--input-bg); color: var(--text-main); border: 1px solid var(--input-border); border-radius: 6px; padding: 4px 8px; cursor: pointer; outline: none; font-size: 0.9em;">
-                            <option value="10" style="color: black;">10 dòng/trang</option>
-                            <option value="20" style="color: black;" selected>20 dòng/trang</option>
+                            <option value="10" style="color: black;" selected>10 dòng/trang</option>
+                            <option value="20" style="color: black;">20 dòng/trang</option>
                             <option value="50" style="color: black;">50 dòng/trang</option>
                             <option value="100" style="color: black;">100 dòng/trang</option>
                         </select>
@@ -278,7 +337,7 @@
 
     <script src="pdf-lib.min.js"></script>
     <script src="pdf.min.js"></script>
-    <script src="app.js?v=1.0.45"></script>
+    <script src="app.js?v=1.0.46"></script>
 </body>
 </html>
 

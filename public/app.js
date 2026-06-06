@@ -30,7 +30,7 @@ let documentTypes = [];
 let patientsList = [];
 let currentTab = 0; // 0: Chưa ký, 1: Đã ký
 let currentPage = 1;
-let pageSize = 20;
+let pageSize = 10;
 let currentDocTypeIndex = -1;
 let totalItems = 0;
 let currentLoadToken = 0;
@@ -935,3 +935,21 @@ if(btnClearSearch) {
         renderTable();
     });
 }
+
+const btnMobileFilter = document.getElementById('btn-mobile-filter');
+const filtersContainer = document.getElementById('filters-container');
+const filterOverlay = document.getElementById('filter-overlay');
+const btnCloseFilter = document.getElementById('btn-close-filter');
+function toggleMobileFilter() {
+    if(filtersContainer && filterOverlay) {
+        filtersContainer.classList.toggle('show');
+        filterOverlay.classList.toggle('show');
+    }
+}
+if(btnMobileFilter) btnMobileFilter.addEventListener('click', toggleMobileFilter);
+if(btnCloseFilter) btnCloseFilter.addEventListener('click', toggleMobileFilter);
+if(filterOverlay) filterOverlay.addEventListener('click', toggleMobileFilter);
+const btnRefreshMobile = document.getElementById('btn-refresh');
+if(btnRefreshMobile) btnRefreshMobile.addEventListener('click', () => {
+    if (filtersContainer && filtersContainer.classList.contains('show')) { toggleMobileFilter(); }
+});
