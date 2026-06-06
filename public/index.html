@@ -24,48 +24,65 @@
         .status-loi { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
 
         /* Bố cục ghim thanh công cụ, cuộn danh sách */
-        #dashboard-view { display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
-        .dashboard-content { flex-grow: 1; display: flex; flex-direction: column; overflow: hidden; padding-bottom: 10px; }
-        .main-panel { display: flex; flex-direction: column; flex-grow: 1; overflow: hidden; padding: 15px 24px; }
+        .view.active#dashboard-view { display: flex; flex-direction: column; height: 100dvh; height: 100vh; overflow: hidden; }
+        .dashboard-content { flex-grow: 1; display: flex; flex-direction: column; overflow: hidden; padding-bottom: 10px; min-height: 0; }
+        .main-panel { display: flex; flex-direction: column; flex-grow: 1; overflow: hidden; padding: 15px 24px; min-height: 0; }
         .table-container { flex-grow: 1; overflow-y: auto; min-height: 0; }
         .panel-header { margin-bottom: 10px !important; flex-shrink: 0; }
-        .filters-container { flex-shrink: 0; }
         .tabs-container { flex-shrink: 0; }
-        .pagination { flex-shrink: 0; }
+        .pagination { flex-shrink: 0; margin-top: 10px; }
 
-        /* Responsive Mobile Bottom Sheet Filter */
-        #btn-mobile-filter { display: none; }
+        /* Filter Modal / Bottom Sheet cho TẤT CẢ thiết bị (PC & Mobile) */
+        #btn-mobile-filter { display: flex; align-items: center; gap: 5px; padding: 5px 15px; border-radius: 20px; font-size: 1rem; font-weight: 500; }
+        
+        .filters-container {
+            display: none;
+            position: fixed;
+            top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: var(--card-bg);
+            z-index: 2000;
+            padding: 25px;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            width: 90%; max-width: 600px;
+        }
+        .filters-container.show {
+            display: block;
+            animation: fadeInScale 0.3s ease forwards;
+        }
+        .filter-overlay {
+            display: none;
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.6); z-index: 1999;
+            backdrop-filter: blur(3px);
+        }
+        .filter-overlay.show { display: block; }
+        
+        @keyframes fadeInScale { 
+            from { opacity: 0; transform: translate(-50%, -45%); } 
+            to { opacity: 1; transform: translate(-50%, -50%); } 
+        }
+
         @media (max-width: 768px) {
-            #btn-mobile-filter { display: flex; align-items: center; gap: 5px; padding: 5px 12px; border-radius: 20px; font-size: 0.9rem; }
             .filters-container {
-                display: none;
-                position: fixed;
-                bottom: 0; left: 0; right: 0;
-                background: var(--card-bg);
-                z-index: 2000;
+                top: auto; bottom: 0; left: 0; right: 0; transform: none;
+                width: 100%; max-width: none;
+                border-radius: 0; border-top-left-radius: 20px; border-top-right-radius: 20px;
                 padding: 20px;
-                border-top-left-radius: 20px;
-                border-top-right-radius: 20px;
-                box-shadow: 0 -5px 25px rgba(0,0,0,0.8);
-                backdrop-filter: blur(15px);
                 border-top: 1px solid var(--glass-border);
             }
             .filters-container.show {
-                display: block;
                 animation: slideUp 0.3s ease forwards;
             }
-            .filter-overlay {
-                display: none;
-                position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-                background: rgba(0,0,0,0.6); z-index: 1999;
-            }
-            .filter-overlay.show { display: block; }
+            @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+            
             .main-panel { padding: 10px; }
             .tabs-container { flex-wrap: wrap; margin-bottom: 10px; }
             .search-box { width: 100%; max-width: none; }
             #btn-refresh { width: 100%; justify-content: center; }
         }
-        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -337,7 +354,7 @@
 
     <script src="pdf-lib.min.js"></script>
     <script src="pdf.min.js"></script>
-    <script src="app.js?v=1.0.46"></script>
+    <script src="app.js?v=1.0.47"></script>
 </body>
 </html>
 
