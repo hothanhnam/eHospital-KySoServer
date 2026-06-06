@@ -634,7 +634,7 @@ window.signDocument = async function(docId) {
         return;
     }
     
-    if (loadingTitle) loadingTitle.textContent = 'Đang xử lý Ký số...';
+    if (loadingTitle) loadingTitle.textContent = 'Đang xử lý Ký...';
     if (loadingDesc) loadingDesc.textContent = 'Vui lòng kiểm tra màn hình máy tính của bạn để thao tác.';
     loadingOverlay.classList.remove('hidden');
     try {
@@ -646,14 +646,14 @@ window.signDocument = async function(docId) {
             reportParameter: doc.ReportParameter || ''
         });
         if (data.success && data.data && data.data.ok) {
-            showToast('Ký số thành công!', 'success');
+            showToast('Ký thành công!', 'success');
             await new Promise(r => setTimeout(r, 1500));
             await loadDocumentTypes();
         } else {
             showToast(data.message || data?.data?.message || 'Lỗi ký số', 'error');
         }
     } catch(err) {
-        showToast('Lỗi khi ký số', 'error');
+        showToast('Lỗi khi ký', 'error');
     }
     loadingOverlay.classList.add('hidden');
 }
