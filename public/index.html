@@ -23,9 +23,9 @@
         /* Bố cục app-like bulletproof cho di động */
         html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; position: fixed; width: 100%; }
         .view.active#dashboard-view { display: flex; flex-direction: column; height: 100%; width: 100%; position: absolute; top: 0; left: 0; right: 0; bottom: 0; overflow: hidden; }
-        .dashboard-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; padding-bottom: 10px; }
-        .main-panel { display: flex; flex-direction: column; flex: 1; overflow: hidden; padding: 10px 15px; }
-        .table-container { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; min-height: 0; padding-right: 5px; }
+        .dashboard-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; padding-bottom: 10px; min-height: 0; }
+        .main-panel { display: flex; flex-direction: column; flex: 1; overflow: hidden; padding: 10px 15px; min-height: 0; }
+        .table-container { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; min-height: 0; padding-right: 5px; height: 100%; }
         .panel-header { margin-bottom: 10px !important; flex-shrink: 0; }
         .tabs-container { flex-shrink: 0; }
         .pagination { flex-shrink: 0; margin-top: 10px; }
@@ -349,7 +349,7 @@
 
     <script src="pdf-lib.min.js"></script>
     <script src="pdf.min.js"></script>
-    <script src="app.js?v=1.0.49"></script>
+    <script src="app.js?v=1.0.50"></script>
 </body>
 </html>
 
