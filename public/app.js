@@ -654,12 +654,19 @@ document.getElementById('btn-download-pdf')?.addEventListener('click', async () 
             finalBase64 = await pdfDoc.saveAsBase64({ dataUri: false });
         }
         
+        // Use Fetch to convert base64 to Blob, which is required for mobile browsers
+        const res = await fetch('data:application/pdf;base64,' + finalBase64);
+        const blob = await res.blob();
+        const objectUrl = URL.createObjectURL(blob);
+        
         const link = document.createElement('a');
-        link.href = 'data:application/pdf;base64,' + finalBase64;
+        link.href = objectUrl;
         link.download = (currentPdfDocName || 'Tai_lieu') + '.pdf';
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+        
+        setTimeout(() => URL.revokeObjectURL(objectUrl), 2000);
     } catch (err) {
         console.error('Lỗi tải PDF:', err);
         showToast('Có lỗi xảy ra khi xử lý file', 'error');
