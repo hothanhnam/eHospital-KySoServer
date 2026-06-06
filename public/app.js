@@ -595,8 +595,17 @@ document.getElementById('btn-download-pdf')?.addEventListener('click', async () 
             const pdfDoc = await PDFDocument.load(currentPdfBase64);
             const pages = pdfDoc.getPages();
             
-            let fullname = currentUser?.name || 'User';
-            let username = currentUser?.username || currentUser?.uid || currentUser?.id || currentUser?.nhanVienId || 'Unknown';
+            let fullnameRaw = currentUser?.name || 'User';
+            let usernameRaw = currentUser?.username || currentUser?.uid || currentUser?.id || currentUser?.nhanVienId || 'Unknown';
+            
+            // Remove Vietnamese accents to prevent pdf-lib WinAnsiEncoding error
+            const removeAccents = (str) => {
+                if(!str) return '';
+                return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D');
+            };
+            
+            let fullname = removeAccents(String(fullnameRaw));
+            let username = removeAccents(String(usernameRaw));
             
             const now = new Date();
             const timeStr = `${String(now.getDate()).padStart(2,'0')}/${String(now.getMonth()+1).padStart(2,'0')}/${now.getFullYear()} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
