@@ -67,8 +67,16 @@
         }
 
         /* Fix lỗi iOS Safari vuốt trên hàng không cuộn được bảng */
-        .table-container table, .table-container tr {
-            touch-action: pan-y;
+        .table-container {
+            overflow-y: auto !important;
+            -webkit-overflow-scrolling: touch !important;
+            transform: translateZ(0);
+        }
+        .table-container tr {
+            cursor: pointer;
+            -webkit-user-select: none;
+            user-select: none;
+            transform: translateZ(0);
         }
 
         @media (max-width: 768px) {
@@ -359,7 +367,7 @@
 
     <script src="pdf-lib.min.js"></script>
     <script src="pdf.min.js"></script>
-    <script src="app.js?v=1.0.51"></script>
+    <script src="app.js?v=1.0.52"></script>
 </body>
 </html>
 
