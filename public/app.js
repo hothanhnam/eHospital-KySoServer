@@ -527,7 +527,7 @@ function renderTable() {
         
         let actionBtn = currentTab === 0 
             ? `<div style="display: flex; gap: 5px; justify-content: center;">
-                 <button class="btn-secondary" onclick="openPreview('${docIdForAction}')" style="padding: 5px 10px; font-size: 0.8rem;">Xem</button>
+                 <button class="btn-secondary" onclick="openSignPreview('${docIdForAction}')" style="padding: 5px 10px; font-size: 0.8rem;">Xem</button>
                  <button class="btn-sign" onclick="openSignPreview('${docIdForAction}')" style="padding: 5px 10px; font-size: 0.8rem;">Ký</button>
                </div>`
             : `<div style="display: flex; gap: 5px; justify-content: center;">
