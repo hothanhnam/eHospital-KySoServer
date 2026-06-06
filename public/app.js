@@ -335,7 +335,7 @@ async function loadDocumentTypes() {
         const res = await callAgent('get-document-types', {
             fromDate: dateFrom.value, 
             toDate: dateTo.value,
-            deptId: phongBanSelect.value ? parseInt(phongBanSelect.value) : null,
+            deptId: phongBanSelect.value ? parseInt(phongBanSelect.value) : 0,
             roleName: quyenKySelect.value || ''
         });
         const data = res;
@@ -429,9 +429,9 @@ async function loadPatients() {
             // "Tất cả loại giấy tờ" -> Fetch 1 lần duy nhất bằng reportId = 0 để C# Agent tự xử lý gom nhóm, tránh quá tải WS
             const data = await callAgent('get-patients-by-document', {
                 documentInstanceIDs: '',
-                reportId: null,
+                reportId: 0,
                 roleName: quyenKySelect.value || '',
-                deptId: phongBanSelect.value ? parseInt(phongBanSelect.value) : null,
+                deptId: phongBanSelect.value ? parseInt(phongBanSelect.value) : 0,
                 fromDate: dateFrom.value,
                 toDate: dateTo.value,
                 signStatus: currentTab
@@ -460,7 +460,7 @@ async function loadPatients() {
             
             const data = await callAgent('get-patients-by-document', {
                 documentInstanceIDs: ids,
-                reportId: dt.Report_Id || null,
+                reportId: dt.Report_Id || 0,
                 roleName: dt.RoleName || quyenKySelect.value || '',
                 fromDate: dateFrom.value,
                 toDate: dateTo.value,
