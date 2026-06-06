@@ -634,7 +634,7 @@ window.signDocument = async function(docId) {
         return;
     }
     
-    if (loadingTitle) loadingTitle.textContent = 'Đang gửi lệnh xuống Agent...';
+    if (loadingTitle) loadingTitle.textContent = 'Đang xử lý Ký số...';
     if (loadingDesc) loadingDesc.textContent = 'Vui lòng kiểm tra màn hình máy tính của bạn để thao tác.';
     loadingOverlay.classList.remove('hidden');
     try {
@@ -646,14 +646,14 @@ window.signDocument = async function(docId) {
             reportParameter: doc.ReportParameter || ''
         });
         if (data.success && data.data && data.data.ok) {
-            showToast('Đã gửi lệnh ký số thành công!', 'success');
+            showToast('Ký số thành công!', 'success');
             await new Promise(r => setTimeout(r, 1500));
             await loadDocumentTypes();
         } else {
             showToast(data.message || data?.data?.message || 'Lỗi ký số', 'error');
         }
     } catch(err) {
-        showToast('Lỗi khi gửi lệnh ký số', 'error');
+        showToast('Lỗi khi ký số', 'error');
     }
     loadingOverlay.classList.add('hidden');
 }
@@ -672,7 +672,7 @@ window.cancelSignDocument = async function(docId) {
     const patientName = doc.TenBenhNhan || 'Bệnh nhân';
 
     showConfirm(`Bạn có chắc chắn muốn HỦY KÝ <b>${docName}</b> của bệnh nhân <b>${patientName}</b>?`, async () => {
-        if (loadingTitle) loadingTitle.textContent = 'Đang gửi lệnh Hủy ký...';
+        if (loadingTitle) loadingTitle.textContent = 'Đang xử lý Hủy ký...';
         if (loadingDesc) loadingDesc.textContent = 'Vui lòng chờ trong giây lát.';
         loadingOverlay.classList.remove('hidden');
         document.getElementById('pdf-modal').classList.add('hidden'); // Close modal if open
