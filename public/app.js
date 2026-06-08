@@ -321,16 +321,22 @@ async function loadFilters() {
             if (agentData.quyenKy) {
                 quyenKySelect.innerHTML = '<option value="">-- Tất cả --</option>' + 
                     agentData.quyenKy.map(q => `<option value="${q.MaQuyenKy}">${q.TenQuyenKy}</option>`).join('');
-                quyenKySelect.value = ""; // Auto select 'Tất cả'
-                
                 const lanhDaoOpt = Array.from(quyenKySelect.options).find(o => o.text.trim().toLowerCase() === "ban lãnh đạo bệnh viện");
                 if (chkLanhDaoContainer) {
                     if (lanhDaoOpt) {
                         chkLanhDaoContainer.style.display = 'flex';
+                        if (chkLanhDao && chkLanhDao.checked) {
+                            quyenKySelect.value = lanhDaoOpt.value;
+                        } else {
+                            quyenKySelect.value = "";
+                        }
                     } else {
                         chkLanhDaoContainer.style.display = 'none';
                         if(chkLanhDao) chkLanhDao.checked = false;
+                        quyenKySelect.value = "";
                     }
+                } else {
+                    quyenKySelect.value = "";
                 }
             }
         }
