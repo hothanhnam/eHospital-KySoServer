@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>eHospital - Cổng Ký Số Điện Tử</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=1.0.39">
+    <link rel="stylesheet" href="style.css?v=1.0.40">
     <style>
         .filter-row { display: flex; gap: 15px; margin-bottom: 15px; flex-wrap: wrap; }
         .filter-row .input-group { flex: 1; min-width: 200px; margin-bottom: 0; }
@@ -191,6 +191,12 @@
                             <label style="font-size: 0.8rem; color: #8892b0; margin-bottom: 2px; display: block;">📅 ĐẾN NGÀY</label>
                             <input autocomplete="off" type="date" id="date-to" class="form-control" style="padding: 6px 10px; font-size: 0.9rem; border-radius: 8px;">
                         </div>
+                        <div class="input-group" style="flex: 1; min-width: 130px; margin-bottom: 0;">
+                            <label style="font-size: 0.8rem; color: #8892b0; margin-bottom: 2px; display: block;">👤 QUYỀN KÝ</label>
+                            <select autocomplete="off" id="quyen-ky-select" class="form-control" style="padding: 6px 10px; font-size: 0.9rem; border-radius: 8px;">
+                                <option value="">-- Tất cả --</option>
+                            </select>
+                        </div>
                         <button id="btn-refresh" class="btn-primary" style="display: none;">Tải lại</button>
                     </div>
 
@@ -222,12 +228,7 @@
                                     <option value="">-- Tất cả --</option>
                                 </select>
                             </div>
-                            <div class="input-group">
-                                <label>👤 QUYỀN KÝ</label>
-                                <select autocomplete="off" id="quyen-ky-select" class="form-control" style="border-radius: 8px;">
-                                    <option value="">-- Tất cả --</option>
-                                </select>
-                            </div>
+
                             <div class="input-group">
                                 <label>📄 LOẠI GIẤY TỜ</label>
                                 <select autocomplete="off" id="doc-type-select" class="form-control" style="border-radius: 8px;">
@@ -350,6 +351,6 @@
 
     <script src="pdf-lib.min.js"></script>
     <script src="pdf.min.js"></script>
-    <script src="app.js?v=1.0.39"></script>
+    <script src="app.js?v=1.0.40"></script>
 </body>
 </html>
