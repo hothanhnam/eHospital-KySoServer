@@ -51,6 +51,8 @@ const btnRefreshAgents = document.getElementById('btn-refresh-agents');
 
 const phongBanSelect = document.getElementById('phong-ban-select');
 const quyenKySelect = document.getElementById('quyen-ky-select');
+const chkLanhDao = document.getElementById('chk-lanh-dao');
+const chkLanhDaoContainer = document.getElementById('lanh-dao-checkbox-container');
 const docTypeSelect = document.getElementById('doc-type-select');
 const dateFrom = document.getElementById('date-from');
 const dateTo = document.getElementById('date-to');
@@ -320,6 +322,16 @@ async function loadFilters() {
                 quyenKySelect.innerHTML = '<option value="">-- Tất cả --</option>' + 
                     agentData.quyenKy.map(q => `<option value="${q.MaQuyenKy}">${q.TenQuyenKy}</option>`).join('');
                 quyenKySelect.value = ""; // Auto select 'Tất cả'
+                
+                const lanhDaoOpt = Array.from(quyenKySelect.options).find(o => o.text.trim().toLowerCase() === "ban lãnh đạo bệnh viện");
+                if (chkLanhDaoContainer) {
+                    if (lanhDaoOpt) {
+                        chkLanhDaoContainer.style.display = 'flex';
+                    } else {
+                        chkLanhDaoContainer.style.display = 'none';
+                        if(chkLanhDao) chkLanhDao.checked = false;
+                    }
+                }
             }
         }
     } catch (err) {
@@ -376,7 +388,35 @@ if(btnRefresh) btnRefresh.addEventListener('click', loadDocumentTypes);
 if(dateFrom) dateFrom.addEventListener('change', loadDocumentTypes);
 if(dateTo) dateTo.addEventListener('change', loadDocumentTypes);
 if(phongBanSelect) phongBanSelect.addEventListener('change', loadDocumentTypes);
-if(quyenKySelect) quyenKySelect.addEventListener('change', loadDocumentTypes);
+if(quyenKySelect) {
+    quyenKySelect.addEventListener('change', () => {
+        if (quyenKySelect.options[quyenKySelect.selectedIndex]?.text.trim().toLowerCase() !== "ban lãnh đạo bệnh viện") {
+            if(chkLanhDao) chkLanhDao.checked = false;
+        } else {
+            if(chkLanhDao) chkLanhDao.checked = true;
+        }
+        loadDocumentTypes();
+    });
+}
+
+if(chkLanhDao) {
+    chkLanhDao.addEventListener('change', () => {
+        if (chkLanhDao.checked) {
+            let found = false;
+            for(let i = 0; i < quyenKySelect.options.length; i++) {
+                if (quyenKySelect.options[i].text.trim().toLowerCase() === "ban lãnh đạo bệnh viện") {
+                    quyenKySelect.selectedIndex = i;
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) quyenKySelect.value = "";
+        } else {
+            quyenKySelect.value = "";
+        }
+        loadDocumentTypes();
+    });
+}
 
 if(docTypeSelect) {
     docTypeSelect.addEventListener('change', (e) => {
@@ -886,7 +926,7 @@ if (pageSizeSelect) {
 }
 
 phongBanSelect.addEventListener('change', loadDocumentTypes);
-quyenKySelect.addEventListener('change', loadDocumentTypes);
+
 dateFrom.addEventListener('change', loadDocumentTypes);
 dateTo.addEventListener('change', loadDocumentTypes);
 
