@@ -53,6 +53,7 @@ const phongBanSelect = document.getElementById('phong-ban-select');
 const quyenKySelect = document.getElementById('quyen-ky-select');
 const chkLanhDao = document.getElementById('chk-lanh-dao');
 const chkLanhDaoContainer = document.getElementById('lanh-dao-checkbox-container');
+const chkAllRoles = document.getElementById('chk-all-roles');
 const docTypeSelect = document.getElementById('doc-type-select');
 const dateFrom = document.getElementById('date-from');
 const dateTo = document.getElementById('date-to');
@@ -354,7 +355,8 @@ async function loadDocumentTypes() {
             fromDate: dateFrom.value, 
             toDate: dateTo.value,
             deptId: phongBanSelect.value ? parseInt(phongBanSelect.value) : 0,
-            roleName: quyenKySelect.value || ''
+            roleName: quyenKySelect.value || '',
+            allRoles: chkAllRoles ? chkAllRoles.checked : false
         });
         const data = res;
         if (data.success && data.data && data.data.data) {
@@ -403,6 +405,10 @@ if(quyenKySelect) {
         }
         loadDocumentTypes();
     });
+}
+
+if(chkAllRoles) {
+    chkAllRoles.addEventListener('change', loadDocumentTypes);
 }
 
 if(chkLanhDao) {
@@ -480,7 +486,8 @@ async function loadPatients() {
                 deptId: phongBanSelect.value ? parseInt(phongBanSelect.value) : 0,
                 fromDate: dateFrom.value,
                 toDate: dateTo.value,
-                signStatus: currentTab
+                signStatus: currentTab,
+                allRoles: chkAllRoles ? chkAllRoles.checked : false
             });
             if (myToken !== currentLoadToken) return; // Bỏ qua nếu có request mới hơn
             
@@ -510,7 +517,8 @@ async function loadPatients() {
                 roleName: dt.RoleName || quyenKySelect.value || '',
                 fromDate: dateFrom.value,
                 toDate: dateTo.value,
-                signStatus: currentTab
+                signStatus: currentTab,
+                allRoles: chkAllRoles ? chkAllRoles.checked : false
             });
             if (myToken !== currentLoadToken) return; // Bỏ qua nếu có request mới hơn
             
