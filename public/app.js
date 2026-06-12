@@ -406,7 +406,6 @@ if(quyenKySelect) {
         loadDocumentTypes();
     });
 }
-
 if(chkAllRoles) {
     chkAllRoles.addEventListener('change', loadDocumentTypes);
 }
