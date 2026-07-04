@@ -2,6 +2,37 @@ const express = require('express');
 const cors = require('cors');
 const http = require('http');
 const WebSocket = require('ws');
+const fs = require('fs');
+const crypto = require('crypto');
+const path = require('path');
+
+// --- Encryption Utilities ---
+const ENCRYPTION_KEY = crypto.scryptSync(process.env.ENCRYPTION_KEY || 'vinhduc_netplus_secret', 'salt', 32);
+const IV_LENGTH = 16;
+const CONFIG_FILE = path.join(__dirname, 'netplus_config.dat');
+
+function encrypt(text) {
+    let iv = crypto.randomBytes(IV_LENGTH);
+    let cipher = crypto.createCipheriv('aes-256-cbc', ENCRYPTION_KEY, iv);
+    let encrypted = cipher.update(text);
+    encrypted = Buffer.concat([encrypted, cipher.final()]);
+    return iv.toString('hex') + ':' + encrypted.toString('hex');
+}
+
+function decrypt(text) {
+    try {
+        let textParts = text.split(':');
+        let iv = Buffer.from(textParts.shift(), 'hex');
+        let encryptedText = Buffer.from(textParts.join(':'), 'hex');
+        let decipher = crypto.createDecipheriv('aes-256-cbc', ENCRYPTION_KEY, iv);
+        let decrypted = decipher.update(encryptedText);
+        decrypted = Buffer.concat([decrypted, decipher.final()]);
+        return decrypted.toString();
+    } catch (e) {
+        return null;
+    }
+}
+// -----------------------------
 
 const app = express();
 app.use(cors());
@@ -234,6 +265,58 @@ app.post('/api/agent/request', (req, res) => {
         uid: payload?.uid || reqId
     });
     ws.send(JSON.stringify(requestPayload));
+});
+
+// API: Get NetPlus Config
+app.get('/api/config', (req, res) => {
+    try {
+        if (fs.existsSync(CONFIG_FILE)) {
+            const encryptedData = fs.readFileSync(CONFIG_FILE, 'utf8');
+            const decryptedData = decrypt(encryptedData);
+            if (decryptedData) {
+                const config = JSON.parse(decryptedData);
+                return res.json({ success: true, data: config });
+            } else {
+                return res.json({ success: false, message: 'Không thể giải mã file cấu hình!' });
+            }
+        }
+        // Return default config if no file exists
+        res.json({ 
+            success: true, 
+            data: {
+                url: 'http://svc.netplus.vn/WSSendSMS.asmx',
+                fallbackUrl: 'http://svc3.netplus.vn/WSSendSMS.asmx',
+                maTruong: 'BV-VinhDuc',
+                companyCode: 'BV-VinhDuc',
+                username: 'bvvinhducqnguitin',
+                password: '',
+                smsType: 1
+            } 
+        });
+    } catch (e) {
+        console.error('Error reading config:', e);
+        res.json({ success: false, message: 'Lỗi đọc cấu hình: ' + e.message });
+    }
+});
+
+// API: Save NetPlus Config
+app.post('/api/config', (req, res) => {
+    try {
+        const configData = req.body;
+        // Validate minimally
+        if (!configData.url || !configData.username || !configData.password) {
+            return res.json({ success: false, message: 'Vui lòng nhập đủ các trường bắt buộc (URL, Username, Password)!' });
+        }
+        
+        const configStr = JSON.stringify(configData);
+        const encryptedStr = encrypt(configStr);
+        
+        fs.writeFileSync(CONFIG_FILE, encryptedStr, 'utf8');
+        res.json({ success: true, message: 'Cấu hình đã được lưu và mã hoá thành công!' });
+    } catch (e) {
+        console.error('Error saving config:', e);
+        res.json({ success: false, message: 'Lỗi lưu cấu hình: ' + e.message });
+    }
 });
 
 // Healthcheck

@@ -295,6 +295,15 @@ function showDashboard() {
     dashboardView.classList.add('active');
     userGreeting.textContent = 'Xin chào, ' + currentUser.name;
     
+    const btnConfig = document.getElementById('btn-config');
+    if (btnConfig) {
+        if (currentUser.isAdmin) {
+            btnConfig.style.display = 'inline-block';
+        } else {
+            btnConfig.style.display = 'none';
+        }
+    }
+    
     // Reset tab to "Chưa ký" (0)
     currentTab = 0;
     tabBtns.forEach(b => {
