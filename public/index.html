@@ -167,7 +167,7 @@
         <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
     </svg>
 </div>
-                <button id="btn-config" class="btn-secondary" style="display: none; margin-right: 10px;" onclick="window.open('config.html', '_blank')">Cấu hình NetPlus</button>
+                <button id="btn-config" class="btn-secondary" style="display: none; margin-right: 10px;" onclick="openConfigModal()">Cấu hình NetPlus</button>
                 <span id="user-greeting">Xin chào, Bác sĩ</span>
                 <button id="btn-logout" class="btn-secondary">Đăng xuất</button>
             </div>
@@ -319,6 +319,56 @@
                 <button id="btn-prompt-cancel" class="btn-cancel">Hủy</button>
                 <button id="btn-prompt-ok" class="btn-primary">Xác nhận</button>
             </div>
+        </div>
+    </div>
+
+    <!-- Config Modal -->
+    <div id="config-modal" class="overlay hidden" style="z-index: 4000;">
+        <div class="glass-panel confirm-box" style="width: 90vw; max-width: 500px; text-align: left; padding: 25px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--glass-border); padding-bottom: 10px; margin-bottom: 15px;">
+                <h3 style="margin: 0; color: var(--text-main); font-size: 1.2rem; font-weight: 600;">Cấu Hình API NetPlus</h3>
+                <button id="btn-close-config" class="btn-cancel" style="padding: 5px 10px; margin-left: auto;">&times;</button>
+            </div>
+            <div id="config-alert" class="alert hidden" style="padding: 10px; border-radius: 6px; margin-bottom: 15px; font-size: 0.9rem;"></div>
+            <form id="configFormModal" style="display: flex; flex-direction: column; gap: 12px;">
+                <div class="input-group" style="margin-bottom: 0;">
+                    <label style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 4px; display: block;">URL WebService Chính</label>
+                    <input type="url" id="cfg-url" class="form-control" required placeholder="http://svc.netplus.vn/WSSendSMS.asmx" style="padding: 8px 12px;">
+                </div>
+                <div class="input-group" style="margin-bottom: 0;">
+                    <label style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 4px; display: block;">URL Dự Phòng</label>
+                    <input type="url" id="cfg-fallbackUrl" class="form-control" placeholder="http://svc3.netplus.vn/WSSendSMS.asmx" style="padding: 8px 12px;">
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <div class="input-group" style="flex: 1; margin-bottom: 0;">
+                        <label style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 4px; display: block;">Mã Trường</label>
+                        <input type="text" id="cfg-maTruong" class="form-control" required placeholder="VD: BV-VinhDuc" style="padding: 8px 12px;">
+                    </div>
+                    <div class="input-group" style="flex: 1; margin-bottom: 0;">
+                        <label style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 4px; display: block;">Company Code</label>
+                        <input type="text" id="cfg-companyCode" class="form-control" required placeholder="VD: BV-VinhDuc" style="padding: 8px 12px;">
+                    </div>
+                </div>
+                <div class="input-group" style="margin-bottom: 0;">
+                    <label style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 4px; display: block;">Tên đăng nhập</label>
+                    <input type="text" id="cfg-username" class="form-control" required placeholder="Account KH do NetPlus cấp" style="padding: 8px 12px;">
+                </div>
+                <div class="input-group" style="margin-bottom: 0;">
+                    <label style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 4px; display: block;">Mật khẩu</label>
+                    <div style="position: relative;">
+                        <input type="password" id="cfg-password" class="form-control" required placeholder="Nhập mật khẩu API" style="padding: 8px 12px; padding-right: 50px;">
+                        <button type="button" onclick="const p = document.getElementById('cfg-password'); p.type = p.type === 'password' ? 'text' : 'password'; this.textContent = p.type === 'password' ? 'Hiện' : 'Ẩn';" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 0.8rem; font-weight: 600;">Hiện</button>
+                    </div>
+                </div>
+                <div class="input-group" style="margin-bottom: 0;">
+                    <label style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 4px; display: block;">SMS Type</label>
+                    <input type="number" id="cfg-smsType" class="form-control" required value="1" placeholder="Mặc định: 1" style="padding: 8px 12px;">
+                </div>
+                <div class="confirm-actions" style="margin-top: 10px; display: flex; justify-content: flex-end; gap: 10px;">
+                    <button type="button" id="btn-config-cancel" class="btn-cancel">Hủy</button>
+                    <button type="submit" id="btn-config-save" class="btn-primary">Lưu Cấu Hình</button>
+                </div>
+            </form>
         </div>
     </div>
 

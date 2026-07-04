@@ -1005,3 +1005,85 @@ const btnRefreshMobile = document.getElementById('btn-refresh');
 if(btnRefreshMobile) btnRefreshMobile.addEventListener('click', () => {
     if (filtersContainer && filtersContainer.classList.contains('show')) { toggleMobileFilter(); }
 });
+
+// Config Modal Logic
+const configModal = document.getElementById('config-modal');
+const configAlert = document.getElementById('config-alert');
+
+async function openConfigModal() {
+    if (configModal) configModal.classList.remove('hidden');
+    configAlert.classList.add('hidden');
+    try {
+        const res = await fetch('/api/config');
+        const data = await res.json();
+        if (data.success && data.data) {
+            document.getElementById('cfg-url').value = data.data.url || '';
+            document.getElementById('cfg-fallbackUrl').value = data.data.fallbackUrl || '';
+            document.getElementById('cfg-maTruong').value = data.data.maTruong || '';
+            document.getElementById('cfg-companyCode').value = data.data.companyCode || '';
+            document.getElementById('cfg-username').value = data.data.username || '';
+            document.getElementById('cfg-password').value = data.data.password || '';
+            document.getElementById('cfg-smsType').value = data.data.smsType || 1;
+        } else {
+            showConfigAlert(data.message || 'Không thể tải cấu hình', 'error');
+        }
+    } catch (err) {
+        console.error(err);
+        showConfigAlert('Lỗi kết nối tới máy chủ', 'error');
+    }
+}
+
+function closeConfigModal() {
+    if (configModal) configModal.classList.add('hidden');
+}
+
+function showConfigAlert(message, type) {
+    configAlert.textContent = message;
+    configAlert.className = `alert ${type}`;
+    configAlert.classList.remove('hidden');
+    setTimeout(() => {
+        configAlert.classList.add('hidden');
+    }, 5000);
+}
+
+document.getElementById('btn-close-config')?.addEventListener('click', closeConfigModal);
+document.getElementById('btn-config-cancel')?.addEventListener('click', closeConfigModal);
+
+document.getElementById('configFormModal')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btnSave = document.getElementById('btn-config-save');
+    btnSave.disabled = true;
+    btnSave.textContent = 'Đang lưu...';
+    
+    const configData = {
+        url: document.getElementById('cfg-url').value,
+        fallbackUrl: document.getElementById('cfg-fallbackUrl').value,
+        maTruong: document.getElementById('cfg-maTruong').value,
+        companyCode: document.getElementById('cfg-companyCode').value,
+        username: document.getElementById('cfg-username').value,
+        password: document.getElementById('cfg-password').value,
+        smsType: parseInt(document.getElementById('cfg-smsType').value) || 1
+    };
+
+    try {
+        const res = await fetch('/api/config', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(configData)
+        });
+        const data = await res.json();
+
+        if (data.success) {
+            alert(data.message); // Custom alert if you want, but simple alert works for success
+            closeConfigModal();
+        } else {
+            showConfigAlert(data.message, 'error');
+        }
+    } catch (err) {
+        console.error(err);
+        showConfigAlert('Lỗi kết nối tới máy chủ', 'error');
+    } finally {
+        btnSave.disabled = false;
+        btnSave.textContent = 'Lưu Cấu Hình';
+    }
+});
