@@ -401,10 +401,7 @@ async function loadDocumentTypes() {
 
 if(btnRefresh) btnRefresh.addEventListener('click', loadDocumentTypes);
 
-// Auto refresh on filter change
-if(dateFrom) dateFrom.addEventListener('change', loadDocumentTypes);
-if(dateTo) dateTo.addEventListener('change', loadDocumentTypes);
-if(phongBanSelect) phongBanSelect.addEventListener('change', loadDocumentTypes);
+// Auto refresh on filter change removed - controlled by btn-search
 if(quyenKySelect) {
     quyenKySelect.addEventListener('change', () => {
         if (quyenKySelect.options[quyenKySelect.selectedIndex]?.text.trim().toLowerCase() !== "ban lãnh đạo bệnh viện") {
@@ -412,11 +409,10 @@ if(quyenKySelect) {
         } else {
             if(chkLanhDao) chkLanhDao.checked = true;
         }
-        loadDocumentTypes();
     });
 }
 if(chkAllRoles) {
-    chkAllRoles.addEventListener('change', loadDocumentTypes);
+    // chkAllRoles.addEventListener('change', loadDocumentTypes);
 }
 
 if(chkLanhDao) {
@@ -434,14 +430,12 @@ if(chkLanhDao) {
         } else {
             quyenKySelect.value = "";
         }
-        loadDocumentTypes();
     });
 }
 
 if(docTypeSelect) {
     docTypeSelect.addEventListener('change', (e) => {
         currentDocTypeIndex = e.target.value;
-        loadPatients();
     });
 }
 
@@ -947,11 +941,7 @@ if (pageSizeSelect) {
     });
 }
 
-phongBanSelect.addEventListener('change', loadDocumentTypes);
-
-dateFrom.addEventListener('change', loadDocumentTypes);
-dateTo.addEventListener('change', loadDocumentTypes);
-
+// Duplicates removed
 let initialTouchDistance = 0;
 let initialTouchZoom = 100;
 const pdfContainer = document.getElementById('pdf-viewer-container');
@@ -976,11 +966,18 @@ pdfContainer?.addEventListener('touchmove', (e) => {
 
 const gridSearch = document.getElementById('grid-search');
 const btnClearSearch = document.getElementById('btn-clear-search');
+const btnSearch = document.getElementById('btn-search');
+
 if(gridSearch) {
     gridSearch.addEventListener('input', () => {
         if(btnClearSearch) btnClearSearch.style.display = gridSearch.value ? 'block' : 'none';
-        currentPage = 1;
-        renderTable();
+    });
+    gridSearch.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            currentPage = 1;
+            loadDocumentTypes();
+        }
     });
 }
 if(btnClearSearch) {
@@ -988,7 +985,13 @@ if(btnClearSearch) {
         if(gridSearch) gridSearch.value = '';
         btnClearSearch.style.display = 'none';
         currentPage = 1;
-        renderTable();
+        loadDocumentTypes();
+    });
+}
+if(btnSearch) {
+    btnSearch.addEventListener('click', () => {
+        currentPage = 1;
+        loadDocumentTypes();
     });
 }
 
