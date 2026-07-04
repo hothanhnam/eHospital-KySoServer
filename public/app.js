@@ -296,12 +296,13 @@ function showDashboard() {
     userGreeting.textContent = 'Xin chào, ' + currentUser.name;
     
     const btnConfig = document.getElementById('btn-config');
-    if (btnConfig) {
-        if (currentUser.isAdmin) {
-            btnConfig.style.display = 'inline-block';
-        } else {
-            btnConfig.style.display = 'none';
-        }
+    const btnConfigLogin = document.getElementById('btn-config-login');
+    if (currentUser.isAdmin) {
+        if(btnConfig) btnConfig.style.display = 'inline-block';
+        if(btnConfigLogin) btnConfigLogin.style.display = 'inline-block';
+    } else {
+        if(btnConfig) btnConfig.style.display = 'none';
+        if(btnConfigLogin) btnConfigLogin.style.display = 'none';
     }
     
     // Reset tab to "Chưa ký" (0)
@@ -1088,5 +1089,66 @@ document.getElementById('configFormModal')?.addEventListener('submit', async (e)
     } finally {
         btnSave.disabled = false;
         btnSave.textContent = 'Lưu Cấu Hình';
+    }
+});
+
+// Config Login Modal Logic
+const configLoginModal = document.getElementById('config-login-modal');
+
+async function openConfigLoginModal() {
+    if (configLoginModal) {
+        configLoginModal.classList.remove('hidden');
+        try {
+            const res = await fetch('/api/config-login');
+            const data = await res.json();
+            if (data.success && data.data) {
+                document.getElementById('cfg-enableOtp').checked = !!data.data.enableOtp;
+            }
+        } catch (err) {
+            console.error(err);
+        }
+    }
+}
+
+function closeConfigLoginModal() {
+    if (configLoginModal) {
+        configLoginModal.classList.add('hidden');
+    }
+}
+
+document.getElementById('config-login-form')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btnSave = e.target.querySelector('button[type="submit"]');
+    if(btnSave) {
+        btnSave.disabled = true;
+        btnSave.textContent = 'Đang lưu...';
+    }
+    
+    const configData = {
+        enableOtp: document.getElementById('cfg-enableOtp').checked
+    };
+
+    try {
+        const res = await fetch('/api/config-login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(configData)
+        });
+        const data = await res.json();
+
+        if (data.success) {
+            showToast(data.message, 'success');
+            closeConfigLoginModal();
+        } else {
+            showToast(data.message, 'error');
+        }
+    } catch (err) {
+        console.error(err);
+        showToast('Lỗi kết nối tới máy chủ', 'error');
+    } finally {
+        if(btnSave) {
+            btnSave.disabled = false;
+            btnSave.textContent = 'Lưu Cấu Hình';
+        }
     }
 });

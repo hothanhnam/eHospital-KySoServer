@@ -168,6 +168,7 @@
     </svg>
 </div>
                 <button id="btn-config" class="btn-secondary" style="display: none; margin-right: 10px;" onclick="openConfigModal()">Cấu hình NetPlus</button>
+                <button id="btn-config-login" class="btn-secondary" style="display: none; margin-right: 10px;" onclick="openConfigLoginModal()">Cấu hình Đăng nhập</button>
                 <span id="user-greeting">Xin chào, Bác sĩ</span>
                 <button id="btn-logout" class="btn-secondary">Đăng xuất</button>
             </div>
@@ -378,6 +379,26 @@
         </div>
     </div>
 
+    <!-- Config Login Modal -->
+    <div id="config-login-modal" class="overlay hidden" style="z-index: 4000;">
+        <div class="glass-panel confirm-box" style="width: 90vw; max-width: 400px; text-align: left; padding: 25px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="margin: 0; color: var(--text-main); font-size: 1.25rem;">Cấu hình Đăng nhập</h3>
+                <button type="button" onclick="closeConfigLoginModal()" style="background: none; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer; line-height: 1;">&times;</button>
+            </div>
+            <form id="config-login-form">
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
+                    <input type="checkbox" id="cfg-enableOtp" style="width: 20px; height: 20px;">
+                    <label for="cfg-enableOtp" style="font-size: 1rem; color: var(--text-main); cursor: pointer;">Bật đăng nhập bằng OTP qua SMS</label>
+                </div>
+                <div class="confirm-actions" style="margin-top: 10px; display: flex; justify-content: flex-end; gap: 10px;">
+                    <button type="button" onclick="closeConfigLoginModal()" class="btn-cancel" style="flex: 1; padding: 12px 24px; font-size: 1rem; border-radius: 8px; font-weight: 600;">Hủy</button>
+                    <button type="submit" class="btn-primary" style="flex: 1; padding: 12px 24px; font-size: 1rem; border-radius: 8px; font-weight: 600;">Lưu Cấu Hình</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Màn hình chờ (Modal) -->
     <div id="loading-overlay" class="overlay hidden">
         <div class="glass-panel loading-box">
@@ -416,6 +437,6 @@
 
     <script src="pdf-lib.min.js"></script>
     <script src="pdf.min.js"></script>
-    <script src="app.js?v=1.0.46"></script>
+    <script src="app.js?v=1.0.47"></script>
 </body>
 </html>

@@ -320,6 +320,34 @@ app.post('/api/config', (req, res) => {
     }
 });
 
+// API: Get Login Config
+const LOGIN_CONFIG_FILE = path.join(__dirname, 'login_config.json');
+app.get('/api/config-login', (req, res) => {
+    try {
+        if (fs.existsSync(LOGIN_CONFIG_FILE)) {
+            const configData = fs.readFileSync(LOGIN_CONFIG_FILE, 'utf8');
+            const config = JSON.parse(configData);
+            return res.json({ success: true, data: config });
+        }
+        res.json({ success: true, data: { enableOtp: false } });
+    } catch (e) {
+        console.error('Error reading login config:', e);
+        res.json({ success: false, message: 'Lỗi đọc cấu hình đăng nhập: ' + e.message });
+    }
+});
+
+// API: Save Login Config
+app.post('/api/config-login', (req, res) => {
+    try {
+        const configData = req.body;
+        fs.writeFileSync(LOGIN_CONFIG_FILE, JSON.stringify(configData), 'utf8');
+        res.json({ success: true, message: 'Cấu hình đăng nhập đã được lưu thành công!' });
+    } catch (e) {
+        console.error('Error saving login config:', e);
+        res.json({ success: false, message: 'Lỗi lưu cấu hình đăng nhập: ' + e.message });
+    }
+});
+
 // Healthcheck
 app.get('/health', (req, res) => {
     res.json({ status: 'OK', activeAgents: connectedAgents.size });
