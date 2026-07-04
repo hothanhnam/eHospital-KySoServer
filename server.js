@@ -102,6 +102,7 @@ wss.on('connection', (ws, req) => {
                                     username: data.data?.userCode, 
                                     name: data.data?.userName, 
                                     role: 'doctor',
+                                    isAdmin: data.data?.isAdmin,
                                     activeAgentId: pending.agentId
                                 },
                                 token: 'mock-jwt-token-12345'
