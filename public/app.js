@@ -235,7 +235,7 @@ function showConfirm(message, onConfirm, title = 'Xác nhận thao tác', okText
     });
 }
 
-function showPrompt(title, message, onConfirm, inputType = 'password') {
+function showPrompt(title, message, onConfirm, inputType = 'password', placeholder = '******') {
     const modal = document.getElementById('prompt-modal');
     modal.style.zIndex = '9999';
     document.getElementById('prompt-title').textContent = title;
@@ -243,6 +243,12 @@ function showPrompt(title, message, onConfirm, inputType = 'password') {
     
     const inputEl = document.getElementById('prompt-input');
     inputEl.type = inputType;
+    inputEl.placeholder = placeholder;
+    if (inputType === 'text') {
+        inputEl.style.letterSpacing = 'normal';
+    } else {
+        inputEl.style.letterSpacing = '5px';
+    }
     inputEl.value = '';
     const errorEl = document.getElementById('prompt-error');
     errorEl.textContent = '';
@@ -1130,7 +1136,7 @@ document.getElementById('btn-test-sms')?.addEventListener('click', () => {
             btnTest.disabled = false;
             btnTest.textContent = oldText;
         }
-    }, 'text');
+    }, 'text', 'Nhập SĐT tại đây...');
 });
 
 // Config Login Modal Logic
