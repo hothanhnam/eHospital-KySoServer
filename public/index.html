@@ -143,6 +143,21 @@
                 <button type="button" id="btn-login" class="btn-primary">
                     <span>Đăng Nhập</span>
                 </button>
+        </div>
+            
+            <div id="otp-form" style="display: none;">
+                <p class="subtitle" style="font-size: 14px; margin-bottom: 20px; line-height: 1.5;" id="otp-message">Mã xác thực đã được gửi đến số điện thoại <br/><strong id="otp-phone" style="color: var(--primary-color);">*******86</strong></p>
+                <div class="input-group">
+                    <label style="text-align: center; width: 100%;">Mã OTP</label>
+                    <input autocomplete="off" type="text" id="otp-code" class="form-control" placeholder="Nhập 6 số OTP" required maxlength="6" style="text-align: center; letter-spacing: 8px; font-size: 20px; font-weight: bold;">
+                </div>
+                <div id="otp-error" class="error-msg"></div>
+                <button type="button" id="btn-verify-otp" class="btn-primary" style="margin-bottom: 10px;">
+                    <span>Xác nhận</span>
+                </button>
+                <button type="button" id="btn-cancel-otp" class="btn-secondary" style="background: transparent; color: var(--text-color); border: 1px solid var(--glass-border);">
+                    <span>Hủy / Đăng nhập lại</span>
+                </button>
             </div>
         </div>
     </div>

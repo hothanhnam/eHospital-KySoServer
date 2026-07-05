@@ -34,6 +34,139 @@ function decrypt(text) {
     }
 }
 
+const TRUSTED_DEVICES_FILE = path.join(__dirname, 'trusted_devices.dat');
+const otpStore = new Map();
+const otpRateLimit = new Map();
+
+function getTrustedDevices() {
+    try {
+        if (fs.existsSync(TRUSTED_DEVICES_FILE)) {
+            const encryptedData = fs.readFileSync(TRUSTED_DEVICES_FILE, 'utf8');
+            const decryptedData = decrypt(encryptedData);
+            if (decryptedData) return JSON.parse(decryptedData);
+        }
+    } catch (e) {
+        console.error('Error reading trusted devices:', e);
+    }
+    return {};
+}
+
+function saveTrustedDevices(devices) {
+    try {
+        const encryptedData = encrypt(JSON.stringify(devices));
+        fs.writeFileSync(TRUSTED_DEVICES_FILE, encryptedData, 'utf8');
+    } catch (e) {
+        console.error('Error saving trusted devices:', e);
+    }
+}
+
+function isDeviceTrusted(username, deviceToken) {
+    if (!deviceToken) return false;
+    const devices = getTrustedDevices();
+    const userDevices = devices[username] || [];
+    const hash = crypto.createHash('sha256').update(deviceToken).digest('hex');
+    return userDevices.includes(hash);
+}
+
+function addTrustedDevice(username) {
+    const devices = getTrustedDevices();
+    if (!devices[username]) devices[username] = [];
+    const newToken = crypto.randomBytes(32).toString('hex');
+    const hash = crypto.createHash('sha256').update(newToken).digest('hex');
+    devices[username].push(hash);
+    saveTrustedDevices(devices);
+    return newToken;
+}
+
+// Function to send SMS via NetPlus
+async function sendNetPlusSMS(phone, messageContent) {
+    if (!fs.existsSync(CONFIG_FILE)) throw new Error('Chưa cấu hình NetPlus SMS.');
+    const configData = JSON.parse(decrypt(fs.readFileSync(CONFIG_FILE, 'utf8')));
+    const { url, maTruong, username, password } = configData;
+    if (!url || !maTruong || !username || !password) throw new Error('Cấu hình NetPlus SMS chưa đầy đủ.');
+
+    const validPhone = formatAndValidateVNPhone(phone);
+    if (!validPhone) throw new Error('Số điện thoại không hợp lệ.');
+
+    const httpModule = url.startsWith('https') ? require('https') : require('http');
+    const parsedUrl = new URL(url);
+
+    const makeRequest = (options, postData) => new Promise((resolve, reject) => {
+        const req = httpModule.request(options, (res) => {
+            let data = '';
+            res.on('data', (chunk) => data += chunk);
+            res.on('end', () => resolve(data));
+        });
+        req.on('error', reject);
+        req.write(postData);
+        req.end();
+    });
+
+    const loginXml = `<?xml version="1.0" encoding="utf-8"?>
+<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap:Body>
+    <Login xmlns="http://tempuri.org/">
+      <maTruong>${maTruong}</maTruong>
+      <userName>${username}</userName>
+      <password>${password}</password>
+    </Login>
+  </soap:Body>
+</soap:Envelope>`;
+
+    const loginOptions = {
+        hostname: parsedUrl.hostname,
+        port: parsedUrl.port || (parsedUrl.protocol === 'https:' ? 443 : 80),
+        path: parsedUrl.pathname,
+        method: 'POST',
+        headers: {
+            'Content-Type': 'text/xml; charset=utf-8',
+            'SOAPAction': '"http://tempuri.org/Login"',
+            'Content-Length': Buffer.byteLength(loginXml)
+        }
+    };
+
+    const loginRes = await makeRequest(loginOptions, loginXml);
+    const loginMatch = loginRes.match(/<LoginResult>(\d+)<\/LoginResult>/);
+    if (!loginMatch || parseInt(loginMatch[1]) <= 0) {
+        throw new Error('Đăng nhập API NetPlus thất bại!');
+    }
+    
+    const smsXml = `<?xml version="1.0" encoding="utf-8"?>
+<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap:Body>
+    <SendSMS xmlns="http://tempuri.org/">
+      <aSMS_Input>
+        <SmsType>1</SmsType>
+        <IdCustomerSent>${loginMatch[1]}</IdCustomerSent>
+        <CompanyCode>${maTruong}</CompanyCode>
+        <Mobile>${validPhone}</Mobile>
+        <SMSContent>${removeVietnameseTones(messageContent)}</SMSContent>
+      </aSMS_Input>
+      <userName>${username}</userName>
+      <password>${password}</password>
+    </SendSMS>
+  </soap:Body>
+</soap:Envelope>`;
+
+    const smsOptions = {
+        hostname: parsedUrl.hostname,
+        port: parsedUrl.port || (parsedUrl.protocol === 'https:' ? 443 : 80),
+        path: parsedUrl.pathname,
+        method: 'POST',
+        headers: {
+            'Content-Type': 'text/xml; charset=utf-8',
+            'SOAPAction': '"http://tempuri.org/SendSMS"',
+            'Content-Length': Buffer.byteLength(smsXml)
+        }
+    };
+
+    const sendRes = await makeRequest(smsOptions, smsXml);
+    if (!sendRes.includes('<SendSMSResult>true</SendSMSResult>')) {
+        throw new Error('NetPlus trả về False khi gửi tin nhắn.');
+    }
+    return true;
+}
+
 // Check if request is from internal network
 function isInternalRequest(req) {
     // Get IP from proxy or direct connection
@@ -164,19 +297,107 @@ wss.on('connection', (ws, req) => {
                     
                     if (data.type === 'legacy-login-ack') {
                         if (data.ok) {
-                            pending.res.json({
-                                success: true,
-                                user: { 
-                                    id: data.data?.loginUserId, 
-                                    uid: data.uid,
-                                    username: data.data?.userCode, 
-                                    name: data.data?.userName, 
-                                    role: 'doctor',
-                                    isAdmin: data.data?.isAdmin,
-                                    activeAgentId: pending.agentId
-                                },
-                                token: 'mock-jwt-token-12345'
-                            });
+                            (async () => {
+                                const reqBody = pending.reqBody || {};
+                                const username = data.data?.userCode;
+                                
+                                const loginResponse = {
+                                    success: true,
+                                    user: { 
+                                        id: data.data?.loginUserId, 
+                                        uid: data.uid,
+                                        username: username, 
+                                        name: data.data?.userName, 
+                                        role: 'doctor',
+                                        isAdmin: data.data?.isAdmin,
+                                        activeAgentId: pending.agentId,
+                                        soDienThoai: data.data?.soDienThoai
+                                    },
+                                    token: 'mock-jwt-token-12345'
+                                };
+
+                                // Check OTP config
+                                let isOtpEnabled = false;
+                                try {
+                                    if (fs.existsSync(LOGIN_CONFIG_FILE)) {
+                                        const configData = fs.readFileSync(LOGIN_CONFIG_FILE, 'utf8');
+                                        const config = JSON.parse(configData);
+                                        isOtpEnabled = !!config.enableOtp;
+                                    }
+                                } catch (e) {}
+
+                                if (!isOtpEnabled || pending.isInternal) {
+                                    return pending.res.json(loginResponse);
+                                }
+
+                                if (isDeviceTrusted(username, reqBody.deviceToken)) {
+                                    return pending.res.json(loginResponse);
+                                }
+
+                                const soDienThoai = data.data?.soDienThoai;
+                                if (!soDienThoai || soDienThoai.trim() === '') {
+                                    return pending.res.json({
+                                        success: false,
+                                        message: 'Tài khoản chưa được cập nhật số điện thoại hoặc số điện thoại đang bị sai. Vui lòng liên hệ bộ phận IT để được hỗ trợ.'
+                                    });
+                                }
+
+                                // Rate Limit Check
+                                const now = Date.now();
+                                const rateLimit = otpRateLimit.get(username) || { count: 0, firstSent: now, lastSent: 0 };
+                                
+                                // Reset if 10 minutes passed
+                                if (now - rateLimit.firstSent > 10 * 60 * 1000) {
+                                    rateLimit.count = 0;
+                                    rateLimit.firstSent = now;
+                                }
+
+                                if (rateLimit.count >= 5) {
+                                    return pending.res.json({
+                                        success: false,
+                                        message: 'Bạn đã yêu cầu gửi mã OTP quá nhiều lần. Vui lòng thử lại sau 10 phút.'
+                                    });
+                                }
+
+                                if (rateLimit.lastSent && now - rateLimit.lastSent < 60 * 1000) {
+                                    return pending.res.json({
+                                        success: false,
+                                        message: 'Vui lòng đợi 60 giây trước khi yêu cầu gửi lại mã OTP.'
+                                    });
+                                }
+
+                                rateLimit.count += 1;
+                                rateLimit.lastSent = now;
+                                otpRateLimit.set(username, rateLimit);
+
+                                // Generate OTP
+                                const otp = Math.floor(100000 + Math.random() * 900000).toString();
+                                const tempToken = crypto.randomBytes(16).toString('hex');
+                                
+                                otpStore.set(tempToken, {
+                                    otp: otp,
+                                    username: username,
+                                    expires: Date.now() + 5 * 60 * 1000, // 5 minutes
+                                    loginResponse: loginResponse
+                                });
+
+                                try {
+                                    const msg = `Ma xac thuc eHospital cua ban la: ${otp}. Ma co hieu luc trong 5 phut.`;
+                                    await sendNetPlusSMS(soDienThoai, msg);
+                                    
+                                    // Mask phone: keep last 3 digits
+                                    const maskedPhone = '*******' + soDienThoai.slice(-3);
+                                    return pending.res.json({
+                                        success: true,
+                                        requireOtp: true,
+                                        tempToken: tempToken,
+                                        phoneMasked: maskedPhone
+                                    });
+                                } catch (err) {
+                                    console.error('Lỗi gửi SMS OTP:', err);
+                                    return pending.res.json({ success: false, message: 'Lỗi gửi tin nhắn OTP: ' + err.message });
+                                }
+                            })();
                         } else {
                             pending.res.json({ success: false, message: data.message || 'Lỗi đăng nhập từ Agent!' });
                         }
@@ -300,7 +521,13 @@ app.post('/api/login', async (req, res) => {
         }
     }, 15000); // 15 seconds timeout
 
-    pendingRequests.set(reqId, { res, timeout, agentId: selectedAgent });
+    pendingRequests.set(reqId, { 
+        res, 
+        timeout, 
+        agentId: selectedAgent, 
+        reqBody: req.body,
+        isInternal: isInternal
+    });
 
     // Gửi lệnh xuống Agent C#
     const loginPayload = {
@@ -315,6 +542,39 @@ app.post('/api/login', async (req, res) => {
     req.selectedAgent = selectedAgent;
 
     ws.send(JSON.stringify(loginPayload));
+});
+
+// API: Verify OTP
+app.post('/api/verify-otp', (req, res) => {
+    const { tempToken, otp } = req.body;
+    
+    if (!tempToken || !otp) {
+        return res.json({ success: false, message: 'Thiếu thông tin xác thực.' });
+    }
+
+    const otpData = otpStore.get(tempToken);
+    if (!otpData) {
+        return res.json({ success: false, message: 'Mã xác thực không hợp lệ hoặc đã hết hạn.' });
+    }
+
+    if (Date.now() > otpData.expires) {
+        otpStore.delete(tempToken);
+        return res.json({ success: false, message: 'Mã xác thực đã hết hạn.' });
+    }
+
+    if (otpData.otp !== otp) {
+        return res.json({ success: false, message: 'Mã xác thực không chính xác.' });
+    }
+
+    // OTP matched
+    otpStore.delete(tempToken);
+    const deviceToken = addTrustedDevice(otpData.username);
+    
+    res.json({
+        success: true,
+        deviceToken: deviceToken,
+        ...otpData.loginResponse
+    });
 });
 
 // API: Logout Endpoint (Forwards to Agent)

@@ -179,23 +179,31 @@ async function handleLogin() {
     usernameInput.value = '';
     passwordInput.value = '';
     
+    const deviceToken = localStorage.getItem('kyso_device_token') || '';
+
     if(loginError) loginError.textContent = '';
     
     try {
         const res = await fetch('/api/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username, password, captchaToken })
+            body: JSON.stringify({ username, password, captchaToken, deviceToken })
         });
         const data = await res.json();
+        
+        if (data.requireOtp) {
+            // Hiển thị form OTP
+            document.getElementById('login-form').style.display = 'none';
+            document.getElementById('otp-form').style.display = 'block';
+            document.getElementById('otp-phone').textContent = data.phoneMasked || '*******86';
+            window.tempOtpToken = data.tempToken;
+            window.otpUsername = username;
+            return;
+        }
+
         if (data.success) {
-            currentUser = { ...data.user };
-            if(data.data?.selectedAgent) currentUser.activeAgentId = data.data.selectedAgent;
-            else if(data.selectedAgent) currentUser.activeAgentId = data.selectedAgent;
-            else if(data.user.activeAgentId) currentUser.activeAgentId = data.user.activeAgentId;
-            
-            localStorage.setItem('kyso_user', JSON.stringify(currentUser));
-            showDashboard();
+            processLoginSuccess(data);
+        } else {
             if(loginError) loginError.textContent = data.message || 'Đăng nhập thất bại!';
             // Reset turnstile widget if login fails
             if (window.turnstileRequired && window.turnstileWidgetId !== null && window.turnstile) {
@@ -206,6 +214,81 @@ async function handleLogin() {
         if(loginError) loginError.textContent = 'Lỗi kết nối đến máy chủ!';
     }
 }
+
+function processLoginSuccess(data) {
+    if (data.deviceToken) {
+        localStorage.setItem('kyso_device_token', data.deviceToken);
+    }
+    currentUser = { ...data.user };
+    if(data.data?.selectedAgent) currentUser.activeAgentId = data.data.selectedAgent;
+    else if(data.selectedAgent) currentUser.activeAgentId = data.selectedAgent;
+    else if(data.user.activeAgentId) currentUser.activeAgentId = data.user.activeAgentId;
+    
+    localStorage.setItem('kyso_user', JSON.stringify(currentUser));
+    
+    // Đảm bảo Reset Form
+    document.getElementById('login-form').style.display = 'block';
+    const otpForm = document.getElementById('otp-form');
+    if (otpForm) otpForm.style.display = 'none';
+    const otpCodeInput = document.getElementById('otp-code');
+    if (otpCodeInput) otpCodeInput.value = '';
+
+    showDashboard();
+}
+
+async function handleVerifyOtp() {
+    const otpCode = document.getElementById('otp-code').value;
+    const otpError = document.getElementById('otp-error');
+    if (!otpCode || otpCode.length < 6) {
+        otpError.textContent = 'Vui lòng nhập đủ 6 số OTP.';
+        return;
+    }
+
+    otpError.textContent = '';
+    const btnVerify = document.getElementById('btn-verify-otp');
+    btnVerify.disabled = true;
+
+    try {
+        const res = await fetch('/api/verify-otp', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ tempToken: window.tempOtpToken, otp: otpCode })
+        });
+        const data = await res.json();
+        
+        if (data.success) {
+            processLoginSuccess(data);
+        } else {
+            otpError.textContent = data.message || 'Mã OTP không chính xác!';
+            btnVerify.disabled = false;
+        }
+    } catch (e) {
+        otpError.textContent = 'Lỗi kết nối máy chủ!';
+        btnVerify.disabled = false;
+    }
+}
+
+function handleCancelOtp() {
+    document.getElementById('otp-form').style.display = 'none';
+    document.getElementById('login-form').style.display = 'block';
+    document.getElementById('otp-code').value = '';
+    document.getElementById('otp-error').textContent = '';
+    window.tempOtpToken = null;
+    
+    // Reset turnstile
+    if (window.turnstileRequired && window.turnstileWidgetId !== null && window.turnstile) {
+        turnstile.reset(window.turnstileWidgetId);
+    }
+}
+
+const btnVerifyOtp = document.getElementById('btn-verify-otp');
+if (btnVerifyOtp) btnVerifyOtp.addEventListener('click', handleVerifyOtp);
+
+const btnCancelOtp = document.getElementById('btn-cancel-otp');
+if (btnCancelOtp) btnCancelOtp.addEventListener('click', handleCancelOtp);
+
+const otpCodeInput = document.getElementById('otp-code');
+if (otpCodeInput) otpCodeInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') handleVerifyOtp(); });
 
 const btnLogin = document.getElementById('btn-login');
 if(btnLogin) btnLogin.addEventListener('click', handleLogin);
