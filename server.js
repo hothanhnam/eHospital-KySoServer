@@ -57,23 +57,50 @@ function isInternalRequest(req) {
 // Cloudflare Turnstile Verification
 async function verifyTurnstile(token, secretKey) {
     if (!token) return false;
-    try {
-        const fetch = require('node-fetch'); // We might need to use dynamic import or built-in fetch if Node >= 18
-        // Actually, we can use built-in fetch if Node >= 18. Let's use the native fetch.
-        const formData = new URLSearchParams();
-        formData.append('secret', secretKey);
-        formData.append('response', token);
-        
-        const response = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
-            method: 'POST',
-            body: formData
-        });
-        const data = await response.json();
-        return data.success;
-    } catch (error) {
-        console.error('Turnstile verification error:', error);
-        return false;
-    }
+    return new Promise((resolve) => {
+        try {
+            const https = require('https');
+            const data = new URLSearchParams({
+                secret: secretKey,
+                response: token
+            }).toString();
+
+            const options = {
+                hostname: 'challenges.cloudflare.com',
+                port: 443,
+                path: '/turnstile/v0/siteverify',
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'Content-Length': Buffer.byteLength(data)
+                }
+            };
+
+            const req = https.request(options, (res) => {
+                let responseBody = '';
+                res.on('data', (chunk) => { responseBody += chunk; });
+                res.on('end', () => {
+                    try {
+                        const json = JSON.parse(responseBody);
+                        resolve(json.success === true);
+                    } catch (e) {
+                        resolve(false);
+                    }
+                });
+            });
+
+            req.on('error', (error) => {
+                console.error('Turnstile verification error:', error);
+                resolve(false);
+            });
+
+            req.write(data);
+            req.end();
+        } catch (error) {
+            console.error('Turnstile exception:', error);
+            resolve(false);
+        }
+    });
 }
 // -----------------------------
 
