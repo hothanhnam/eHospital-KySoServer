@@ -590,6 +590,20 @@ tr:hover td {
         padding: 15px;
         gap: 15px;
     }
+    .nav-user {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 8px;
+        width: 100%;
+    }
+    .nav-user button {
+        font-size: 0.8rem;
+        padding: 6px 10px;
+        margin: 0 !important;
+        flex: 1 1 auto;
+        white-space: nowrap;
+        text-align: center;
+    }
     
     /* Filters */
     .filter-row {
