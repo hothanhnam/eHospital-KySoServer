@@ -1093,9 +1093,9 @@ document.getElementById('configFormModal')?.addEventListener('submit', async (e)
 });
 
 document.getElementById('btn-test-sms')?.addEventListener('click', () => {
-    showPrompt('Kiểm tra SMS', 'Nhập số điện thoại (VD: 849xxxx...):', async (phone, setError) => {
-        if (!phone || !phone.startsWith('84')) {
-            return setError('Số điện thoại phải bắt đầu bằng 84');
+    showPrompt('Kiểm tra SMS', 'Nhập số điện thoại (VD: 098... hoặc 8498...):', async (phone, setError) => {
+        if (!phone) {
+            return setError('Vui lòng nhập số điện thoại');
         }
         
         const btnTest = document.getElementById('btn-test-sms');

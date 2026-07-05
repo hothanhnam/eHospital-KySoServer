@@ -348,12 +348,47 @@ app.post('/api/config-login', (req, res) => {
     }
 });
 
+function formatAndValidateVNPhone(phone) {
+    if (!phone) return null;
+    let p = phone.replace(/[\s\-\+]/g, '');
+    if (p.startsWith('0')) p = '84' + p.substring(1);
+    const regex = /^84(3[2-9]|5[2689]|7[06-9]|8[1-9]|9[0-9])[0-9]{7}$/;
+    if (regex.test(p)) return p;
+    return null;
+}
+
+function removeVietnameseTones(str) {
+    if (!str) return '';
+    str = str.replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/g, "a");
+    str = str.replace(/è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ/g, "e");
+    str = str.replace(/ì|í|ị|ỉ|ĩ/g, "i");
+    str = str.replace(/ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ/g, "o");
+    str = str.replace(/ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ/g, "u");
+    str = str.replace(/ỳ|ý|ỵ|ỷ|ỹ/g, "y");
+    str = str.replace(/đ/g, "d");
+    str = str.replace(/À|Á|Ạ|Ả|Ã|Â|Ầ|Ấ|Ậ|Ẩ|Ẫ|Ă|Ằ|Ắ|Ặ|Ẳ|Ẵ/g, "A");
+    str = str.replace(/È|É|Ẹ|Ẻ|Ẽ|Ê|Ề|Ế|Ệ|Ể|Ễ/g, "E");
+    str = str.replace(/Ì|Í|Ị|Ỉ|Ĩ/g, "I");
+    str = str.replace(/Ò|Ó|Ọ|Ỏ|Õ|Ô|Ồ|Ố|Ộ|Ổ|Ỗ|Ơ|Ờ|Ớ|Ợ|Ở|Ỡ/g, "O");
+    str = str.replace(/Ù|Ú|Ụ|Ủ|Ũ|Ư|Ừ|Ứ|Ự|Ử|Ữ/g, "U");
+    str = str.replace(/Ỳ|Ý|Ỵ|Ỷ|Ỹ/g, "Y");
+    str = str.replace(/Đ/g, "D");
+    str = str.replace(/\u0300|\u0301|\u0303|\u0309|\u0323/g, ""); 
+    str = str.replace(/\u02C6|\u0306|\u031B/g, ""); 
+    return str;
+}
+
 // API: Test SMS
 app.post('/api/test-sms', async (req, res) => {
     try {
         const { url, maTruong, companyCode, username, password, smsType, phone } = req.body;
         if (!url || !maTruong || !username || !password || !phone) {
             return res.json({ success: false, message: 'Thiếu thông tin cấu hình hoặc số điện thoại!' });
+        }
+
+        const validPhone = formatAndValidateVNPhone(phone);
+        if (!validPhone) {
+            return res.json({ success: false, message: 'Số điện thoại không hợp lệ. Vui lòng nhập đúng số di động tại Việt Nam.' });
         }
 
         const httpModule = url.startsWith('https') ? require('https') : require('http');
@@ -404,6 +439,7 @@ app.post('/api/test-sms', async (req, res) => {
         const loginId = loginMatch[1];
 
         // 2. Call SendSMS
+        const msgContent = removeVietnameseTones("Tin nhắn kiểm tra từ hệ thống Ký Số eHospital.");
         const smsXml = `<?xml version="1.0" encoding="utf-8"?>
 <soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
   <soap:Body>
@@ -412,8 +448,8 @@ app.post('/api/test-sms', async (req, res) => {
         <smsTypeField>${smsType}</smsTypeField>
         <idCustomerSentField>${loginId}</idCustomerSentField>
         <companyCodeField>${companyCode}</companyCodeField>
-        <mobileField>${phone}</mobileField>
-        <sMSContentField>Tin nhan test tu he thong Ky So eHospital.</sMSContentField>
+        <mobileField>${validPhone}</mobileField>
+        <sMSContentField>${msgContent}</sMSContentField>
       </aSMS_Input>
       <userName>${username}</userName>
       <password>${password}</password>
