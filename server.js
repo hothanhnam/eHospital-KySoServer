@@ -285,11 +285,11 @@ app.get('/api/config', (req, res) => {
         res.json({ 
             success: true, 
             data: {
-                url: 'http://svc.netplus.vn/WSSendSMS.asmx',
-                fallbackUrl: 'http://svc3.netplus.vn/WSSendSMS.asmx',
-                maTruong: 'BV-VinhDuc',
-                companyCode: 'BV-VinhDuc',
-                username: 'bvvinhducqnguitin',
+                url: '',
+                fallbackUrl: '',
+                maTruong: '',
+                companyCode: '',
+                username: '',
                 password: '',
                 smsType: 1
             } 
