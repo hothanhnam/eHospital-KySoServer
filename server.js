@@ -348,6 +348,103 @@ app.post('/api/config-login', (req, res) => {
     }
 });
 
+// API: Test SMS
+app.post('/api/test-sms', async (req, res) => {
+    try {
+        const { url, maTruong, companyCode, username, password, smsType, phone } = req.body;
+        if (!url || !maTruong || !username || !password || !phone) {
+            return res.json({ success: false, message: 'Thiếu thông tin cấu hình hoặc số điện thoại!' });
+        }
+
+        const httpModule = url.startsWith('https') ? require('https') : require('http');
+        
+        // 1. Call Login
+        const loginXml = `<?xml version="1.0" encoding="utf-8"?>
+<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap:Body>
+    <Login xmlns="http://tempuri.org/">
+      <maTruong>${maTruong}</maTruong>
+      <userName>${username}</userName>
+      <password>${password}</password>
+    </Login>
+  </soap:Body>
+</soap:Envelope>`;
+
+        const parsedUrl = new URL(url);
+        
+        const loginOptions = {
+            hostname: parsedUrl.hostname,
+            port: parsedUrl.port || (parsedUrl.protocol === 'https:' ? 443 : 80),
+            path: parsedUrl.pathname,
+            method: 'POST',
+            headers: {
+                'Content-Type': 'text/xml; charset=utf-8',
+                'SOAPAction': '"http://tempuri.org/Login"',
+                'Content-Length': Buffer.byteLength(loginXml)
+            }
+        };
+
+        const makeRequest = (options, postData) => new Promise((resolve, reject) => {
+            const req = httpModule.request(options, (res) => {
+                let data = '';
+                res.on('data', (chunk) => data += chunk);
+                res.on('end', () => resolve(data));
+            });
+            req.on('error', reject);
+            req.write(postData);
+            req.end();
+        });
+
+        const loginRes = await makeRequest(loginOptions, loginXml);
+        const loginMatch = loginRes.match(/<LoginResult>(\d+)<\/LoginResult>/);
+        if (!loginMatch || parseInt(loginMatch[1]) <= 0) {
+            return res.json({ success: false, message: 'Đăng nhập API NetPlus thất bại (Kiểm tra lại tài khoản)!' });
+        }
+        
+        const loginId = loginMatch[1];
+
+        // 2. Call SendSMS
+        const smsXml = `<?xml version="1.0" encoding="utf-8"?>
+<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap:Body>
+    <SendSMS xmlns="http://tempuri.org/">
+      <aSMS_Input>
+        <smsTypeField>${smsType}</smsTypeField>
+        <idCustomerSentField>${loginId}</idCustomerSentField>
+        <companyCodeField>${companyCode}</companyCodeField>
+        <mobileField>${phone}</mobileField>
+        <sMSContentField>Tin nhan test tu he thong Ky So eHospital.</sMSContentField>
+      </aSMS_Input>
+      <userName>${username}</userName>
+      <password>${password}</password>
+    </SendSMS>
+  </soap:Body>
+</soap:Envelope>`;
+
+        const smsOptions = {
+            hostname: parsedUrl.hostname,
+            port: parsedUrl.port || (parsedUrl.protocol === 'https:' ? 443 : 80),
+            path: parsedUrl.pathname,
+            method: 'POST',
+            headers: {
+                'Content-Type': 'text/xml; charset=utf-8',
+                'SOAPAction': '"http://tempuri.org/SendSMS"',
+                'Content-Length': Buffer.byteLength(smsXml)
+            }
+        };
+
+        const sendRes = await makeRequest(smsOptions, smsXml);
+        if (sendRes.includes('<SendSMSResult>true</SendSMSResult>')) {
+            res.json({ success: true, message: 'Gửi tin nhắn thành công!' });
+        } else {
+            res.json({ success: false, message: 'Lỗi gửi tin nhắn, NetPlus trả về False.' });
+        }
+    } catch (e) {
+        console.error('Test SMS Error:', e);
+        res.json({ success: false, message: 'Lỗi gọi API: ' + e.message });
+    }
+});
+
 // Healthcheck
 app.get('/health', (req, res) => {
     res.json({ status: 'OK', activeAgents: connectedAgents.size });

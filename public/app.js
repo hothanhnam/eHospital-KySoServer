@@ -1078,7 +1078,7 @@ document.getElementById('configFormModal')?.addEventListener('submit', async (e)
         const data = await res.json();
 
         if (data.success) {
-            alert(data.message); // Custom alert if you want, but simple alert works for success
+            showToast(data.message, 'success');
             closeConfigModal();
         } else {
             showConfigAlert(data.message, 'error');
@@ -1090,6 +1090,51 @@ document.getElementById('configFormModal')?.addEventListener('submit', async (e)
         btnSave.disabled = false;
         btnSave.textContent = 'Lưu Cấu Hình';
     }
+});
+
+document.getElementById('btn-test-sms')?.addEventListener('click', () => {
+    showPrompt('Kiểm tra SMS', 'Nhập số điện thoại (VD: 849xxxx...):', async (phone, setError) => {
+        if (!phone || !phone.startsWith('84')) {
+            return setError('Số điện thoại phải bắt đầu bằng 84');
+        }
+        
+        const btnTest = document.getElementById('btn-test-sms');
+        const oldText = btnTest.textContent;
+        btnTest.disabled = true;
+        btnTest.textContent = 'Đang gửi...';
+
+        const configData = {
+            url: document.getElementById('cfg-url').value,
+            fallbackUrl: document.getElementById('cfg-fallbackUrl').value,
+            maTruong: document.getElementById('cfg-maTruong').value,
+            companyCode: document.getElementById('cfg-companyCode').value,
+            username: document.getElementById('cfg-username').value,
+            password: document.getElementById('cfg-password').value,
+            smsType: parseInt(document.getElementById('cfg-smsType').value) || 1,
+            phone: phone
+        };
+
+        try {
+            const res = await fetch('/api/test-sms', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(configData)
+            });
+            const data = await res.json();
+            
+            if (data.success) {
+                showToast('Gửi tin nhắn test thành công!', 'success');
+                setError(null);
+            } else {
+                setError(data.message || 'Lỗi gửi tin nhắn');
+            }
+        } catch (err) {
+            setError('Lỗi kết nối tới máy chủ');
+        } finally {
+            btnTest.disabled = false;
+            btnTest.textContent = oldText;
+        }
+    });
 });
 
 // Config Login Modal Logic
