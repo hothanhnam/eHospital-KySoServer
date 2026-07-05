@@ -237,6 +237,7 @@ function showConfirm(message, onConfirm, title = 'Xác nhận thao tác', okText
 
 function showPrompt(title, message, onConfirm) {
     const modal = document.getElementById('prompt-modal');
+    modal.style.zIndex = '9999';
     document.getElementById('prompt-title').textContent = title;
     document.getElementById('prompt-msg').innerHTML = message;
     
