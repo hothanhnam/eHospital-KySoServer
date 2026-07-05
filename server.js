@@ -382,7 +382,7 @@ wss.on('connection', (ws, req) => {
                                 });
 
                                 try {
-                                    const msg = `Ma xac thuc eHospital cua ban la: ${otp}. Ma co hieu luc trong 5 phut.`;
+                                    const msg = `Ma xac thuc ky so tu xa cua ban la\n\n${otp}\n\nTuyet doi KHONG chia se ma xac thuc cho bat ky ai. Ma xac thuc co hieu luc trong 5 phut.`;
                                     await sendNetPlusSMS(soDienThoai, msg);
                                     
                                     // Mask phone: keep last 3 digits
