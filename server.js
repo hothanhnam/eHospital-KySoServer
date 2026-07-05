@@ -10,6 +10,7 @@ const path = require('path');
 const ENCRYPTION_KEY = crypto.scryptSync(process.env.ENCRYPTION_KEY || 'vinhduc_netplus_secret', 'salt', 32);
 const IV_LENGTH = 16;
 const CONFIG_FILE = path.join(__dirname, 'netplus_config.dat');
+const TURNSTILE_CONFIG_FILE = path.join(__dirname, 'turnstile_config.dat');
 
 function encrypt(text) {
     let iv = crypto.randomBytes(IV_LENGTH);
@@ -30,6 +31,48 @@ function decrypt(text) {
         return decrypted.toString();
     } catch (e) {
         return null;
+    }
+}
+
+// Check if request is from internal network
+function isInternalRequest(req) {
+    // Get IP from proxy or direct connection
+    const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '';
+    const hostname = req.hostname || '';
+    
+    // Check internal domains
+    if (hostname.includes('kyso.bvvinhduc.com') || hostname === 'localhost') {
+        return true;
+    }
+    
+    // Check internal IPs (IPv4 & IPv6 mapped)
+    const isLocal = ip === '127.0.0.1' || ip === '::1' || ip.includes('::ffff:127.0.0.1');
+    const is192 = ip.startsWith('192.168.') || ip.includes('::ffff:192.168.');
+    const is10 = ip.startsWith('10.') || ip.includes('::ffff:10.');
+    const is172 = ip.match(/^(::ffff:)?172\.(1[6-9]|2[0-9]|3[0-1])\./);
+    
+    return isLocal || is192 || is10 || is172;
+}
+
+// Cloudflare Turnstile Verification
+async function verifyTurnstile(token, secretKey) {
+    if (!token) return false;
+    try {
+        const fetch = require('node-fetch'); // We might need to use dynamic import or built-in fetch if Node >= 18
+        // Actually, we can use built-in fetch if Node >= 18. Let's use the native fetch.
+        const formData = new URLSearchParams();
+        formData.append('secret', secretKey);
+        formData.append('response', token);
+        
+        const response = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+            method: 'POST',
+            body: formData
+        });
+        const data = await response.json();
+        return data.success;
+    } catch (error) {
+        console.error('Turnstile verification error:', error);
+        return false;
     }
 }
 // -----------------------------
@@ -167,8 +210,28 @@ app.get('/api/events', (req, res) => {
 });
 
 // API: Login Endpoint (Forwards to Agent)
-app.post('/api/login', (req, res) => {
-    const { username, password } = req.body;
+app.post('/api/login', async (req, res) => {
+    const { username, password, captchaToken } = req.body;
+    
+    // Turnstile check
+    const isInternal = isInternalRequest(req);
+    if (!isInternal && fs.existsSync(TURNSTILE_CONFIG_FILE)) {
+        try {
+            const encryptedData = fs.readFileSync(TURNSTILE_CONFIG_FILE, 'utf8');
+            const decryptedData = decrypt(encryptedData);
+            if (decryptedData) {
+                const config = JSON.parse(decryptedData);
+                if (config.enabled) {
+                    const isValid = await verifyTurnstile(captchaToken, config.secretKey);
+                    if (!isValid) {
+                        return res.json({ success: false, message: 'Hệ thống chống Spam (CAPTCHA) từ chối yêu cầu của bạn!' });
+                    }
+                }
+            }
+        } catch (e) {
+            console.error('Turnstile logic error in login:', e);
+        }
+    }
     
     const agents = Array.from(connectedAgents.keys());
     if (agents.length === 0) {
@@ -266,6 +329,77 @@ app.post('/api/agent/request', (req, res) => {
         uid: payload?.uid || reqId
     });
     ws.send(JSON.stringify(requestPayload));
+});
+
+// API: Get Turnstile Config
+app.get('/api/turnstile-config', (req, res) => {
+    try {
+        if (fs.existsSync(TURNSTILE_CONFIG_FILE)) {
+            const encryptedData = fs.readFileSync(TURNSTILE_CONFIG_FILE, 'utf8');
+            const decryptedData = decrypt(encryptedData);
+            if (decryptedData) {
+                const config = JSON.parse(decryptedData);
+                return res.json({ success: true, data: config });
+            } else {
+                return res.json({ success: false, message: 'Không thể giải mã file cấu hình Turnstile!' });
+            }
+        }
+        res.json({ 
+            success: true, 
+            data: {
+                enabled: false,
+                siteKey: '',
+                secretKey: ''
+            } 
+        });
+    } catch (e) {
+        console.error('Error reading turnstile config:', e);
+        res.json({ success: false, message: 'Lỗi đọc cấu hình: ' + e.message });
+    }
+});
+
+// API: Save Turnstile Config
+app.post('/api/turnstile-config', (req, res) => {
+    try {
+        const configData = req.body;
+        const configString = JSON.stringify(configData);
+        const encryptedData = encrypt(configString);
+        fs.writeFileSync(TURNSTILE_CONFIG_FILE, encryptedData, 'utf8');
+        res.json({ success: true, message: 'Lưu cấu hình Turnstile thành công!' });
+    } catch (e) {
+        console.error('Error saving turnstile config:', e);
+        res.json({ success: false, message: 'Lỗi lưu cấu hình: ' + e.message });
+    }
+});
+
+// API: App Status (Used by frontend to check if Turnstile should be loaded)
+app.get('/api/app-status', (req, res) => {
+    const isInternal = isInternalRequest(req);
+    let turnstileEnabled = false;
+    let siteKey = '';
+
+    if (fs.existsSync(TURNSTILE_CONFIG_FILE)) {
+        try {
+            const encryptedData = fs.readFileSync(TURNSTILE_CONFIG_FILE, 'utf8');
+            const decryptedData = decrypt(encryptedData);
+            if (decryptedData) {
+                const config = JSON.parse(decryptedData);
+                turnstileEnabled = config.enabled;
+                siteKey = config.siteKey;
+            }
+        } catch (e) {
+            console.error('Error reading turnstile config for status:', e);
+        }
+    }
+
+    res.json({
+        success: true,
+        data: {
+            isInternal: isInternal,
+            turnstileEnabled: turnstileEnabled,
+            siteKey: siteKey
+        }
+    });
 });
 
 // API: Get NetPlus Config
@@ -379,12 +513,28 @@ function removeVietnameseTones(str) {
 // API: Test SMS
 app.post('/api/test-sms', async (req, res) => {
     try {
-        const { url, maTruong, username, password, phone } = req.body;
+        const { url, maTruong, username, password, phone, captchaToken } = req.body;
         const companyCode = maTruong;
         const smsType = 1;
         
         if (!url || !maTruong || !username || !password || !phone) {
             return res.json({ success: false, message: 'Thiếu thông tin cấu hình hoặc số điện thoại!' });
+        }
+
+        // Turnstile check
+        const isInternal = isInternalRequest(req);
+        if (!isInternal && fs.existsSync(TURNSTILE_CONFIG_FILE)) {
+            const encryptedData = fs.readFileSync(TURNSTILE_CONFIG_FILE, 'utf8');
+            const decryptedData = decrypt(encryptedData);
+            if (decryptedData) {
+                const config = JSON.parse(decryptedData);
+                if (config.enabled) {
+                    const isValid = await verifyTurnstile(captchaToken, config.secretKey);
+                    if (!isValid) {
+                        return res.json({ success: false, message: 'Hệ thống chống Spam (CAPTCHA) từ chối yêu cầu Test SMS!' });
+                    }
+                }
+            }
         }
 
         const validPhone = formatAndValidateVNPhone(phone);

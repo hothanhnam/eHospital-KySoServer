@@ -162,6 +162,19 @@ async function handleLogin() {
     const username = usernameInput.value;
     const password = passwordInput.value;
     
+    let captchaToken = '';
+    if (window.turnstileRequired && window.turnstileWidgetId !== null) {
+        try {
+            captchaToken = turnstile.getResponse(window.turnstileWidgetId);
+            if (!captchaToken) {
+                if(loginError) loginError.textContent = 'Vui lòng xác nhận Captcha (Chống Spam)!';
+                return;
+            }
+        } catch (e) {
+            console.error('Turnstile error:', e);
+        }
+    }
+    
     // Clear the form fields immediately upon submit
     usernameInput.value = '';
     passwordInput.value = '';
@@ -172,7 +185,7 @@ async function handleLogin() {
         const res = await fetch('/api/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username, password })
+            body: JSON.stringify({ username, password, captchaToken })
         });
         const data = await res.json();
         if (data.success) {
@@ -183,8 +196,11 @@ async function handleLogin() {
             
             localStorage.setItem('kyso_user', JSON.stringify(currentUser));
             showDashboard();
-        } else {
             if(loginError) loginError.textContent = data.message || 'Đăng nhập thất bại!';
+            // Reset turnstile widget if login fails
+            if (window.turnstileRequired && window.turnstileWidgetId !== null && window.turnstile) {
+                turnstile.reset(window.turnstileWidgetId);
+            }
         }
     } catch (err) {
         if(loginError) loginError.textContent = 'Lỗi kết nối đến máy chủ!';
@@ -305,12 +321,15 @@ function showDashboard() {
     
     const btnConfig = document.getElementById('btn-config');
     const btnConfigLogin = document.getElementById('btn-config-login');
+    const btnConfigTurnstile = document.getElementById('btn-config-turnstile');
     if (currentUser.isAdmin) {
         if(btnConfig) btnConfig.style.display = 'inline-block';
         if(btnConfigLogin) btnConfigLogin.style.display = 'inline-block';
+        if(btnConfigTurnstile) btnConfigTurnstile.style.display = 'inline-block';
     } else {
         if(btnConfig) btnConfig.style.display = 'none';
         if(btnConfigLogin) btnConfigLogin.style.display = 'none';
+        if(btnConfigTurnstile) btnConfigTurnstile.style.display = 'none';
     }
     
     // Reset tab to "Chưa ký" (0)
@@ -1107,13 +1126,26 @@ document.getElementById('btn-test-sms')?.addEventListener('click', () => {
         btnTest.disabled = true;
         btnTest.textContent = 'Đang gửi...';
 
+        let captchaToken = '';
+        if (window.turnstileRequired && window.turnstileTestWidgetId !== null && window.turnstile) {
+            try {
+                captchaToken = turnstile.getResponse(window.turnstileTestWidgetId);
+                if (!captchaToken) {
+                    btnTest.disabled = false;
+                    btnTest.textContent = oldText;
+                    return setError('Vui lòng xác nhận Captcha trước khi Test SMS!');
+                }
+            } catch (e) {}
+        }
+
         const configData = {
             url: document.getElementById('cfg-url').value,
             fallbackUrl: document.getElementById('cfg-fallbackUrl').value,
             maTruong: document.getElementById('cfg-maTruong').value,
             username: document.getElementById('cfg-username').value,
             password: document.getElementById('cfg-password').value,
-            phone: phone
+            phone: phone,
+            captchaToken: captchaToken
         };
 
         try {
@@ -1127,8 +1159,10 @@ document.getElementById('btn-test-sms')?.addEventListener('click', () => {
             if (data.success) {
                 showToast('Gửi tin nhắn test thành công!', 'success');
                 setError(null);
-            } else {
                 setError(data.message || 'Lỗi gửi tin nhắn');
+            }
+            if (window.turnstileRequired && window.turnstileTestWidgetId !== null && window.turnstile) {
+                turnstile.reset(window.turnstileTestWidgetId);
             }
         } catch (err) {
             setError('Lỗi kết nối tới máy chủ');
@@ -1199,3 +1233,128 @@ document.getElementById('config-login-form')?.addEventListener('submit', async (
         }
     }
 });
+
+// --- Turnstile Config Logic ---
+const turnstileModal = document.getElementById('turnstile-modal');
+const turnstileAlert = document.getElementById('turnstile-alert');
+
+function openTurnstileModal() {
+    if (turnstileModal) {
+        turnstileModal.classList.remove('hidden');
+        turnstileAlert.classList.add('hidden');
+        
+        fetch('/api/turnstile-config')
+            .then(res => res.json())
+            .then(data => {
+                if(data.success && data.data) {
+                    document.getElementById('cfg-turnstile-enabled').checked = data.data.enabled;
+                    document.getElementById('cfg-turnstile-sitekey').value = data.data.siteKey || '';
+                    document.getElementById('cfg-turnstile-secretkey').value = data.data.secretKey || '';
+                }
+            })
+            .catch(err => console.error(err));
+    }
+}
+
+document.getElementById('btn-close-turnstile')?.addEventListener('click', () => {
+    turnstileModal?.classList.add('hidden');
+});
+
+document.getElementById('configTurnstileForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btnSave = e.target.querySelector('button[type="submit"]');
+    if(btnSave) {
+        btnSave.disabled = true;
+        btnSave.textContent = 'Đang lưu...';
+    }
+    
+    const configData = {
+        enabled: document.getElementById('cfg-turnstile-enabled').checked,
+        siteKey: document.getElementById('cfg-turnstile-sitekey').value,
+        secretKey: document.getElementById('cfg-turnstile-secretkey').value
+    };
+
+    try {
+        const res = await fetch('/api/turnstile-config', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(configData)
+        });
+        const data = await res.json();
+        if (data.success) {
+            turnstileAlert.className = 'alert alert-success';
+            turnstileAlert.textContent = data.message + ' (Tải lại trang để áp dụng)';
+            turnstileAlert.classList.remove('hidden');
+        } else {
+            turnstileAlert.className = 'alert alert-error';
+            turnstileAlert.textContent = data.message;
+            turnstileAlert.classList.remove('hidden');
+        }
+    } catch (err) {
+        turnstileAlert.className = 'alert alert-error';
+        turnstileAlert.textContent = 'Lỗi kết nối tới máy chủ';
+        turnstileAlert.classList.remove('hidden');
+    } finally {
+        if(btnSave) {
+            btnSave.disabled = false;
+            btnSave.textContent = 'Lưu Cấu Hình';
+        }
+    }
+});
+
+// --- App Initialization (Turnstile Bootstrap) ---
+window.appConfig = { turnstileEnabled: false, siteKey: '', isInternal: false };
+window.turnstileRequired = false;
+window.turnstileWidgetId = null;
+window.turnstileTestWidgetId = null;
+
+async function initApp() {
+    try {
+        const res = await fetch('/api/app-status');
+        const data = await res.json();
+        if (data.success) {
+            window.appConfig = data.data;
+            if (window.appConfig.turnstileEnabled && !window.appConfig.isInternal && window.appConfig.siteKey) {
+                window.turnstileRequired = true;
+                
+                // Add Turnstile container for Test SMS in Config Modal
+                const testSmsForm = document.getElementById('configFormModal');
+                if (testSmsForm) {
+                    const testContainer = document.createElement('div');
+                    testContainer.id = 'turnstile-test-container';
+                    testContainer.style.display = 'flex';
+                    testContainer.style.justifyContent = 'center';
+                    testContainer.style.marginBottom = '10px';
+                    // Insert before the form buttons
+                    testSmsForm.insertBefore(testContainer, testSmsForm.lastElementChild);
+                }
+
+                // Load Cloudflare Script
+                const script = document.createElement('script');
+                script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
+                script.async = true;
+                script.defer = true;
+                script.onload = () => {
+                    if (window.turnstile) {
+                        window.turnstileWidgetId = turnstile.render('#turnstile-container', {
+                            sitekey: window.appConfig.siteKey,
+                            theme: 'light'
+                        });
+                        
+                        const testEl = document.getElementById('turnstile-test-container');
+                        if (testEl) {
+                            window.turnstileTestWidgetId = turnstile.render('#turnstile-test-container', {
+                                sitekey: window.appConfig.siteKey,
+                                theme: 'light'
+                            });
+                        }
+                    }
+                };
+                document.head.appendChild(script);
+            }
+        }
+    } catch (e) {
+        console.error('Failed to load app config', e);
+    }
+}
+initApp();

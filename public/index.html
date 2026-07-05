@@ -138,6 +138,7 @@
                       <label>Mật khẩu</label>
                       <input autocomplete="off" type="password" id="password" class="form-control" placeholder="Nhập mật khẩu" required>
                   </div>
+                <div id="turnstile-container" style="margin-bottom: 15px; display: flex; justify-content: center;"></div>
                 <div id="login-error" class="error-msg"></div>
                 <button type="button" id="btn-login" class="btn-primary">
                     <span>Đăng Nhập</span>
@@ -169,6 +170,7 @@
 </div>
                 <button id="btn-config" class="btn-secondary" style="display: none; margin-right: 10px;" onclick="openConfigModal()">Cấu hình NetPlus</button>
                 <button id="btn-config-login" class="btn-secondary" style="display: none; margin-right: 10px;" onclick="openConfigLoginModal()">Cấu hình Đăng nhập</button>
+                <button id="btn-config-turnstile" class="btn-secondary" style="display: none; margin-right: 10px;" onclick="openTurnstileModal()">Cấu hình Chống Spam</button>
                 <span id="user-greeting">Xin chào, Bác sĩ</span>
                 <button id="btn-logout" class="btn-secondary">Đăng xuất</button>
             </div>
@@ -430,6 +432,34 @@
 
     <script src="pdf-lib.min.js"></script>
     <script src="pdf.min.js"></script>
+    <!-- Turnstile Modal -->
+    <div id="turnstile-modal" class="overlay hidden" style="z-index: 4000;">
+        <div class="glass-panel confirm-box" style="width: 90vw; max-width: 450px; text-align: left; padding: 25px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--glass-border); padding-bottom: 10px; margin-bottom: 15px;">
+                <h3 style="margin: 0; color: var(--text-main); font-size: 1.25rem;">Cấu hình Chống Spam (Turnstile)</h3>
+                <button id="btn-close-turnstile" class="btn-cancel" style="padding: 5px 10px; margin-left: auto;">&times;</button>
+            </div>
+            <div id="turnstile-alert" class="alert hidden" style="padding: 10px; border-radius: 6px; margin-bottom: 15px; font-size: 0.9rem;"></div>
+            <form id="configTurnstileForm" style="display: flex; flex-direction: column; gap: 15px;">
+                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                    <input type="checkbox" id="cfg-turnstile-enabled" style="width: 20px; height: 20px;">
+                    <span style="font-size: 1rem; font-weight: bold;">Bật Cloudflare Turnstile</span>
+                </label>
+                <div class="input-group" style="margin-bottom: 0;">
+                    <label>Site Key</label>
+                    <input autocomplete="off" type="text" id="cfg-turnstile-sitekey" class="form-control" placeholder="Nhập Site Key">
+                </div>
+                <div class="input-group" style="margin-bottom: 0;">
+                    <label>Secret Key</label>
+                    <input autocomplete="off" type="password" id="cfg-turnstile-secretkey" class="form-control" placeholder="Nhập Secret Key">
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-top: 10px;">
+                    <button type="submit" class="btn-primary" style="flex: 1; padding: 12px 24px; font-size: 1rem; border-radius: 8px; font-weight: 600;">Lưu Cấu Hình</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script src="app.js?v=1.0.50"></script>
 </body>
 </html>
