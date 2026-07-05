@@ -149,7 +149,7 @@
                 <p class="subtitle" style="font-size: 14px; margin-bottom: 20px; line-height: 1.5;" id="otp-message">Mã xác thực đã được gửi đến số điện thoại <br/><strong id="otp-phone" style="color: var(--primary-color);">*******86</strong></p>
                 <div class="input-group">
                     <label style="text-align: center; width: 100%;">Mã OTP</label>
-                    <input autocomplete="off" type="text" id="otp-code" class="form-control" placeholder="Nhập 6 số OTP" required maxlength="6" style="text-align: center; letter-spacing: 8px; font-size: 20px; font-weight: bold;">
+                    <input autocomplete="one-time-code" type="text" inputmode="numeric" pattern="[0-9]*" id="otp-code" class="form-control" placeholder="Nhập 6 số OTP" required maxlength="6" style="text-align: center; letter-spacing: 8px; font-size: 20px; font-weight: bold;">
                 </div>
                 <div id="otp-error" class="error-msg"></div>
                 <button type="button" id="btn-verify-otp" class="btn-primary" style="margin-bottom: 10px;">
