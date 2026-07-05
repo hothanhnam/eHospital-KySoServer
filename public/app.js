@@ -235,13 +235,14 @@ function showConfirm(message, onConfirm, title = 'Xác nhận thao tác', okText
     });
 }
 
-function showPrompt(title, message, onConfirm) {
+function showPrompt(title, message, onConfirm, inputType = 'password') {
     const modal = document.getElementById('prompt-modal');
     modal.style.zIndex = '9999';
     document.getElementById('prompt-title').textContent = title;
     document.getElementById('prompt-msg').innerHTML = message;
     
     const inputEl = document.getElementById('prompt-input');
+    inputEl.type = inputType;
     inputEl.value = '';
     const errorEl = document.getElementById('prompt-error');
     errorEl.textContent = '';
@@ -1129,7 +1130,7 @@ document.getElementById('btn-test-sms')?.addEventListener('click', () => {
             btnTest.disabled = false;
             btnTest.textContent = oldText;
         }
-    });
+    }, 'text');
 });
 
 // Config Login Modal Logic
