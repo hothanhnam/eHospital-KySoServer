@@ -446,11 +446,11 @@ app.post('/api/test-sms', async (req, res) => {
   <soap:Body>
     <SendSMS xmlns="http://tempuri.org/">
       <aSMS_Input>
-        <smsTypeField>${smsType}</smsTypeField>
-        <idCustomerSentField>${loginId}</idCustomerSentField>
-        <companyCodeField>${companyCode}</companyCodeField>
-        <mobileField>${validPhone}</mobileField>
-        <sMSContentField>${msgContent}</sMSContentField>
+        <SmsType>${smsType}</SmsType>
+        <IdCustomerSent>${loginId}</IdCustomerSent>
+        <CompanyCode>${companyCode}</CompanyCode>
+        <Mobile>${validPhone}</Mobile>
+        <SMSContent>${msgContent}</SMSContent>
       </aSMS_Input>
       <userName>${username}</userName>
       <password>${password}</password>
