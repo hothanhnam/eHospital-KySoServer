@@ -346,30 +346,22 @@
                     <label style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 4px; display: block;">URL Dự Phòng</label>
                     <input type="url" id="cfg-fallbackUrl" class="form-control" placeholder="Nhập URL dự phòng..." style="padding: 8px 12px;">
                 </div>
+                <div class="input-group" style="margin-bottom: 0;">
+                    <label style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 4px; display: block;">Mã Trường (maTruong)</label>
+                    <input type="text" id="cfg-maTruong" class="form-control" required placeholder="Nhập mã trường (VD: BV-VinhDuc)..." style="padding: 8px 12px;">
+                </div>
                 <div style="display: flex; gap: 10px;">
                     <div class="input-group" style="flex: 1; margin-bottom: 0;">
-                        <label style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 4px; display: block;">Mã Trường</label>
-                        <input type="text" id="cfg-maTruong" class="form-control" required placeholder="Nhập mã trường..." style="padding: 8px 12px;">
+                        <label style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 4px; display: block;">Tài khoản (userName)</label>
+                        <input type="text" id="cfg-username" class="form-control" required placeholder="Nhập tên đăng nhập..." style="padding: 8px 12px;">
                     </div>
                     <div class="input-group" style="flex: 1; margin-bottom: 0;">
-                        <label style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 4px; display: block;">Company Code</label>
-                        <input type="text" id="cfg-companyCode" class="form-control" required placeholder="Nhập mã công ty..." style="padding: 8px 12px;">
+                        <label style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 4px; display: block;">Mật khẩu (password)</label>
+                        <div style="position: relative;">
+                            <input type="password" id="cfg-password" class="form-control" required placeholder="Nhập mật khẩu..." style="padding: 8px 12px; padding-right: 50px;">
+                            <button type="button" onclick="const p = document.getElementById('cfg-password'); p.type = p.type === 'password' ? 'text' : 'password'; this.textContent = p.type === 'password' ? 'Hiện' : 'Ẩn';" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 0.8rem; font-weight: 600;">Hiện</button>
+                        </div>
                     </div>
-                </div>
-                <div class="input-group" style="margin-bottom: 0;">
-                    <label style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 4px; display: block;">Tên đăng nhập</label>
-                    <input type="text" id="cfg-username" class="form-control" required placeholder="Nhập tên đăng nhập..." style="padding: 8px 12px;">
-                </div>
-                <div class="input-group" style="margin-bottom: 0;">
-                    <label style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 4px; display: block;">Mật khẩu</label>
-                    <div style="position: relative;">
-                        <input type="password" id="cfg-password" class="form-control" required placeholder="Nhập mật khẩu API" style="padding: 8px 12px; padding-right: 50px;">
-                        <button type="button" onclick="const p = document.getElementById('cfg-password'); p.type = p.type === 'password' ? 'text' : 'password'; this.textContent = p.type === 'password' ? 'Hiện' : 'Ẩn';" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 0.8rem; font-weight: 600;">Hiện</button>
-                    </div>
-                </div>
-                <div class="input-group" style="margin-bottom: 0;">
-                    <label style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 4px; display: block;">SMS Type</label>
-                    <input type="number" id="cfg-smsType" class="form-control" required value="1" placeholder="Mặc định: 1" style="padding: 8px 12px;">
                 </div>
                 <div class="confirm-actions" style="margin-top: 10px; display: flex; justify-content: flex-end; gap: 10px;">
                     <button type="button" id="btn-test-sms" class="btn-secondary" style="flex: 1; padding: 12px; font-size: 1rem; border-radius: 8px; font-weight: 600;">Test SMS</button>

@@ -288,10 +288,8 @@ app.get('/api/config', (req, res) => {
                 url: '',
                 fallbackUrl: '',
                 maTruong: '',
-                companyCode: '',
                 username: '',
-                password: '',
-                smsType: 1
+                password: ''
             } 
         });
     } catch (e) {
@@ -381,7 +379,10 @@ function removeVietnameseTones(str) {
 // API: Test SMS
 app.post('/api/test-sms', async (req, res) => {
     try {
-        const { url, maTruong, companyCode, username, password, smsType, phone } = req.body;
+        const { url, maTruong, username, password, phone } = req.body;
+        const companyCode = maTruong;
+        const smsType = 1;
+        
         if (!url || !maTruong || !username || !password || !phone) {
             return res.json({ success: false, message: 'Thiếu thông tin cấu hình hoặc số điện thoại!' });
         }

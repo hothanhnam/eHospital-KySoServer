@@ -1025,10 +1025,8 @@ async function openConfigModal() {
             document.getElementById('cfg-url').value = data.data.url || '';
             document.getElementById('cfg-fallbackUrl').value = data.data.fallbackUrl || '';
             document.getElementById('cfg-maTruong').value = data.data.maTruong || '';
-            document.getElementById('cfg-companyCode').value = data.data.companyCode || '';
             document.getElementById('cfg-username').value = data.data.username || '';
             document.getElementById('cfg-password').value = data.data.password || '';
-            document.getElementById('cfg-smsType').value = data.data.smsType || 1;
         } else {
             showConfigAlert(data.message || 'Không thể tải cấu hình', 'error');
         }
@@ -1064,10 +1062,8 @@ document.getElementById('configFormModal')?.addEventListener('submit', async (e)
         url: document.getElementById('cfg-url').value,
         fallbackUrl: document.getElementById('cfg-fallbackUrl').value,
         maTruong: document.getElementById('cfg-maTruong').value,
-        companyCode: document.getElementById('cfg-companyCode').value,
         username: document.getElementById('cfg-username').value,
-        password: document.getElementById('cfg-password').value,
-        smsType: parseInt(document.getElementById('cfg-smsType').value) || 1
+        password: document.getElementById('cfg-password').value
     };
 
     try {
@@ -1108,10 +1104,8 @@ document.getElementById('btn-test-sms')?.addEventListener('click', () => {
             url: document.getElementById('cfg-url').value,
             fallbackUrl: document.getElementById('cfg-fallbackUrl').value,
             maTruong: document.getElementById('cfg-maTruong').value,
-            companyCode: document.getElementById('cfg-companyCode').value,
             username: document.getElementById('cfg-username').value,
             password: document.getElementById('cfg-password').value,
-            smsType: parseInt(document.getElementById('cfg-smsType').value) || 1,
             phone: phone
         };
 
