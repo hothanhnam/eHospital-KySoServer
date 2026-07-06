@@ -318,6 +318,7 @@ wss.on('connection', (ws, req) => {
                                         name: data.data?.userName, 
                                         role: 'doctor',
                                         isAdmin: data.data?.isAdmin,
+                                        isKySoTuXa: data.data?.isKySoTuXa,
                                         activeAgentId: pending.agentId,
                                         soDienThoai: data.data?.soDienThoai
                                     },
@@ -326,13 +327,25 @@ wss.on('connection', (ws, req) => {
 
                                 // Check OTP config
                                 let isOtpEnabled = false;
+                                let isGroupLoginEnabled = false;
                                 try {
                                     if (fs.existsSync(LOGIN_CONFIG_FILE)) {
                                         const configData = fs.readFileSync(LOGIN_CONFIG_FILE, 'utf8');
                                         const config = JSON.parse(configData);
                                         isOtpEnabled = !!config.enableOtp;
+                                        isGroupLoginEnabled = !!config.enableGroupLogin;
                                     }
                                 } catch (e) {}
+
+                                // Bổ sung logic kiểm tra quyền (chỉ áp dụng ngoại mạng và khi cấu hình được bật)
+                                if (!pending.isInternal && isGroupLoginEnabled) {
+                                    if (!data.data?.isAdmin && !data.data?.isKySoTuXa) {
+                                        return pending.res.json({
+                                            success: false,
+                                            message: 'Bạn chưa được phân quyền sử dụng Ký số từ xa. Vui lòng liên hệ bộ phận IT hoặc thực hiện ký trong mạng nội bộ Bệnh viện.'
+                                        });
+                                    }
+                                }
 
                                 if (!isOtpEnabled || pending.isInternal) {
                                     return pending.res.json(loginResponse);
@@ -756,7 +769,7 @@ app.get('/api/config-login', (req, res) => {
             const config = JSON.parse(configData);
             return res.json({ success: true, data: config });
         }
-        res.json({ success: true, data: { enableOtp: false } });
+        res.json({ success: true, data: { enableOtp: false, enableGroupLogin: false } });
     } catch (e) {
         console.error('Error reading login config:', e);
         res.json({ success: false, message: 'Lỗi đọc cấu hình đăng nhập: ' + e.message });

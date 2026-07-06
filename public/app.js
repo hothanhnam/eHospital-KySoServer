@@ -1261,6 +1261,8 @@ async function openConfigLoginModal() {
             const data = await res.json();
             if (data.success && data.data) {
                 document.getElementById('cfg-enableOtp').checked = !!data.data.enableOtp;
+                const elGroup = document.getElementById('cfg-enableGroupLogin');
+                if (elGroup) elGroup.checked = !!data.data.enableGroupLogin;
             }
         } catch (err) {
             console.error(err);
@@ -1283,7 +1285,8 @@ document.getElementById('config-login-form')?.addEventListener('submit', async (
     }
     
     const configData = {
-        enableOtp: document.getElementById('cfg-enableOtp').checked
+        enableOtp: document.getElementById('cfg-enableOtp').checked,
+        enableGroupLogin: document.getElementById('cfg-enableGroupLogin') ? document.getElementById('cfg-enableGroupLogin').checked : false
     };
 
     try {
