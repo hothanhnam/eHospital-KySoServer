@@ -169,12 +169,20 @@ async function sendNetPlusSMS(phone, messageContent) {
 
 // Check if request is from internal network
 function isInternalRequest(req) {
-    // Get IP from proxy or direct connection
-    const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '';
-    const hostname = req.hostname || '';
+    // Lấy IP thật của client (hỗ trợ proxy, Cloudflare)
+    const forwardedIps = req.headers['cf-connecting-ip'] || req.headers['x-real-ip'] || req.headers['x-forwarded-for'] || req.socket.remoteAddress || '';
+    const ip = forwardedIps.split(',')[0].trim(); 
+    
+    const hostHeader = req.hostname || req.headers['host'] || '';
+    const hostname = hostHeader.split(':')[0]; // Bỏ port nếu có
+    
+    // Nếu truy cập bằng tên miền vinhduchospital.com -> LUÔN bắt buộc xác thực (Không tính là nội bộ)
+    if (hostname.includes('vinhduchospital.com')) {
+        return false;
+    }
     
     // Check internal domains
-    if (hostname.includes('kyso.bvvinhduc.com') || hostname === 'localhost') {
+    if (hostname.includes('bvvinhduc.com') || hostname === 'localhost') {
         return true;
     }
     
