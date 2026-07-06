@@ -262,6 +262,8 @@ body {
     padding: 16px 32px;
     margin: 20px;
     border-radius: 16px;
+    position: relative;
+    z-index: 50;
 }
 .nav-brand {
     display: flex;
