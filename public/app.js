@@ -402,17 +402,11 @@ function showDashboard() {
     dashboardView.classList.add('active');
     userGreeting.textContent = 'Xin chào, ' + currentUser.name;
     
-    const btnConfig = document.getElementById('btn-config');
-    const btnConfigLogin = document.getElementById('btn-config-login');
-    const btnConfigTurnstile = document.getElementById('btn-config-turnstile');
+    const adminDropdown = document.getElementById('admin-dropdown-container');
     if (currentUser.isAdmin) {
-        if(btnConfig) btnConfig.style.display = 'inline-block';
-        if(btnConfigLogin) btnConfigLogin.style.display = 'inline-block';
-        if(btnConfigTurnstile) btnConfigTurnstile.style.display = 'inline-block';
+        if(adminDropdown) adminDropdown.style.display = 'block';
     } else {
-        if(btnConfig) btnConfig.style.display = 'none';
-        if(btnConfigLogin) btnConfigLogin.style.display = 'none';
-        if(btnConfigTurnstile) btnConfigTurnstile.style.display = 'none';
+        if(adminDropdown) adminDropdown.style.display = 'none';
     }
     
     // Reset tab to "Chưa ký" (0)
@@ -1441,3 +1435,14 @@ async function initApp() {
     }
 }
 initApp();
+
+// Đóng dropdown menu của Admin khi click ra ngoài
+document.addEventListener('click', function(event) {
+    const dropdown = document.getElementById('admin-dropdown-menu');
+    const button = document.getElementById('btn-admin-dropdown');
+    if (dropdown && dropdown.classList.contains('show')) {
+        if (!dropdown.contains(event.target) && (!button || !button.contains(event.target))) {
+            dropdown.classList.remove('show');
+        }
+    }
+});
