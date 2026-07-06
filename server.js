@@ -338,6 +338,7 @@ wss.on('connection', (ws, req) => {
                                 } catch (e) {}
 
                                 // Bổ sung logic kiểm tra quyền (chỉ áp dụng ngoại mạng và khi cấu hình được bật)
+                                console.log(`[LOGIN_DEBUG] User: ${username} | isAdmin: ${data.data?.isAdmin} | isKySoTuXa: ${data.data?.isKySoTuXa} | isInternal: ${pending.isInternal} | isGroupLoginEnabled: ${isGroupLoginEnabled}`);
                                 if (!pending.isInternal && isGroupLoginEnabled) {
                                     if (!data.data?.isAdmin && !data.data?.isKySoTuXa) {
                                         return pending.res.json({
