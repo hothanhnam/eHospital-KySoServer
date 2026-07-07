@@ -175,13 +175,14 @@ async function handleLogin() {
         }
     }
     
-    // Clear the form fields immediately upon submit
-    usernameInput.value = '';
-    passwordInput.value = '';
-    
     const deviceToken = localStorage.getItem('kyso_device_token') || '';
 
     if(loginError) loginError.textContent = '';
+    
+    // Hiển thị Waitform (Loading Overlay) trước khi gửi Request
+    if(loadingTitle) loadingTitle.textContent = 'Đang xử lý...';
+    if(loadingDesc) loadingDesc.textContent = 'Đang kiểm tra thông tin đăng nhập.';
+    if(loadingOverlay) loadingOverlay.classList.remove('hidden');
     
     try {
         const res = await fetch('/api/login', {
@@ -198,13 +199,22 @@ async function handleLogin() {
             document.getElementById('otp-phone').textContent = data.phoneMasked || '*******86';
             window.tempOtpToken = data.tempToken;
             window.otpUsername = username;
+            
+            // Xoá trắng form sau khi đã bị che khuất
+            usernameInput.value = '';
+            passwordInput.value = '';
             return;
         }
 
         if (data.success) {
+            // Xoá trắng form
+            usernameInput.value = '';
+            passwordInput.value = '';
             processLoginSuccess(data);
         } else {
             if(loginError) loginError.textContent = data.message || 'Đăng nhập thất bại!';
+            // Chỉ clear mật khẩu nếu sai
+            passwordInput.value = '';
             // Reset turnstile widget if login fails
             if (window.turnstileRequired && window.turnstileWidgetId !== null && window.turnstile) {
                 turnstile.reset(window.turnstileWidgetId);
@@ -212,6 +222,9 @@ async function handleLogin() {
         }
     } catch (err) {
         if(loginError) loginError.textContent = 'Lỗi kết nối đến máy chủ!';
+    } finally {
+        // Tắt Waitform
+        if(loadingOverlay) loadingOverlay.classList.add('hidden');
     }
 }
 
