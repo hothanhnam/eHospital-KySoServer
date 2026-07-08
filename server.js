@@ -193,18 +193,8 @@ function isInternalRequest(req) {
         return false;
     }
     
-    // Check internal domains
-    if (hostname.includes('bvvinhduc.com') || hostname === 'localhost') {
-        return true;
-    }
-    
-    // Check internal IPs (IPv4 & IPv6 mapped)
-    const isLocal = ip === '127.0.0.1' || ip === '::1' || ip.includes('::ffff:127.0.0.1');
-    const is192 = ip.startsWith('192.168.') || ip.includes('::ffff:192.168.');
-    const is10 = ip.startsWith('10.') || ip.includes('::ffff:10.');
-    const is172 = ip.match(/^(::ffff:)?172\.(1[6-9]|2[0-9]|3[0-1])\./);
-    
-    return isLocal || is192 || is10 || is172;
+    // Theo yêu cầu: "còn lại được coi là nội bộ"
+    return true;
 }
 
 // Cloudflare Turnstile Verification
