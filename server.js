@@ -11,6 +11,7 @@ const ENCRYPTION_KEY = crypto.scryptSync(process.env.ENCRYPTION_KEY || 'vinhduc_
 const IV_LENGTH = 16;
 const CONFIG_FILE = path.join(__dirname, 'netplus_config.dat');
 const TURNSTILE_CONFIG_FILE = path.join(__dirname, 'turnstile_config.dat');
+const LOGIN_CONFIG_FILE = path.join(__dirname, 'login_config.json');
 
 function encrypt(text) {
     let iv = crypto.randomBytes(IV_LENGTH);
@@ -176,8 +177,19 @@ function isInternalRequest(req) {
     const hostHeader = req.hostname || req.headers['host'] || '';
     const hostname = hostHeader.split(':')[0]; // Bỏ port nếu có
     
-    // Nếu truy cập bằng tên miền vinhduchospital.com -> LUÔN bắt buộc xác thực (Không tính là nội bộ)
-    if (hostname.includes('vinhduchospital.com')) {
+    let internetDomain = 'vinhduchospital.com';
+    try {
+        if (fs.existsSync(LOGIN_CONFIG_FILE)) {
+            const configData = fs.readFileSync(LOGIN_CONFIG_FILE, 'utf8');
+            const config = JSON.parse(configData);
+            if (config.internetDomain && config.internetDomain.trim() !== '') {
+                internetDomain = config.internetDomain.trim();
+            }
+        }
+    } catch (e) {}
+
+    // Nếu truy cập bằng tên miền được cấu hình là internet -> LUÔN bắt buộc xác thực (Không tính là nội bộ)
+    if (hostname.includes(internetDomain)) {
         return false;
     }
     
@@ -762,7 +774,6 @@ app.post('/api/config', (req, res) => {
 });
 
 // API: Get Login Config
-const LOGIN_CONFIG_FILE = path.join(__dirname, 'login_config.json');
 app.get('/api/config-login', (req, res) => {
     try {
         if (fs.existsSync(LOGIN_CONFIG_FILE)) {
@@ -770,7 +781,7 @@ app.get('/api/config-login', (req, res) => {
             const config = JSON.parse(configData);
             return res.json({ success: true, data: config });
         }
-        res.json({ success: true, data: { enableOtp: false, enableGroupLogin: false } });
+        res.json({ success: true, data: { enableOtp: false, enableGroupLogin: false, internetDomain: '' } });
     } catch (e) {
         console.error('Error reading login config:', e);
         res.json({ success: false, message: 'Lỗi đọc cấu hình đăng nhập: ' + e.message });

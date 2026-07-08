@@ -414,6 +414,11 @@
                     <input type="checkbox" id="cfg-enableGroupLogin" style="width: 20px; height: 20px;">
                     <label for="cfg-enableGroupLogin" style="font-size: 1rem; color: var(--text-main); cursor: pointer;">Chỉ cho phép đăng nhập theo nhóm phân quyền</label>
                 </div>
+                <div class="input-group" style="margin-bottom: 20px;">
+                    <label style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 4px; display: block;">Tên miền Internet</label>
+                    <input type="text" id="cfg-internetDomain" class="form-control" placeholder="VD: vinhduchospital.com" style="padding: 8px 12px;">
+                    <small style="color: var(--text-muted); font-size: 0.75rem; display: block; margin-top: 5px;">Khi người dùng truy cập bằng tên miền này sẽ được tính là truy cập từ Internet.</small>
+                </div>
                 <div class="confirm-actions" style="margin-top: 10px; display: flex; justify-content: flex-end; gap: 10px;">
                     <button type="button" onclick="closeConfigLoginModal()" class="btn-cancel" style="flex: 1; padding: 12px 24px; font-size: 1rem; border-radius: 8px; font-weight: 600;">Hủy</button>
                     <button type="submit" class="btn-primary" style="flex: 1; padding: 12px 24px; font-size: 1rem; border-radius: 8px; font-weight: 600;">Lưu Cấu Hình</button>
