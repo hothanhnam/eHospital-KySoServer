@@ -701,7 +701,6 @@ function renderTable() {
         
         let actionBtn = currentTab === 0 
             ? `<div style="display: flex; gap: 5px; justify-content: center;">
-                 <button class="btn-secondary" onclick="openSignPreview('${docIdForAction}')" style="padding: 5px 10px; font-size: 0.8rem;">Xem</button>
                  <button class="btn-sign" onclick="openSignPreview('${docIdForAction}')" style="padding: 5px 10px; font-size: 0.8rem;">Ký</button>
                </div>`
             : `<div style="display: flex; gap: 5px; justify-content: center;">
@@ -938,7 +937,7 @@ window.openSignPreview = async function(docId, isSigning = true) {
         });
         
         if (data.success && data.data && data.data.data && data.data.data.base64) {
-            currentPdfBase64 = await applyWatermark(data.data.data.base64);
+            currentPdfBase64 = data.data.data.base64;
             currentPdfDocName = docName;
             currentZoomLevel = 100;
             const zoomSpan = document.getElementById('zoom-level');
