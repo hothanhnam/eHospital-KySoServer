@@ -1,4 +1,4 @@
-﻿
+
 // Theme management
 let currentTheme = localStorage.getItem('theme') || 'dark';
 document.documentElement.setAttribute('data-theme', currentTheme);
@@ -131,20 +131,20 @@ async function fetchAgents() {
             }
         }
         
-        agentSelect.innerHTML = '';
+        if(agentSelect) agentSelect.innerHTML = '';
         if (data.data.length === 0) {
-            agentSelect.innerHTML = '<option value="">-- ChÆ°a cÃ³ mÃ¡y kÃ½ sá»‘ nÃ o Ä‘ang báº­t --</option>';
+            if(agentSelect) agentSelect.innerHTML = '<option value="">-- ChÆ°a cÃ³ mÃ¡y kÃ½ sá»‘ nÃ o Ä‘ang báº­t --</option>';
         } else {
             data.data.forEach(agentId => {
                 const opt = document.createElement('option');
                 opt.value = agentId;
                 opt.textContent = agentId;
-                agentSelect.appendChild(opt);
+                if(agentSelect) agentSelect.appendChild(opt);
             });
-            agentSelect.selectedIndex = 0;
+            if(agentSelect) agentSelect.selectedIndex = 0;
         }
     } catch (err) {
-        agentSelect.innerHTML = '<option value="">Lá»—i táº£i danh sÃ¡ch Agent</option>';
+        if(agentSelect) agentSelect.innerHTML = '<option value="">Lá»—i táº£i danh sÃ¡ch Agent</option>';
     }
 }
 if (btnRefreshAgents) {
@@ -1636,7 +1636,7 @@ window.switchMainTab = function(tabName) {
     });
     
     document.querySelectorAll('.main-tab-content').forEach(c => {
-        if(c.id === 	ab-) {
+        if(c.id === 'tab-' + tabName) {
             c.style.display = 'flex';
             c.classList.add('active');
         } else {
