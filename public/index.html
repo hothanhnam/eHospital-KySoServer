@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>eHospital - Cổng Ký Số Điện Tử</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=20260810_3">
+    <link rel="stylesheet" href="style.css?v=20260810_4">
     <style>
         .filter-row { display: flex; gap: 15px; margin-bottom: 15px; flex-wrap: wrap; }
         .filter-row .input-group { flex: 1; min-width: 200px; margin-bottom: 0; }
@@ -120,18 +120,16 @@
             .filter-row .input-group { width: 100% !important; min-width: 100% !important; }
             .filters-container { display: block !important; margin-top: 0; border-top: none; padding-top: 0; }
         }
-        /* PC CSS cho Bottom Sheet & Bento Grid */
+        /* PC CSS cho Bottom Sheet & Minimalist Grid */
         .bottom-sheet-header, .bottom-sheet-footer, .sheet-backdrop { display: none; }
-        .bottom-sheet { display: block !important; }
-        .bento-advanced-filters { grid-column: span 12; padding: 12px; background: rgba(255, 255, 255, 0.05); border-radius: 16px; border: 1px solid var(--glass-border); display: flex; align-items: center; }
-        .bento-advanced-filters .bottom-sheet-content { padding: 0; width: 100%; }
-        .bento-advanced-filters .filters-container { display: flex; flex-direction: column; gap: 15px; }
-        .bento-advanced-filters .filter-row { display: flex; flex-direction: row; gap: 15px; width: 100%; }
-        .bento-advanced-filters.bottom-sheet.show { transform: none; visibility: visible; }
+        .bottom-sheet { display: block !important; position: static !important; transform: none !important; visibility: visible !important; box-shadow: none !important; padding: 0 !important; background: transparent !important; }
+        .minimal-advanced-filters .bottom-sheet-content { padding: 0; width: 100%; }
+        .minimal-advanced-filters .filters-container { display: flex; flex-direction: column; gap: 15px; }
+        .minimal-advanced-filters .filter-row { display: flex; flex-direction: row; gap: 15px; width: 100%; }
     </style>
 </head>
 <body>
-    <div class="background-shapes">
+    <div class="background-shapes" style="display: none;">
         <div class="shape shape-1"></div>
         <div class="shape shape-2"></div>
         <div class="shape shape-3"></div>
@@ -240,93 +238,87 @@
             </div>
         </nav>
 
-                    <div class="bento-container">
-                        <!-- Tiêu đề (Bento Header) -->
-                        <div class="bento-header" style="padding-bottom: 0;">
-                            <h3 style="margin: 0; font-size: 1.1rem; font-weight: 600; letter-spacing: 0.5px;">Danh sách văn bản</h3>
-                        </div>
+                <div class="sticky-toolbar" style="background: var(--bg-main); padding: 15px 20px; border-bottom: 1px solid var(--input-border); box-shadow: 0 2px 5px rgba(0,0,0,0.02); z-index: 1000; display: flex; flex-direction: column; gap: 15px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <h2 style="margin: 0; font-size: 1.25rem; font-weight: 600; color: var(--text-main);">Danh sách văn bản</h2>
+                        <button id="btn-mobile-filter" class="btn-secondary minimal-tab-btn" style="display: none;" onclick="document.getElementById('mobile-bottom-sheet').classList.add('show'); document.getElementById('sheet-backdrop').classList.add('show');">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+                        </button>
+                    </div>
 
-                        <!-- Date Filters (Bento Date) -->
-                        <div class="bento-box bento-date" style="flex-direction: row; align-items: center; justify-content: space-between; padding: 8px 12px;">
-                            <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 500;">📅 Từ</span>
-                            <input autocomplete="off" type="date" id="date-from" style="background: transparent; border: none; color: var(--text-main); font-size: 0.9rem; outline: none; flex: 1; padding: 4px; margin-left: 6px;">
-                            
-                            <span style="color: var(--glass-border); margin: 0 5px;">|</span>
-                            
-                            <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 500;">Đến</span>
-                            <input autocomplete="off" type="date" id="date-to" style="background: transparent; border: none; color: var(--text-main); font-size: 0.9rem; outline: none; flex: 1; padding: 4px; margin-left: 6px;">
-                            
+                    <div class="minimal-toolbar-row">
+                        <!-- Date Filter -->
+                        <div class="minimal-input-group">
+                            <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 500; margin-right: 5px;">Từ</span>
+                            <input autocomplete="off" type="date" id="date-from">
+                            <span style="color: var(--input-border); margin: 0 8px;">|</span>
+                            <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 500; margin-right: 5px;">Đến</span>
+                            <input autocomplete="off" type="date" id="date-to">
                             <button id="btn-refresh" class="btn-primary" style="display: none;">Tải lại</button>
                         </div>
 
-                        <!-- Search & Filter (Bento Search) -->
-                        <div class="bento-box bento-search" style="flex-direction: row; align-items: center; padding: 6px; gap: 8px; border: none; background: transparent; box-shadow: none;">
-                            <div style="display: flex; align-items: center; flex: 1; background: var(--input-bg); border-radius: 12px; padding: 0 12px; height: 42px; border: 1px solid var(--glass-border);">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--text-muted);"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                                <input type="text" id="grid-search" placeholder="Tên BN, hồ sơ..." style="background: transparent; border: none; color: var(--text-main); font-size: 0.95rem; width: 100%; outline: none; padding: 0 10px;">
-                                <button id="btn-clear-search" style="background: none; border: none; color: var(--text-muted); cursor: pointer; display: none; padding: 5px;">
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                                </button>
-                            </div>
-                            <button id="btn-search" class="btn-primary" style="width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center; padding: 0; margin: 0; border: none; flex-shrink: 0;" title="Tìm kiếm">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                        <!-- Search -->
+                        <div class="minimal-input-group" style="flex: 1; min-width: 250px;">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--text-muted); margin-right: 8px;"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                            <input type="text" id="grid-search" placeholder="Tên BN, hồ sơ..." style="width: 100%;">
+                            <button id="btn-clear-search" style="background: none; border: none; color: var(--text-muted); cursor: pointer; display: none; padding: 5px;">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                             </button>
-                            <button id="btn-mobile-filter" class="btn-secondary" style="width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center; padding: 0; margin: 0; flex-shrink: 0;" title="Lọc nâng cao" onclick="document.getElementById('mobile-bottom-sheet').classList.add('show'); document.getElementById('sheet-backdrop').classList.add('show');">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
-                            </button>
-                        </div>
-
-                        <!-- Tabs (Bento Tabs) -->
-                        <div class="bento-box bento-tabs" style="flex-direction: row; padding: 4px; border-radius: 14px;">
-                            <button class="tab-btn active" data-tab="0" style="flex: 1; border-radius: 10px; font-size: 0.95rem; padding: 8px; justify-content: center; border: none; font-weight: 600;">✍️ Chưa ký <span id="badge-chua-ky" class="badge">0</span></button>
-                            <button class="tab-btn" data-tab="1" style="flex: 1; border-radius: 10px; font-size: 0.95rem; padding: 8px; justify-content: center; border: none; font-weight: 600;">✅ Đã ký <span id="badge-da-ky" class="badge">0</span></button>
                         </div>
                         
-                        <!-- Filter Advanced (Bento Box on PC, Bottom Sheet on Mobile) -->
-                        <div id="mobile-bottom-sheet" class="bottom-sheet bento-box bento-advanced-filters">
-                            <div class="bottom-sheet-header">
-                                <h4>Bộ lọc nâng cao</h4>
-                                <button type="button" class="btn-close-sheet" onclick="document.getElementById('mobile-bottom-sheet').classList.remove('show'); document.getElementById('sheet-backdrop').classList.remove('show');">&times;</button>
-                            </div>
-                            
-                            <div class="bottom-sheet-content">
-                                <div class="filters-container" id="filters-container" style="display: block; margin-top: 0; padding-top: 0; border-top: none;">
-                                    <div class="filter-row" style="margin-bottom: 15px; display: flex; gap: 15px; flex-wrap: wrap;">
-                                        <div class="input-group" style="flex: 1; min-width: 200px; margin-bottom: 0;">
-                                            <label style="font-size: 0.8rem; color: #8892b0; margin-bottom: 2px; display: block;">👑 QUYỀN KÝ</label>
-                                            <select autocomplete="off" id="quyen-ky-select" class="form-control" style="padding: 6px 10px; font-size: 0.9rem; border-radius: 8px; width: 100%;">
-                                                <option value="">-- Tất cả --</option>
-                                            </select>
-                                        </div>
-                                        <div id="lanh-dao-checkbox-container" style="display: none; align-items: center; gap: 5px; margin-bottom: 0;">
-                                            <input type="checkbox" id="chk-lanh-dao" style="cursor: pointer; width: 18px; height: 18px; margin: 0;">
-                                            <label for="chk-lanh-dao" style="font-size: 0.95rem; color: var(--text-main); margin: 0; cursor: pointer; font-weight: 600;">Lãnh đạo bệnh viện</label>
-                                        </div>
-                                        <div id="all-roles-checkbox-container" style="display: flex; align-items: center; gap: 5px; margin-bottom: 0;">
-                                            <input type="checkbox" id="chk-all-roles" style="cursor: pointer; width: 18px; height: 18px; margin: 0;">
-                                            <label for="chk-all-roles" style="font-size: 0.95rem; color: var(--text-main); margin: 0; cursor: pointer; font-weight: 600;">Tất cả quyền có thể ký</label>
-                                        </div>
+                        <button id="btn-search" class="btn-primary minimal-tab-btn" style="padding: 8px 12px; display: flex; align-items: center; justify-content: center; border: none; color: white;" title="Tìm kiếm">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                        </button>
+
+                        <!-- Tabs -->
+                        <div class="minimal-tab-group">
+                            <button class="minimal-tab-btn active" data-tab="0">Chưa ký <span id="badge-chua-ky" class="badge">0</span></button>
+                            <button class="minimal-tab-btn" data-tab="1">Đã ký <span id="badge-da-ky" class="badge">0</span></button>
+                        </div>
+                    </div>
+
+                    <!-- Advanced Filters -->
+                    <div id="mobile-bottom-sheet" class="bottom-sheet minimal-advanced-filters">
+                        <div class="bottom-sheet-header">
+                            <h4>Bộ lọc nâng cao</h4>
+                            <button type="button" class="btn-close-sheet" onclick="document.getElementById('mobile-bottom-sheet').classList.remove('show'); document.getElementById('sheet-backdrop').classList.remove('show');">&times;</button>
+                        </div>
+                        <div class="bottom-sheet-content">
+                            <div class="filters-container" id="filters-container" style="display: flex; flex-direction: column; gap: 15px; border: none; padding: 0; margin: 0;">
+                                <div class="filter-row" style="display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 0;">
+                                    <div class="minimal-input-group" style="flex: 1; min-width: 200px; padding: 4px 12px;">
+                                        <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 500; margin-right: 8px; white-space: nowrap;">Quyền Ký</span>
+                                        <select autocomplete="off" id="quyen-ky-select" style="width: 100%;">
+                                            <option value="">-- Tất cả --</option>
+                                        </select>
                                     </div>
-                                    <div class="filter-row" style="display: flex; gap: 15px; flex-wrap: wrap;">
-                                        <div class="input-group" style="flex: 1; min-width: 200px;">
-                                            <label style="font-size: 0.8rem; color: #8892b0; margin-bottom: 2px; display: block;">🏢 PHÒNG BAN</label>
-                                            <select autocomplete="off" id="phong-ban-select" class="form-control" style="border-radius: 8px; width: 100%;">
-                                                <option value="">-- Tất cả --</option>
-                                            </select>
-                                        </div>
-                                        <div class="input-group" style="flex: 1; min-width: 200px;">
-                                            <label style="font-size: 0.8rem; color: #8892b0; margin-bottom: 2px; display: block;">📄 LOẠI GIẤY TỜ</label>
-                                            <select autocomplete="off" id="doc-type-select" class="form-control" style="border-radius: 8px; width: 100%;">
-                                                <option value="">-- Tất cả loại giấy tờ --</option>
-                                            </select>
-                                        </div>
+                                    <div id="lanh-dao-checkbox-container" style="display: none; align-items: center; gap: 5px;">
+                                        <input type="checkbox" id="chk-lanh-dao" style="cursor: pointer; width: 16px; height: 16px; margin: 0;">
+                                        <label for="chk-lanh-dao" style="font-size: 0.9rem; color: var(--text-main); margin: 0; cursor: pointer;">Lãnh đạo bệnh viện</label>
+                                    </div>
+                                    <div id="all-roles-checkbox-container" style="display: flex; align-items: center; gap: 5px;">
+                                        <input type="checkbox" id="chk-all-roles" style="cursor: pointer; width: 16px; height: 16px; margin: 0;">
+                                        <label for="chk-all-roles" style="font-size: 0.9rem; color: var(--text-main); margin: 0; cursor: pointer;">Tất cả quyền có thể ký</label>
+                                    </div>
+                                </div>
+                                <div class="filter-row" style="display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 0;">
+                                    <div class="minimal-input-group" style="flex: 1; min-width: 200px; padding: 4px 12px;">
+                                        <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 500; margin-right: 8px; white-space: nowrap;">Phòng Ban</span>
+                                        <select autocomplete="off" id="phong-ban-select" style="width: 100%;">
+                                            <option value="">-- Tất cả --</option>
+                                        </select>
+                                    </div>
+                                    <div class="minimal-input-group" style="flex: 1; min-width: 200px; padding: 4px 12px;">
+                                        <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 500; margin-right: 8px; white-space: nowrap;">Loại Giấy Tờ</span>
+                                        <select autocomplete="off" id="doc-type-select" style="width: 100%;">
+                                            <option value="">-- Tất cả loại giấy tờ --</option>
+                                        </select>
                                     </div>
                                 </div>
                             </div>
-
-                            <div class="bottom-sheet-footer">
-                                <button class="btn-primary" style="width: 100%; padding: 12px; font-size: 1.1rem; border-radius: 12px; font-weight: 600;" onclick="document.getElementById('mobile-bottom-sheet').classList.remove('show'); document.getElementById('sheet-backdrop').classList.remove('show'); document.getElementById('btn-refresh').click();">Áp dụng bộ lọc</button>
-                            </div>
+                        </div>
+                        <div class="bottom-sheet-footer">
+                            <button class="btn-primary" style="width: 100%; padding: 12px; font-size: 1.1rem; border-radius: 8px; font-weight: 500;" onclick="document.getElementById('mobile-bottom-sheet').classList.remove('show'); document.getElementById('sheet-backdrop').classList.remove('show'); document.getElementById('btn-refresh').click();">Áp dụng bộ lọc</button>
                         </div>
                     </div>
                 </div>

@@ -1,44 +1,43 @@
 :root {
     --primary: #0ea5e9;
     --primary-dark: #0284c7;
-    --bg-gradient-1: #0f172a;
-    --bg-gradient-2: #1e293b;
-    --glass-bg: rgba(30, 41, 59, 0.7);
-    --glass-border: rgba(255, 255, 255, 0.2);
-    --text-main: #f8fafc;
-    --text-muted: #94a3b8;
+    --bg-gradient-1: #ffffff;
+    --bg-gradient-2: #f8fafc;
+    --glass-bg: #ffffff;
+    --glass-border: #e2e8f0;
+    --text-main: #0f172a;
+    --text-muted: #64748b;
     --danger: #ef4444;
     --success: #10b981;
     --warning: #f59e0b;
 
-    --input-bg: rgba(255, 255, 255, 0.05);
-    --input-border: rgba(255, 255, 255, 0.25);
-    --input-focus: rgba(255, 255, 255, 0.1);
-    --table-border: rgba(255, 255, 255, 0.05);
-    --table-hover: rgba(255, 255, 255, 0.02);
-    --modal-bg: rgba(15, 23, 42, 0.95);
-    --modal-border: rgba(255, 255, 255, 0.2);
-    --overlay-bg: rgba(0, 0, 0, 0.6);
-    --card-bg: rgba(15, 23, 42, 0.6);
+    --input-bg: #ffffff;
+    --input-border: #cbd5e1;
+    --input-focus: #e0f2fe;
+    --table-border: #e2e8f0;
+    --table-hover: #f1f5f9;
+    --modal-bg: #ffffff;
+    --modal-border: #e2e8f0;
+    --overlay-bg: rgba(0, 0, 0, 0.4);
+    --card-bg: #ffffff;
 }
 
-[data-theme="light"] {
-  --bg-gradient-1: #f8fafc;
-  --bg-gradient-2: #e2e8f0;
-  --glass-bg: rgba(255, 255, 255, 0.85);
-  --glass-border: rgba(0, 0, 0, 0.2);
-  --text-main: #0f172a;
-  --text-muted: #475569;
-  
-  --input-bg: rgba(255, 255, 255, 0.8);
-  --input-border: rgba(0, 0, 0, 0.3);
-  --input-focus: rgba(0, 0, 0, 0.15);
-  --table-border: rgba(0, 0, 0, 0.1);
-  --table-hover: rgba(0, 0, 0, 0.04);
-  --modal-bg: rgba(255, 255, 255, 0.95);
-  --modal-border: rgba(0, 0, 0, 0.2);
-  --overlay-bg: rgba(255, 255, 255, 0.6);
-  --card-bg: rgba(255, 255, 255, 0.9);
+[data-theme="dark"] {
+    --bg-gradient-1: #0f172a;
+    --bg-gradient-2: #1e293b;
+    --glass-bg: #1e293b;
+    --glass-border: #334155;
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
+    --input-bg: #1e293b;
+    --input-border: #475569;
+    --input-focus: #334155;
+    --table-border: #334155;
+    --table-hover: #0f172a;
+    --modal-bg: #1e293b;
+    --modal-border: #334155;
+    --overlay-bg: rgba(0, 0, 0, 0.6);
+    --card-bg: #1e293b;
 }
 
 
@@ -104,37 +103,48 @@ body {
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 }
 
-/* Bento Grid System */
-.bento-container {
-    display: grid;
-    grid-template-columns: repeat(12, 1fr);
-    gap: 16px;
-    margin-bottom: 20px;
-    width: 100%;
-}
-.bento-box {
-    background: rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
-    border: 1px solid var(--glass-border);
-    border-radius: 20px;
-    padding: 16px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+/* Minimalist Layout */
+.minimal-toolbar-row {
     display: flex;
-    flex-direction: column;
-    justify-content: center;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    flex-wrap: wrap;
+    gap: 15px;
+    align-items: center;
+    margin-bottom: 15px;
 }
-[data-theme="dark"] .bento-box {
-    background: rgba(0, 0, 0, 0.2);
+.minimal-input-group {
+    background: var(--input-bg);
+    border: 1px solid var(--input-border);
+    border-radius: 8px;
+    padding: 6px 12px;
+    display: flex;
+    align-items: center;
 }
-.bento-box:hover {
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+.minimal-input-group input, .minimal-input-group select {
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text-main);
+    font-size: 0.95rem;
 }
-.bento-header { grid-column: span 12; display: flex; justify-content: space-between; align-items: center; padding: 10px 0; }
-.bento-date { grid-column: span 4; }
-.bento-search { grid-column: span 5; }
-.bento-tabs { grid-column: span 3; }
+.minimal-tab-group {
+    display: flex;
+    gap: 10px;
+}
+.minimal-tab-btn {
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: 1px solid var(--input-border);
+    background: var(--input-bg);
+    color: var(--text-muted);
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.minimal-tab-btn.active {
+    background: var(--primary);
+    color: #fff;
+    border-color: var(--primary);
+}
 
 /* Views Management */
 .view {
