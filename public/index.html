@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>eHospital - Cổng Ký Số Điện Tử</title>
-    <link rel="stylesheet" href="style.css?v=20260810_17">
+    <link rel="stylesheet" href="style.css?v=20260810_18">
     <style>
         .filter-row { display: flex; gap: 15px; margin-bottom: 15px; flex-wrap: wrap; }
         .filter-row .input-group { flex: 1; min-width: 200px; margin-bottom: 0; }
@@ -282,9 +282,10 @@
                         <button class="minimal-tab-btn tab-btn active" data-tab="0">Chưa ký <span id="badge-chua-ky" class="badge">0</span></button>
                         <button class="minimal-tab-btn tab-btn" data-tab="1">Đã ký <span id="badge-da-ky" class="badge">0</span></button>
                     </div>
+                </div>
 
-                    <!-- Advanced Filters -->
-                    <div id="mobile-bottom-sheet" class="bottom-sheet minimal-advanced-filters">
+                <!-- Advanced Filters -->
+                <div id="mobile-bottom-sheet" class="bottom-sheet minimal-advanced-filters">
                         <div class="bottom-sheet-header">
                             <h4>Bộ lọc nâng cao</h4>
                             <button type="button" class="btn-close-sheet" onclick="document.getElementById('mobile-bottom-sheet').classList.remove('show'); document.getElementById('sheet-backdrop').classList.remove('show');">&times;</button>
@@ -327,7 +328,6 @@
                             <button class="btn-primary" style="width: 100%; padding: 12px; font-size: 1.1rem; border-radius: 8px; font-weight: 500;" onclick="document.getElementById('mobile-bottom-sheet').classList.remove('show'); document.getElementById('sheet-backdrop').classList.remove('show'); document.getElementById('btn-refresh').click();">Áp dụng bộ lọc</button>
                         </div>
                     </div>
-                </div>
 
                 <div id="sheet-backdrop" class="sheet-backdrop" onclick="document.getElementById('mobile-bottom-sheet').classList.remove('show'); document.getElementById('sheet-backdrop').classList.remove('show');"></div>
 
