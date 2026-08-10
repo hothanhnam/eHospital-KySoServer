@@ -1,4 +1,4 @@
-const express = require('express');
+﻿const express = require('express');
 const cors = require('cors');
 const http = require('http');
 const WebSocket = require('ws');
@@ -281,6 +281,7 @@ wss.on('connection', (ws, req) => {
     });
 
     ws.on('message', (message) => {
+        ws.isAlive = true;
         try {
             const data = JSON.parse(message);
             console.log(`[WS] Received:`, data);
@@ -543,7 +544,7 @@ app.post('/api/login', async (req, res) => {
             pendingRequests.delete(reqId);
             res.json({ success: false, message: 'Máy ký số không phản hồi (Timeout)!' });
         }
-    }, 15000); // 15 seconds timeout
+    }, 30000); // 15 seconds timeout
 
     pendingRequests.set(reqId, { 
         res, 
@@ -968,7 +969,7 @@ const interval = setInterval(() => {
         ws.isAlive = false;
         ws.ping();
     });
-}, 15000);
+}, 30000);
 
 wss.on('close', () => {
     clearInterval(interval);
