@@ -91,7 +91,38 @@
                   padding-bottom: env(safe-area-inset-bottom) !important;
                   box-sizing: border-box !important;
               }
+              
+            /* Bottom Sheet CSS */
+            .bottom-sheet {
+                position: fixed; bottom: 0; left: 0; right: 0; background: var(--card-bg);
+                border-radius: 24px 24px 0 0; padding: 0; box-shadow: 0 -5px 25px rgba(0,0,0,0.3);
+                z-index: 2000; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                display: flex !important; flex-direction: column; max-height: 85vh; visibility: hidden;
+            }
+            .bottom-sheet.show { transform: translateY(0); visibility: visible; }
+            .bottom-sheet-header {
+                display: flex; justify-content: space-between; align-items: center; padding: 15px 20px;
+                border-bottom: 1px solid var(--glass-border);
+            }
+            .bottom-sheet-header h4 { margin: 0; font-size: 1.2rem; color: var(--text-main); font-weight: 600; }
+            .btn-close-sheet { background: none; border: none; font-size: 1.5rem; color: var(--text-muted); cursor: pointer; padding: 5px; line-height: 1; }
+            .bottom-sheet-content { padding: 20px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+            .bottom-sheet-footer {
+                display: block; padding: 15px 20px; border-top: 1px solid var(--glass-border);
+                background: var(--card-bg); padding-bottom: calc(15px + env(safe-area-inset-bottom));
+            }
+            .sheet-backdrop {
+                display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+                background: rgba(0,0,0,0.5); z-index: 1999; opacity: 0; transition: opacity 0.3s ease;
+            }
+            .sheet-backdrop.show { display: block; opacity: 1; }
+            .date-filter-always-visible, .filter-row { flex-direction: column !important; gap: 15px !important; margin-bottom: 0 !important; }
+            .date-filter-always-visible .input-group, .filter-row .input-group { width: 100% !important; min-width: 100% !important; }
+            .filters-container { display: block !important; margin-top: 15px; border-top: 1px dashed var(--glass-border); padding-top: 15px; }
         }
+        /* PC CSS cho Bottom Sheet */
+        .bottom-sheet-header, .bottom-sheet-footer, .sheet-backdrop { display: none; }
+        .bottom-sheet { display: block !important; }
     </style>
 </head>
 <body>
@@ -213,33 +244,6 @@
                         </div>
                     </div>
 
-                    <!-- Ngày tháng (Luôn hiện) -->
-                    <div class="date-filter-always-visible" style="display: flex; gap: 10px; margin-bottom: 10px; align-items: flex-end; flex-wrap: wrap;">
-                        <div class="input-group" style="flex: 1; min-width: 130px; margin-bottom: 0;">
-                            <label style="font-size: 0.8rem; color: #8892b0; margin-bottom: 2px; display: block;">📅 TỪ NGÀY</label>
-                            <input autocomplete="off" type="date" id="date-from" class="form-control" style="padding: 6px 10px; font-size: 0.9rem; border-radius: 8px;">
-                        </div>
-                        <div class="input-group" style="flex: 1; min-width: 130px; margin-bottom: 0;">
-                            <label style="font-size: 0.8rem; color: #8892b0; margin-bottom: 2px; display: block;">📅 ĐẾN NGÀY</label>
-                            <input autocomplete="off" type="date" id="date-to" class="form-control" style="padding: 6px 10px; font-size: 0.9rem; border-radius: 8px;">
-                        </div>
-                        <div class="input-group" style="flex: 1; min-width: 130px; margin-bottom: 0;">
-                            <label style="font-size: 0.8rem; color: #8892b0; margin-bottom: 2px; display: block;">👤 QUYỀN KÝ</label>
-                            <select autocomplete="off" id="quyen-ky-select" class="form-control" style="padding: 6px 10px; font-size: 0.9rem; border-radius: 8px;">
-                                <option value="">-- Tất cả --</option>
-                            </select>
-                        </div>
-                        <div id="lanh-dao-checkbox-container" style="display: none; align-items: center; gap: 5px; margin-bottom: 0; padding-bottom: 4px;">
-                            <input type="checkbox" id="chk-lanh-dao" style="cursor: pointer; width: 18px; height: 18px; margin: 0;">
-                            <label for="chk-lanh-dao" style="font-size: 0.95rem; color: var(--text-main); margin: 0; cursor: pointer; font-weight: 600;">Lãnh đạo bệnh viện</label>
-                        </div>
-                        <div id="all-roles-checkbox-container" style="display: flex; align-items: center; gap: 5px; margin-bottom: 0; padding-bottom: 4px;">
-                            <input type="checkbox" id="chk-all-roles" style="cursor: pointer; width: 18px; height: 18px; margin: 0;">
-                            <label for="chk-all-roles" style="font-size: 0.95rem; color: var(--text-main); margin: 0; cursor: pointer; font-weight: 600;">Tất cả quyền có thể ký</label>
-                        </div>
-                        <button id="btn-refresh" class="btn-primary" style="display: none;">Tải lại</button>
-                    </div>
-
                     <!-- Thanh tìm kiếm và nút Lọc -->
                     <div style="display: flex; gap: 10px; margin-bottom: 15px; width: 100%;">
                         <div class="search-box" style="position: relative; flex-grow: 1; display: flex; gap: 10px;">
@@ -254,33 +258,75 @@
                                 Tìm kiếm
                             </button>
                         </div>
-                        <button id="btn-mobile-filter" class="btn-secondary" style="width: 42px; height: 42px; padding: 0; display: flex; align-items: center; justify-content: center; border-radius: 12px; flex-shrink: 0;" title="Lọc nâng cao">
+                        <button id="btn-mobile-filter" class="btn-secondary" style="width: 42px; height: 42px; padding: 0; display: flex; align-items: center; justify-content: center; border-radius: 12px; flex-shrink: 0;" title="Lọc nâng cao" onclick="document.getElementById('mobile-bottom-sheet').classList.add('show'); document.getElementById('sheet-backdrop').classList.add('show');">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
                         </button>
                     </div>
 
                     <!-- Tabs Chưa ký / Đã ký -->
-                    <div class="tabs-container" style="display: flex; width: 100%; background: var(--card-bg); padding: 4px; border-radius: 12px; border: 1px solid var(--glass-border);">
+                    <div class="tabs-container" style="display: flex; width: 100%; background: var(--card-bg); padding: 4px; border-radius: 12px; border: 1px solid var(--glass-border); margin-bottom: 0;">
                         <button class="tab-btn active" data-tab="0" style="flex: 1; border-radius: 8px; font-size: 0.95rem; padding: 8px; justify-content: center;">✍️ Chưa ký <span id="badge-chua-ky" class="badge">0</span></button>
                         <button class="tab-btn" data-tab="1" style="flex: 1; border-radius: 8px; font-size: 0.95rem; padding: 8px; justify-content: center;">✅ Đã ký <span id="badge-da-ky" class="badge">0</span></button>
                     </div>
-                    
-                    <div class="filters-container" id="filters-container">
 
-                        <div class="filter-row">
-                            <div class="input-group">
-                                <label>🏢 PHÒNG BAN</label>
-                                <select autocomplete="off" id="phong-ban-select" class="form-control" style="border-radius: 8px;">
-                                    <option value="">-- Tất cả --</option>
-                                </select>
+                    <!-- Backdrop của Bottom Sheet -->
+                    <div id="sheet-backdrop" class="sheet-backdrop" onclick="document.getElementById('mobile-bottom-sheet').classList.remove('show'); document.getElementById('sheet-backdrop').classList.remove('show');"></div>
+
+                    <!-- Bottom Sheet chứa các Filter -->
+                    <div id="mobile-bottom-sheet" class="bottom-sheet">
+                        <div class="bottom-sheet-header">
+                            <h4>Bộ lọc nâng cao</h4>
+                            <button type="button" class="btn-close-sheet" onclick="document.getElementById('mobile-bottom-sheet').classList.remove('show'); document.getElementById('sheet-backdrop').classList.remove('show');">&times;</button>
+                        </div>
+                        
+                        <div class="bottom-sheet-content">
+                            <!-- Ngày tháng (Luôn hiện trên PC) -->
+                            <div class="date-filter-always-visible" style="display: flex; gap: 10px; margin-bottom: 10px; align-items: flex-end; flex-wrap: wrap;">
+                                <div class="input-group" style="flex: 1; min-width: 130px; margin-bottom: 0;">
+                                    <label style="font-size: 0.8rem; color: #8892b0; margin-bottom: 2px; display: block;">📅 TỪ NGÀY</label>
+                                    <input autocomplete="off" type="date" id="date-from" class="form-control" style="padding: 6px 10px; font-size: 0.9rem; border-radius: 8px;">
+                                </div>
+                                <div class="input-group" style="flex: 1; min-width: 130px; margin-bottom: 0;">
+                                    <label style="font-size: 0.8rem; color: #8892b0; margin-bottom: 2px; display: block;">📅 ĐẾN NGÀY</label>
+                                    <input autocomplete="off" type="date" id="date-to" class="form-control" style="padding: 6px 10px; font-size: 0.9rem; border-radius: 8px;">
+                                </div>
+                                <div class="input-group" style="flex: 1; min-width: 130px; margin-bottom: 0;">
+                                    <label style="font-size: 0.8rem; color: #8892b0; margin-bottom: 2px; display: block;">👤 QUYỀN KÝ</label>
+                                    <select autocomplete="off" id="quyen-ky-select" class="form-control" style="padding: 6px 10px; font-size: 0.9rem; border-radius: 8px;">
+                                        <option value="">-- Tất cả --</option>
+                                    </select>
+                                </div>
+                                <div id="lanh-dao-checkbox-container" style="display: none; align-items: center; gap: 5px; margin-bottom: 0; padding-bottom: 4px;">
+                                    <input type="checkbox" id="chk-lanh-dao" style="cursor: pointer; width: 18px; height: 18px; margin: 0;">
+                                    <label for="chk-lanh-dao" style="font-size: 0.95rem; color: var(--text-main); margin: 0; cursor: pointer; font-weight: 600;">Lãnh đạo bệnh viện</label>
+                                </div>
+                                <div id="all-roles-checkbox-container" style="display: flex; align-items: center; gap: 5px; margin-bottom: 0; padding-bottom: 4px;">
+                                    <input type="checkbox" id="chk-all-roles" style="cursor: pointer; width: 18px; height: 18px; margin: 0;">
+                                    <label for="chk-all-roles" style="font-size: 0.95rem; color: var(--text-main); margin: 0; cursor: pointer; font-weight: 600;">Tất cả quyền có thể ký</label>
+                                </div>
+                                <button id="btn-refresh" class="btn-primary" style="display: none;">Tải lại</button>
                             </div>
 
-                            <div class="input-group">
-                                <label>📄 LOẠI GIẤY TỜ</label>
-                                <select autocomplete="off" id="doc-type-select" class="form-control" style="border-radius: 8px;">
-                                    <option value="">-- Tất cả loại giấy tờ --</option>
-                                </select>
+                            <div class="filters-container" id="filters-container">
+                                <div class="filter-row">
+                                    <div class="input-group">
+                                        <label>🏢 PHÒNG BAN</label>
+                                        <select autocomplete="off" id="phong-ban-select" class="form-control" style="border-radius: 8px;">
+                                            <option value="">-- Tất cả --</option>
+                                        </select>
+                                    </div>
+                                    <div class="input-group">
+                                        <label>📄 LOẠI GIẤY TỜ</label>
+                                        <select autocomplete="off" id="doc-type-select" class="form-control" style="border-radius: 8px;">
+                                            <option value="">-- Tất cả loại giấy tờ --</option>
+                                        </select>
+                                    </div>
+                                </div>
                             </div>
+                        </div>
+
+                        <div class="bottom-sheet-footer">
+                            <button class="btn-primary" style="width: 100%; padding: 12px; font-size: 1.1rem; border-radius: 12px; font-weight: 600;" onclick="document.getElementById('mobile-bottom-sheet').classList.remove('show'); document.getElementById('sheet-backdrop').classList.remove('show'); document.getElementById('btn-refresh').click();">Áp dụng bộ lọc</button>
                         </div>
                     </div>
                 </div>
