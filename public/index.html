@@ -268,8 +268,9 @@
                         </div>
                         
                         <div style="display: flex; gap: 10px;">
-                            <button id="btn-search" class="btn-primary minimal-tab-btn" style="padding: 8px 12px; display: flex; align-items: center; justify-content: center; border: none; color: white;" title="Tìm kiếm">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                            <button id="btn-search" class="btn-primary minimal-tab-btn" style="padding: 8px 12px; display: flex; align-items: center; justify-content: center; border: none; color: white; gap: 6px;" title="Tìm kiếm">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                                <span>Tìm kiếm</span>
                             </button>
                             
                             <button id="btn-mobile-filter" class="btn-secondary minimal-tab-btn" style="display: flex; align-items: center; gap: 5px; font-weight: 500;" onclick="document.getElementById('mobile-bottom-sheet').classList.add('show'); document.getElementById('sheet-backdrop').classList.add('show');">
@@ -280,8 +281,8 @@
 
                         <!-- Tabs -->
                         <div class="minimal-tab-group" style="margin-left: auto;">
-                            <button class="minimal-tab-btn active" data-tab="0">Chưa ký <span id="badge-chua-ky" class="badge">0</span></button>
-                            <button class="minimal-tab-btn" data-tab="1">Đã ký <span id="badge-da-ky" class="badge">0</span></button>
+                            <button class="minimal-tab-btn tab-btn active" data-tab="0">Chưa ký <span id="badge-chua-ky" class="badge">0</span></button>
+                            <button class="minimal-tab-btn tab-btn" data-tab="1">Đã ký <span id="badge-da-ky" class="badge">0</span></button>
                         </div>
                     </div>
 
