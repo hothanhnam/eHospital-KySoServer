@@ -138,6 +138,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
+    gap: 8px;
     border-radius: 12px 12px 0 0;
     border: 1px solid var(--input-border);
     border-bottom: none;
