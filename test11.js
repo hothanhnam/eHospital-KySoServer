@@ -1,0 +1,1 @@
+﻿const fs = require('fs'); const html = fs.readFileSync('public/index.html', 'utf8'); let lines = html.split('\n'); let diff = 0; for(let i=0; i<lines.length; i++) { diff += (lines[i].match(/<div\b[^>]*>/gi)||[]).length - (lines[i].match(/<\/div>/gi)||[]).length; if (diff < 0) { console.log('Went negative at line ' + (i+1) + ': ' + lines[i]); break; } }

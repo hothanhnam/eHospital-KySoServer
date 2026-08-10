@@ -1,0 +1,1 @@
+﻿const fs = require('fs'); const html = fs.readFileSync('public/index.html', 'utf8'); const start = html.indexOf('<div id="tab-nhan-vien"'); const end = html.indexOf('<!-- End tab-nhan-vien -->'); const sec = html.substring(start, end); let lines = sec.split('\n'); for(let i=120; i<=135; i++) { console.log(i + ': ' + lines[i]); }
