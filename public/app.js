@@ -28,7 +28,7 @@ function updateThemeIcon() {
 let currentUser = null;
 let documentTypes = [];
 let patientsList = [];
-let currentTab = 0; // 0: Chưa ký, 1: Đã ký
+let currentTab = 0; // 0: ChÆ°a kÃ½, 1: ÄÃ£ kÃ½
 let currentPage = 1;
 let pageSize = parseInt(localStorage.getItem('kyso_pageSize') || '10');
 let currentDocTypeIndex = -1;
@@ -90,13 +90,13 @@ async function callAgent(type, payload) {
     const data = await res.json();
     
     // Auto logout if agent is missing/disconnected or session expired
-    if (!data.success && data.message && (data.message.includes('không khả dụng') || data.message.includes('mất kết nối'))) {
-        showToast('Mất kết nối với Máy ký số. Đang đăng xuất...', 'error');
+    if (!data.success && data.message && (data.message.includes('khÃ´ng kháº£ dá»¥ng') || data.message.includes('máº¥t káº¿t ná»‘i'))) {
+        showToast('Máº¥t káº¿t ná»‘i vá»›i MÃ¡y kÃ½ sá»‘. Äang Ä‘Äƒng xuáº¥t...', 'error');
         setTimeout(forceLogout, 1500);
         throw new Error('Agent disconnected');
     }
     if (data.success && data.data && data.data.error === 'UNAUTHORIZED') {
-        showToast('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.', 'error');
+        showToast('PhiÃªn Ä‘Äƒng nháº­p Ä‘Ã£ háº¿t háº¡n. Vui lÃ²ng Ä‘Äƒng nháº­p láº¡i.', 'error');
         setTimeout(forceLogout, 1500);
         throw new Error('Unauthorized');
     }
@@ -125,7 +125,7 @@ async function fetchAgents() {
         
         if (currentUser && currentUser.activeAgentId) {
             if (!data.data.includes(currentUser.activeAgentId)) {
-                showToast('Máy ký số của bạn đã ngắt kết nối!', 'error');
+                showToast('MÃ¡y kÃ½ sá»‘ cá»§a báº¡n Ä‘Ã£ ngáº¯t káº¿t ná»‘i!', 'error');
                 setTimeout(forceLogout, 1500);
                 // Continue to update the dropdown for the login screen
             }
@@ -133,7 +133,7 @@ async function fetchAgents() {
         
         agentSelect.innerHTML = '';
         if (data.data.length === 0) {
-            agentSelect.innerHTML = '<option value="">-- Chưa có máy ký số nào đang bật --</option>';
+            agentSelect.innerHTML = '<option value="">-- ChÆ°a cÃ³ mÃ¡y kÃ½ sá»‘ nÃ o Ä‘ang báº­t --</option>';
         } else {
             data.data.forEach(agentId => {
                 const opt = document.createElement('option');
@@ -144,7 +144,7 @@ async function fetchAgents() {
             agentSelect.selectedIndex = 0;
         }
     } catch (err) {
-        agentSelect.innerHTML = '<option value="">Lỗi tải danh sách Agent</option>';
+        agentSelect.innerHTML = '<option value="">Lá»—i táº£i danh sÃ¡ch Agent</option>';
     }
 }
 if (btnRefreshAgents) {
@@ -167,7 +167,7 @@ async function handleLogin() {
         try {
             captchaToken = turnstile.getResponse(window.turnstileWidgetId);
             if (!captchaToken) {
-                if(loginError) loginError.textContent = 'Vui lòng xác nhận Captcha (Chống Spam)!';
+                if(loginError) loginError.textContent = 'Vui lÃ²ng xÃ¡c nháº­n Captcha (Chá»‘ng Spam)!';
                 return;
             }
         } catch (e) {
@@ -179,9 +179,9 @@ async function handleLogin() {
 
     if(loginError) loginError.textContent = '';
     
-    // Hiển thị Waitform (Loading Overlay) trước khi gửi Request
-    if(loadingTitle) loadingTitle.textContent = 'Đang xử lý...';
-    if(loadingDesc) loadingDesc.textContent = 'Đang kiểm tra thông tin đăng nhập.';
+    // Hiá»ƒn thá»‹ Waitform (Loading Overlay) trÆ°á»›c khi gá»­i Request
+    if(loadingTitle) loadingTitle.textContent = 'Äang xá»­ lÃ½...';
+    if(loadingDesc) loadingDesc.textContent = 'Äang kiá»ƒm tra thÃ´ng tin Ä‘Äƒng nháº­p.';
     if(loadingOverlay) loadingOverlay.classList.remove('hidden');
     
     try {
@@ -193,27 +193,27 @@ async function handleLogin() {
         const data = await res.json();
         
         if (data.requireOtp) {
-            // Hiển thị form OTP
+            // Hiá»ƒn thá»‹ form OTP
             document.getElementById('login-form').style.display = 'none';
             document.getElementById('otp-form').style.display = 'block';
             document.getElementById('otp-phone').textContent = data.phoneMasked || '*******86';
             window.tempOtpToken = data.tempToken;
             window.otpUsername = username;
             
-            // Xoá trắng form sau khi đã bị che khuất
+            // XoÃ¡ tráº¯ng form sau khi Ä‘Ã£ bá»‹ che khuáº¥t
             usernameInput.value = '';
             passwordInput.value = '';
             return;
         }
 
         if (data.success) {
-            // Xoá trắng form
+            // XoÃ¡ tráº¯ng form
             usernameInput.value = '';
             passwordInput.value = '';
             processLoginSuccess(data);
         } else {
-            if(loginError) loginError.textContent = data.message || 'Đăng nhập thất bại!';
-            // Chỉ clear mật khẩu nếu sai
+            if(loginError) loginError.textContent = data.message || 'ÄÄƒng nháº­p tháº¥t báº¡i!';
+            // Chá»‰ clear máº­t kháº©u náº¿u sai
             passwordInput.value = '';
             // Reset turnstile widget if login fails
             if (window.turnstileRequired && window.turnstileWidgetId !== null && window.turnstile) {
@@ -221,9 +221,9 @@ async function handleLogin() {
             }
         }
     } catch (err) {
-        if(loginError) loginError.textContent = 'Lỗi kết nối đến máy chủ!';
+        if(loginError) loginError.textContent = 'Lá»—i káº¿t ná»‘i Ä‘áº¿n mÃ¡y chá»§!';
     } finally {
-        // Tắt Waitform
+        // Táº¯t Waitform
         if(loadingOverlay) loadingOverlay.classList.add('hidden');
     }
 }
@@ -239,7 +239,7 @@ function processLoginSuccess(data) {
     
     localStorage.setItem('kyso_user', JSON.stringify(currentUser));
     
-    // Đảm bảo Reset Form
+    // Äáº£m báº£o Reset Form
     document.getElementById('login-form').style.display = 'block';
     const otpForm = document.getElementById('otp-form');
     if (otpForm) otpForm.style.display = 'none';
@@ -253,7 +253,7 @@ async function handleVerifyOtp() {
     const otpCode = document.getElementById('otp-code').value;
     const otpError = document.getElementById('otp-error');
     if (!otpCode || otpCode.length < 6) {
-        otpError.textContent = 'Vui lòng nhập đủ 6 số OTP.';
+        otpError.textContent = 'Vui lÃ²ng nháº­p Ä‘á»§ 6 sá»‘ OTP.';
         return;
     }
 
@@ -272,11 +272,11 @@ async function handleVerifyOtp() {
         if (data.success) {
             processLoginSuccess(data);
         } else {
-            otpError.textContent = data.message || 'Mã OTP không chính xác!';
+            otpError.textContent = data.message || 'MÃ£ OTP khÃ´ng chÃ­nh xÃ¡c!';
             btnVerify.disabled = false;
         }
     } catch (e) {
-        otpError.textContent = 'Lỗi kết nối máy chủ!';
+        otpError.textContent = 'Lá»—i káº¿t ná»‘i mÃ¡y chá»§!';
         btnVerify.disabled = false;
     }
 }
@@ -324,7 +324,7 @@ function showToast(message, type = 'info') {
     }, 3000);
 }
 
-function showConfirm(message, onConfirm, title = 'Xác nhận thao tác', okText = 'Xác nhận') {
+function showConfirm(message, onConfirm, title = 'XÃ¡c nháº­n thao tÃ¡c', okText = 'XÃ¡c nháº­n') {
     const modal = document.getElementById('confirm-modal');
     const titleEl = document.getElementById('confirm-title');
     if (titleEl) titleEl.textContent = title;
@@ -398,7 +398,7 @@ function showPrompt(title, message, onConfirm, inputType = 'password', placehold
 }
 
 btnLogout.addEventListener('click', () => {
-    showConfirm('Bạn có chắc chắn muốn thoát phiên làm việc hiện tại?', async () => {
+    showConfirm('Báº¡n cÃ³ cháº¯c cháº¯n muá»‘n thoÃ¡t phiÃªn lÃ m viá»‡c hiá»‡n táº¡i?', async () => {
         try {
             await fetch('/api/logout', {
                 method: 'POST',
@@ -407,13 +407,13 @@ btnLogout.addEventListener('click', () => {
             });
         } catch (err) {}
         forceLogout();
-    }, 'Xác nhận Đăng xuất', 'Đăng xuất');
+    }, 'XÃ¡c nháº­n ÄÄƒng xuáº¥t', 'ÄÄƒng xuáº¥t');
 });
 
 function showDashboard() {
     loginView.classList.remove('active');
     dashboardView.classList.add('active');
-    userGreeting.textContent = 'Xin chào, ' + currentUser.name;
+    userGreeting.textContent = 'Xin chÃ o, ' + currentUser.name;
     
     const adminDropdown = document.getElementById('admin-dropdown-container');
     if (currentUser.isAdmin) {
@@ -422,7 +422,7 @@ function showDashboard() {
         if(adminDropdown) adminDropdown.style.display = 'none';
     }
     
-    // Reset tab to "Chưa ký" (0)
+    // Reset tab to "ChÆ°a kÃ½" (0)
     currentTab = 0;
     tabBtns.forEach(b => {
         if(b.dataset.tab === "0") b.classList.add('active');
@@ -443,13 +443,13 @@ async function loadFilters() {
         const agentData = res?.data?.data;
         if (agentData) {
             if (agentData.phongBan) {
-                phongBanSelect.innerHTML = '<option value="">-- Tất cả --</option>' + 
+                phongBanSelect.innerHTML = '<option value="">-- Táº¥t cáº£ --</option>' + 
                     agentData.phongBan.map(p => `<option value="${p.MaPhongBan}">${p.TenPhongBan}</option>`).join('');
             }
             if (agentData.quyenKy) {
-                quyenKySelect.innerHTML = '<option value="">-- Tất cả --</option>' + 
+                quyenKySelect.innerHTML = '<option value="">-- Táº¥t cáº£ --</option>' + 
                     agentData.quyenKy.map(q => `<option value="${q.MaQuyenKy}">${q.TenQuyenKy}</option>`).join('');
-                const lanhDaoOpt = Array.from(quyenKySelect.options).find(o => o.text.trim().toLowerCase() === "ban lãnh đạo bệnh viện");
+                const lanhDaoOpt = Array.from(quyenKySelect.options).find(o => o.text.trim().toLowerCase() === "ban lÃ£nh Ä‘áº¡o bá»‡nh viá»‡n");
                 if (chkLanhDaoContainer) {
                     if (lanhDaoOpt) {
                         chkLanhDaoContainer.style.display = 'flex';
@@ -469,13 +469,13 @@ async function loadFilters() {
             }
         }
     } catch (err) {
-        console.error("Lỗi tải bộ lọc:", err);
+        console.error("Lá»—i táº£i bá»™ lá»c:", err);
     }
 }
 
 async function loadDocumentTypes() {
-    if (loadingTitle) loadingTitle.textContent = 'Đang xử lý...';
-    if (loadingDesc) loadingDesc.textContent = 'Vui lòng chờ trong giây lát.';
+    if (loadingTitle) loadingTitle.textContent = 'Äang xá»­ lÃ½...';
+    if (loadingDesc) loadingDesc.textContent = 'Vui lÃ²ng chá» trong giÃ¢y lÃ¡t.';
     loadingOverlay.classList.remove('hidden');
     try {
         const res = await callAgent('get-document-types', {
@@ -490,11 +490,11 @@ async function loadDocumentTypes() {
             documentTypes = data.data.data;
             if(docTypeSelect) {
                 const prevSelection = currentDocTypeIndex;
-                docTypeSelect.innerHTML = '<option value="-1">-- Tất cả loại giấy tờ --</option>';
+                docTypeSelect.innerHTML = '<option value="-1">-- Táº¥t cáº£ loáº¡i giáº¥y tá» --</option>';
                 documentTypes.forEach((dt, idx) => {
                     const opt = document.createElement('option');
                     opt.value = idx;
-                    opt.textContent = (dt.TenGiayTo || dt.TenLoaiBaoCao || 'Tài liệu') + ' (Chưa ký: ' + (dt.SoLuong_ChuaKy || dt.CountChuaKy || 0) + ' / Đã ký: ' + (dt.SoLuong_DaKy || dt.CountDaKy || 0) + ')';
+                    opt.textContent = (dt.TenGiayTo || dt.TenLoaiBaoCao || 'TÃ i liá»‡u') + ' (ChÆ°a kÃ½: ' + (dt.SoLuong_ChuaKy || dt.CountChuaKy || 0) + ' / ÄÃ£ kÃ½: ' + (dt.SoLuong_DaKy || dt.CountDaKy || 0) + ')';
                     docTypeSelect.appendChild(opt);
                 });
                 if (prevSelection >= 0 && prevSelection < documentTypes.length) {
@@ -508,11 +508,11 @@ async function loadDocumentTypes() {
             updateBadges();
             loadPatients();
         } else {
-            showToast('Không tải được danh sách loại tài liệu', 'error');
+            showToast('KhÃ´ng táº£i Ä‘Æ°á»£c danh sÃ¡ch loáº¡i tÃ i liá»‡u', 'error');
             loadingOverlay.classList.add('hidden');
         }
     } catch (err) {
-        showToast('Lỗi kết nối tới Agent', 'error');
+        showToast('Lá»—i káº¿t ná»‘i tá»›i Agent', 'error');
         loadingOverlay.classList.add('hidden');
     }
 }
@@ -522,7 +522,7 @@ if(btnRefresh) btnRefresh.addEventListener('click', loadDocumentTypes);
 // Auto refresh on filter change removed - controlled by btn-search
 if(quyenKySelect) {
     quyenKySelect.addEventListener('change', () => {
-        if (quyenKySelect.options[quyenKySelect.selectedIndex]?.text.trim().toLowerCase() !== "ban lãnh đạo bệnh viện") {
+        if (quyenKySelect.options[quyenKySelect.selectedIndex]?.text.trim().toLowerCase() !== "ban lÃ£nh Ä‘áº¡o bá»‡nh viá»‡n") {
             if(chkLanhDao) chkLanhDao.checked = false;
         } else {
             if(chkLanhDao) chkLanhDao.checked = true;
@@ -538,7 +538,7 @@ if(chkLanhDao) {
         if (chkLanhDao.checked) {
             let found = false;
             for(let i = 0; i < quyenKySelect.options.length; i++) {
-                if (quyenKySelect.options[i].text.trim().toLowerCase() === "ban lãnh đạo bệnh viện") {
+                if (quyenKySelect.options[i].text.trim().toLowerCase() === "ban lÃ£nh Ä‘áº¡o bá»‡nh viá»‡n") {
                     quyenKySelect.selectedIndex = i;
                     found = true;
                     break;
@@ -586,8 +586,8 @@ function updateBadges() {
 async function loadPatients() {
     currentPage = 1;
     updateBadges();
-    if (loadingTitle) loadingTitle.textContent = 'Đang xử lý...';
-    if (loadingDesc) loadingDesc.textContent = 'Vui lòng chờ trong giây lát.';
+    if (loadingTitle) loadingTitle.textContent = 'Äang xá»­ lÃ½...';
+    if (loadingDesc) loadingDesc.textContent = 'Vui lÃ²ng chá» trong giÃ¢y lÃ¡t.';
     loadingOverlay.classList.remove('hidden');
     
     currentLoadToken++;
@@ -598,7 +598,7 @@ async function loadPatients() {
     
     try {
         if (currentDocTypeIndex == -1) {
-            // "Tất cả loại giấy tờ" -> Fetch 1 lần duy nhất bằng reportId = 0 để C# Agent tự xử lý gom nhóm, tránh quá tải WS
+            // "Táº¥t cáº£ loáº¡i giáº¥y tá»" -> Fetch 1 láº§n duy nháº¥t báº±ng reportId = 0 Ä‘á»ƒ C# Agent tá»± xá»­ lÃ½ gom nhÃ³m, trÃ¡nh quÃ¡ táº£i WS
             const data = await callAgent('get-patients-by-document', {
                 documentInstanceIDs: '',
                 reportId: 0,
@@ -609,7 +609,7 @@ async function loadPatients() {
                 signStatus: currentTab,
                 allRoles: chkAllRoles ? chkAllRoles.checked : false
             });
-            if (myToken !== currentLoadToken) return; // Bỏ qua nếu có request mới hơn
+            if (myToken !== currentLoadToken) return; // Bá» qua náº¿u cÃ³ request má»›i hÆ¡n
             
             if (data.success && data.data && data.data.data) {
                 patientsList = data.data.data;
@@ -640,13 +640,13 @@ async function loadPatients() {
                 signStatus: currentTab,
                 allRoles: chkAllRoles ? chkAllRoles.checked : false
             });
-            if (myToken !== currentLoadToken) return; // Bỏ qua nếu có request mới hơn
+            if (myToken !== currentLoadToken) return; // Bá» qua náº¿u cÃ³ request má»›i hÆ¡n
             
             if (data.success && data.data && data.data.data) {
                 patientsList = data.data.data;
-                // Gán tên trực tiếp từ loại giấy tờ đang chọn
+                // GÃ¡n tÃªn trá»±c tiáº¿p tá»« loáº¡i giáº¥y tá» Ä‘ang chá»n
                 for (const p of patientsList) {
-                    p.ResolvedDocName = dt.TenGiayTo || dt.TenLoaiBaoCao || 'Tài liệu';
+                    p.ResolvedDocName = dt.TenGiayTo || dt.TenLoaiBaoCao || 'TÃ i liá»‡u';
                 }
                 renderTable();
             } else {
@@ -655,7 +655,7 @@ async function loadPatients() {
             }
         }
     } catch (err) {
-        showToast('Lỗi tải danh sách hồ sơ', 'error');
+        showToast('Lá»—i táº£i danh sÃ¡ch há»“ sÆ¡', 'error');
     }
     loadingOverlay.classList.add('hidden');
 }
@@ -684,31 +684,31 @@ function renderTable() {
     const endIdx = startIdx + pageSize;
     const pagedList = filteredList.slice(startIdx, endIdx);
     
-    document.getElementById('page-info').innerText = `Hiển thị ${totalItems > 0 ? startIdx + 1 : 0} - ${Math.min(endIdx, totalItems)}/${totalItems} bản ghi`;
+    document.getElementById('page-info').innerText = `Hiá»ƒn thá»‹ ${totalItems > 0 ? startIdx + 1 : 0} - ${Math.min(endIdx, totalItems)}/${totalItems} báº£n ghi`;
     document.getElementById('current-page-num').innerText = currentPage;
     
     if (filteredList.length === 0) {
-        docsBody.innerHTML = '<tr><td colspan="8" style="text-align:center">Không có tài liệu nào</td></tr>';
+        docsBody.innerHTML = '<tr><td colspan="8" style="text-align:center">KhÃ´ng cÃ³ tÃ i liá»‡u nÃ o</td></tr>';
         return;
     }
     
     pagedList.forEach((doc, i) => {
         const idx = startIdx + i;
         const tr = document.createElement('tr');
-        const statusHtml = currentTab === 0 ? '<span class="status-badge status-pending">Chưa ký</span>' : '<span class="status-badge status-signed">Đã ký</span>';
+        const statusHtml = currentTab === 0 ? '<span class="status-badge status-pending">ChÆ°a kÃ½</span>' : '<span class="status-badge status-signed">ÄÃ£ kÃ½</span>';
         
         const docIdForAction = doc.DocumentInstance_Id || doc.Document_Id || '';
         
         let actionBtn = currentTab === 0 
             ? `<div style="display: flex; gap: 5px; justify-content: center;">
-                 <button class="btn-sign" onclick="openSignPreview('${docIdForAction}')" style="padding: 5px 10px; font-size: 0.8rem;">Ký</button>
+                 <button class="btn-sign" onclick="openSignPreview('${docIdForAction}')" style="padding: 5px 10px; font-size: 0.8rem;">KÃ½</button>
                </div>`
             : `<div style="display: flex; gap: 5px; justify-content: center;">
                  <button class="btn-secondary" onclick="openPreview('${docIdForAction}')" style="padding: 5px 10px; font-size: 0.8rem;">Xem</button>
-                 <button class="btn-cancel" onclick="cancelSignDocument('${docIdForAction}')" style="padding: 5px 10px; font-size: 0.8rem;">Huỷ ký</button>
+                 <button class="btn-cancel" onclick="cancelSignDocument('${docIdForAction}')" style="padding: 5px 10px; font-size: 0.8rem;">Huá»· kÃ½</button>
                </div>`;
             
-        let docName = doc.ResolvedDocName || 'Tài liệu (Khác)';
+        let docName = doc.ResolvedDocName || 'TÃ i liá»‡u (KhÃ¡c)';
         if (!doc.ResolvedDocName && documentTypes) {
             let rId = doc.Report_Id;
             let rName = doc.RoleName;
@@ -725,7 +725,7 @@ function renderTable() {
             let matchingDoc = documentTypes.find(d => d.Report_Id == rId && (rName ? d.RoleName == rName : true));
             if (!matchingDoc) matchingDoc = documentTypes.find(d => d.Report_Id == rId);
             if (matchingDoc) {
-                docName = matchingDoc.TenGiayTo || matchingDoc.TenLoaiBaoCao || 'Tài liệu';
+                docName = matchingDoc.TenGiayTo || matchingDoc.TenLoaiBaoCao || 'TÃ i liá»‡u';
                 doc.ResolvedDocName = docName;
                 doc.ResolvedRoleName = matchingDoc.RoleName;
             }
@@ -733,13 +733,13 @@ function renderTable() {
             
         tr.innerHTML = `
             <td data-label="STT">${idx + 1}</td>
-            <td data-label="Bệnh Nhân"><strong>${doc.TenBenhNhan || ''}</strong></td>
-            <td data-label="Loại Giấy Tờ"><span style="font-size: 0.9em; color: var(--primary); background: rgba(14,165,233,0.1); padding: 4px 8px; border-radius: 6px;">${docName}</span></td>
-            <td data-label="Năm Sinh">${doc.NamSinh || doc.Tuoi || ''}</td>
-            <td data-label="Giới Tính">${doc.GioiTinh || ''}</td>
-            <td data-label="Số TN / Số BA">${doc.SoBenhAn || doc.SoVaoVien || doc.MaYTe || doc.BenhAn_Id || doc.TiepNhan_Id || doc.SoTiepNhan || ''}</td>
-            <td data-label="Trạng Thái">${statusHtml}</td>
-            <td data-label="Thao Tác" class="td-actions">${actionBtn}</td>
+            <td data-label="Bá»‡nh NhÃ¢n"><strong>${doc.TenBenhNhan || ''}</strong></td>
+            <td data-label="Loáº¡i Giáº¥y Tá»"><span style="font-size: 0.9em; color: var(--primary); background: rgba(14,165,233,0.1); padding: 4px 8px; border-radius: 6px;">${docName}</span></td>
+            <td data-label="NÄƒm Sinh">${doc.NamSinh || doc.Tuoi || ''}</td>
+            <td data-label="Giá»›i TÃ­nh">${doc.GioiTinh || ''}</td>
+            <td data-label="Sá»‘ TN / Sá»‘ BA">${doc.SoBenhAn || doc.SoVaoVien || doc.MaYTe || doc.BenhAn_Id || doc.TiepNhan_Id || doc.SoTiepNhan || ''}</td>
+            <td data-label="Tráº¡ng ThÃ¡i">${statusHtml}</td>
+            <td data-label="Thao TÃ¡c" class="td-actions">${actionBtn}</td>
         `;
         docsBody.appendChild(tr);
     });
@@ -769,7 +769,7 @@ document.getElementById('btn-download-pdf')?.addEventListener('click', async () 
     if (!currentPdfBase64) return;
     const btn = document.getElementById('btn-download-pdf');
     const originalText = btn.innerHTML;
-    btn.innerHTML = 'Đang xử lý...';
+    btn.innerHTML = 'Äang xá»­ lÃ½...';
     btn.disabled = true;
     
     try {
@@ -789,8 +789,8 @@ document.getElementById('btn-download-pdf')?.addEventListener('click', async () 
         
         setTimeout(() => URL.revokeObjectURL(objectUrl), 2000);
     } catch (err) {
-        console.error('Lỗi tải PDF:', err);
-        showToast('Có lỗi xảy ra khi xử lý file', 'error');
+        console.error('Lá»—i táº£i PDF:', err);
+        showToast('CÃ³ lá»—i xáº£y ra khi xá»­ lÃ½ file', 'error');
     }
     
     btn.innerHTML = originalText;
@@ -803,12 +803,12 @@ window.signDocument = async function(docId) {
     
     const doc = patientsList.find(d => (d.DocumentInstance_Id || d.Document_Id) == docId);
     if (!doc) {
-        showToast('Không tìm thấy thông tin tài liệu để ký', 'error');
+        showToast('KhÃ´ng tÃ¬m tháº¥y thÃ´ng tin tÃ i liá»‡u Ä‘á»ƒ kÃ½', 'error');
         return;
     }
     
-    if (loadingTitle) loadingTitle.textContent = 'Đang xử lý Ký...';
-    if (loadingDesc) loadingDesc.textContent = 'Vui lòng kiểm tra màn hình máy tính của bạn để thao tác.';
+    if (loadingTitle) loadingTitle.textContent = 'Äang xá»­ lÃ½ KÃ½...';
+    if (loadingDesc) loadingDesc.textContent = 'Vui lÃ²ng kiá»ƒm tra mÃ n hÃ¬nh mÃ¡y tÃ­nh cá»§a báº¡n Ä‘á»ƒ thao tÃ¡c.';
     loadingOverlay.classList.remove('hidden');
     try {
         const data = await callAgent('sign-document', {
@@ -819,14 +819,14 @@ window.signDocument = async function(docId) {
             reportParameter: doc.ReportParameter || ''
         });
         if (data.success && data.data && data.data.ok) {
-            showToast('Ký thành công!', 'success');
+            showToast('KÃ½ thÃ nh cÃ´ng!', 'success');
             await new Promise(r => setTimeout(r, 1500));
             await loadDocumentTypes();
         } else {
-            showToast(data.message || data?.data?.message || 'Lỗi ký số', 'error');
+            showToast(data.message || data?.data?.message || 'Lá»—i kÃ½ sá»‘', 'error');
         }
     } catch(err) {
-        showToast('Lỗi khi ký', 'error');
+        showToast('Lá»—i khi kÃ½', 'error');
     }
     loadingOverlay.classList.add('hidden');
 }
@@ -838,15 +838,15 @@ window.openPreview = async function(docId) {
 window.cancelSignDocument = async function(docId) {
     const doc = patientsList.find(d => (d.DocumentInstance_Id || d.Document_Id) == docId);
     if (!doc) {
-        showToast('Không tìm thấy tài liệu', 'error');
+        showToast('KhÃ´ng tÃ¬m tháº¥y tÃ i liá»‡u', 'error');
         return;
     }
-    const docName = doc.Report_Name || doc.Document_Name || 'Tài liệu';
-    const patientName = doc.TenBenhNhan || 'Bệnh nhân';
+    const docName = doc.Report_Name || doc.Document_Name || 'TÃ i liá»‡u';
+    const patientName = doc.TenBenhNhan || 'Bá»‡nh nhÃ¢n';
 
-    showConfirm(`Bạn có chắc chắn muốn HỦY KÝ <b>${docName}</b> của bệnh nhân <b>${patientName}</b>?`, async () => {
-        if (loadingTitle) loadingTitle.textContent = 'Đang xử lý Hủy ký...';
-        if (loadingDesc) loadingDesc.textContent = 'Vui lòng chờ trong giây lát.';
+    showConfirm(`Báº¡n cÃ³ cháº¯c cháº¯n muá»‘n Há»¦Y KÃ <b>${docName}</b> cá»§a bá»‡nh nhÃ¢n <b>${patientName}</b>?`, async () => {
+        if (loadingTitle) loadingTitle.textContent = 'Äang xá»­ lÃ½ Há»§y kÃ½...';
+        if (loadingDesc) loadingDesc.textContent = 'Vui lÃ²ng chá» trong giÃ¢y lÃ¡t.';
         loadingOverlay.classList.remove('hidden');
         document.getElementById('pdf-modal').classList.add('hidden'); // Close modal if open
         document.body.classList.remove('modal-open');
@@ -859,17 +859,17 @@ window.cancelSignDocument = async function(docId) {
             });
             
             if (data.success && data.data && data.data.ok) {
-                showToast('Đã hủy ký thành công!', 'success');
+                showToast('ÄÃ£ há»§y kÃ½ thÃ nh cÃ´ng!', 'success');
                 await new Promise(r => setTimeout(r, 1500));
                 await loadDocumentTypes();
             } else {
-                showToast(data.message || data?.data?.message || 'Lỗi khi hủy ký', 'error');
+                showToast(data.message || data?.data?.message || 'Lá»—i khi há»§y kÃ½', 'error');
             }
         } catch (err) {
-            showToast('Lỗi hệ thống khi hủy ký', 'error');
+            showToast('Lá»—i há»‡ thá»‘ng khi há»§y kÃ½', 'error');
         }
         loadingOverlay.classList.add('hidden');
-    }, 'Xác nhận Hủy ký', 'Hủy ký');
+    }, 'XÃ¡c nháº­n Há»§y kÃ½', 'Há»§y kÃ½');
 }
 
 async function applyWatermark(base64) {
@@ -884,7 +884,7 @@ async function applyWatermark(base64) {
         
         const removeAccents = (str) => {
             if(!str) return '';
-            return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D');
+            return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/Ä‘/g, 'd').replace(/Ä/g, 'D');
         };
         
         let fullname = removeAccents(String(fullnameRaw));
@@ -912,7 +912,7 @@ async function applyWatermark(base64) {
         }
         return await pdfDoc.saveAsBase64({ dataUri: false });
     } catch (e) {
-        console.error('Lỗi tạo watermark:', e);
+        console.error('Lá»—i táº¡o watermark:', e);
         return base64;
     }
 }
@@ -920,13 +920,13 @@ async function applyWatermark(base64) {
 window.openSignPreview = async function(docId, isSigning = true) {
     const doc = patientsList.find(d => (d.DocumentInstance_Id || d.Document_Id) == docId);
     if (!doc) {
-        showToast('Không tìm thấy tài liệu', 'error');
+        showToast('KhÃ´ng tÃ¬m tháº¥y tÃ i liá»‡u', 'error');
         return;
     }
-    const docName = doc.Report_Name || doc.Document_Name || 'Tài liệu';
+    const docName = doc.Report_Name || doc.Document_Name || 'TÃ i liá»‡u';
     
-    if (loadingTitle) loadingTitle.textContent = 'Đang tải bản xem trước...';
-    if (loadingDesc) loadingDesc.textContent = 'Vui lòng chờ trong giây lát.';
+    if (loadingTitle) loadingTitle.textContent = 'Äang táº£i báº£n xem trÆ°á»›c...';
+    if (loadingDesc) loadingDesc.textContent = 'Vui lÃ²ng chá» trong giÃ¢y lÃ¡t.';
     loadingOverlay.classList.remove('hidden');
     
     try {
@@ -950,7 +950,7 @@ window.openSignPreview = async function(docId, isSigning = true) {
             if (window.pdfjsLib) {
                 viewer.style.display = 'none';
                 container.style.display = 'block';
-                container.innerHTML = '<div style="padding: 20px; text-align: center;">Đang xử lý PDF...</div>';
+                container.innerHTML = '<div style="padding: 20px; text-align: center;">Äang xá»­ lÃ½ PDF...</div>';
                 
                 pdfjsLib.GlobalWorkerOptions.workerSrc = 'pdf.worker.min.js';
                 const pdfData = atob(currentPdfBase64);
@@ -981,7 +981,7 @@ window.openSignPreview = async function(docId, isSigning = true) {
                         });
                     }
                 }).catch(err => {
-                    container.innerHTML = '<div style="color:red; padding: 20px; text-align: center;">Lỗi hiển thị PDF</div>';
+                    container.innerHTML = '<div style="color:red; padding: 20px; text-align: center;">Lá»—i hiá»ƒn thá»‹ PDF</div>';
                 });
             } else {
                 // Fallback if pdf.js fails to load
@@ -990,13 +990,16 @@ window.openSignPreview = async function(docId, isSigning = true) {
                 viewer.src = 'data:application/pdf;base64,' + currentPdfBase64 + '#toolbar=0';
             }
             
-            // Hiện modal
+            // Hiá»‡n modal
             document.getElementById('pdf-modal').classList.remove('hidden');
             document.body.classList.add('modal-open');
             
             // Xử lý nút Ký số & Hủy ký
             const btnSign = document.getElementById('btn-pdf-sign');
             const btnCancelSign = document.getElementById('btn-pdf-cancel-sign');
+            const btnSignpad = document.getElementById('btn-pdf-signpad');
+            
+            if(btnSignpad) btnSignpad.style.display = 'none';
             
             if (isSigning) {
                 btnSign.style.display = 'block';
@@ -1008,10 +1011,10 @@ window.openSignPreview = async function(docId, isSigning = true) {
                 btnCancelSign.onclick = () => window.cancelSignDocument(docId);
             }
         } else {
-            showToast(data?.data?.message || 'Không thể xem trước tài liệu', 'error');
+            showToast(data?.data?.message || 'KhÃ´ng thá»ƒ xem trÆ°á»›c tÃ i liá»‡u', 'error');
         }
     } catch (err) {
-        showToast('Lỗi khi tải file xem trước', 'error');
+        showToast('Lá»—i khi táº£i file xem trÆ°á»›c', 'error');
     }
     loadingOverlay.classList.add('hidden');
 }
@@ -1143,11 +1146,11 @@ async function openConfigModal() {
             document.getElementById('cfg-username').value = data.data.username || '';
             document.getElementById('cfg-password').value = data.data.password || '';
         } else {
-            showConfigAlert(data.message || 'Không thể tải cấu hình', 'error');
+            showConfigAlert(data.message || 'KhÃ´ng thá»ƒ táº£i cáº¥u hÃ¬nh', 'error');
         }
     } catch (err) {
         console.error(err);
-        showConfigAlert('Lỗi kết nối tới máy chủ', 'error');
+        showConfigAlert('Lá»—i káº¿t ná»‘i tá»›i mÃ¡y chá»§', 'error');
     }
 }
 
@@ -1171,7 +1174,7 @@ document.getElementById('configFormModal')?.addEventListener('submit', async (e)
     e.preventDefault();
     const btnSave = document.getElementById('btn-config-save');
     btnSave.disabled = true;
-    btnSave.textContent = 'Đang lưu...';
+    btnSave.textContent = 'Äang lÆ°u...';
     
     const configData = {
         url: document.getElementById('cfg-url').value,
@@ -1197,23 +1200,23 @@ document.getElementById('configFormModal')?.addEventListener('submit', async (e)
         }
     } catch (err) {
         console.error(err);
-        showConfigAlert('Lỗi kết nối tới máy chủ', 'error');
+        showConfigAlert('Lá»—i káº¿t ná»‘i tá»›i mÃ¡y chá»§', 'error');
     } finally {
         btnSave.disabled = false;
-        btnSave.textContent = 'Lưu Cấu Hình';
+        btnSave.textContent = 'LÆ°u Cáº¥u HÃ¬nh';
     }
 });
 
 document.getElementById('btn-test-sms')?.addEventListener('click', () => {
-    showPrompt('Kiểm tra SMS', 'Nhập số điện thoại (VD: 098... hoặc 8498...):', async (phone, setError) => {
+    showPrompt('Kiá»ƒm tra SMS', 'Nháº­p sá»‘ Ä‘iá»‡n thoáº¡i (VD: 098... hoáº·c 8498...):', async (phone, setError) => {
         if (!phone) {
-            return setError('Vui lòng nhập số điện thoại');
+            return setError('Vui lÃ²ng nháº­p sá»‘ Ä‘iá»‡n thoáº¡i');
         }
         
         const btnTest = document.getElementById('btn-test-sms');
         const oldText = btnTest.textContent;
         btnTest.disabled = true;
-        btnTest.textContent = 'Đang gửi...';
+        btnTest.textContent = 'Äang gá»­i...';
 
         let captchaToken = '';
         if (window.turnstileRequired && window.turnstileTestWidgetId !== null && window.turnstile) {
@@ -1222,7 +1225,7 @@ document.getElementById('btn-test-sms')?.addEventListener('click', () => {
                 if (!captchaToken) {
                     btnTest.disabled = false;
                     btnTest.textContent = oldText;
-                    return setError('Vui lòng xác nhận Captcha trước khi Test SMS!');
+                    return setError('Vui lÃ²ng xÃ¡c nháº­n Captcha trÆ°á»›c khi Test SMS!');
                 }
             } catch (e) {}
         }
@@ -1246,20 +1249,20 @@ document.getElementById('btn-test-sms')?.addEventListener('click', () => {
             const data = await res.json();
             
             if (data.success) {
-                showToast('Gửi tin nhắn test thành công!', 'success');
+                showToast('Gá»­i tin nháº¯n test thÃ nh cÃ´ng!', 'success');
                 setError(null);
-                setError(data.message || 'Lỗi gửi tin nhắn');
+                setError(data.message || 'Lá»—i gá»­i tin nháº¯n');
             }
             if (window.turnstileRequired && window.turnstileTestWidgetId !== null && window.turnstile) {
                 turnstile.reset(window.turnstileTestWidgetId);
             }
         } catch (err) {
-            setError('Lỗi kết nối tới máy chủ');
+            setError('Lá»—i káº¿t ná»‘i tá»›i mÃ¡y chá»§');
         } finally {
             btnTest.disabled = false;
             btnTest.textContent = oldText;
         }
-    }, 'text', 'Nhập SĐT tại đây...');
+    }, 'text', 'Nháº­p SÄT táº¡i Ä‘Ã¢y...');
 });
 
 // Config Login Modal Logic
@@ -1295,7 +1298,7 @@ document.getElementById('config-login-form')?.addEventListener('submit', async (
     const btnSave = e.target.querySelector('button[type="submit"]');
     if(btnSave) {
         btnSave.disabled = true;
-        btnSave.textContent = 'Đang lưu...';
+        btnSave.textContent = 'Äang lÆ°u...';
     }
     
     const configData = {
@@ -1320,11 +1323,11 @@ document.getElementById('config-login-form')?.addEventListener('submit', async (
         }
     } catch (err) {
         console.error(err);
-        showToast('Lỗi kết nối tới máy chủ', 'error');
+        showToast('Lá»—i káº¿t ná»‘i tá»›i mÃ¡y chá»§', 'error');
     } finally {
         if(btnSave) {
             btnSave.disabled = false;
-            btnSave.textContent = 'Lưu Cấu Hình';
+            btnSave.textContent = 'LÆ°u Cáº¥u HÃ¬nh';
         }
     }
 });
@@ -1360,7 +1363,7 @@ document.getElementById('configTurnstileForm')?.addEventListener('submit', async
     const btnSave = e.target.querySelector('button[type="submit"]');
     if(btnSave) {
         btnSave.disabled = true;
-        btnSave.textContent = 'Đang lưu...';
+        btnSave.textContent = 'Äang lÆ°u...';
     }
     
     const configData = {
@@ -1378,7 +1381,7 @@ document.getElementById('configTurnstileForm')?.addEventListener('submit', async
         const data = await res.json();
         if (data.success) {
             turnstileAlert.className = 'alert alert-success';
-            turnstileAlert.textContent = data.message + ' (Tải lại trang để áp dụng)';
+            turnstileAlert.textContent = data.message + ' (Táº£i láº¡i trang Ä‘á»ƒ Ã¡p dá»¥ng)';
             turnstileAlert.classList.remove('hidden');
         } else {
             turnstileAlert.className = 'alert alert-error';
@@ -1387,12 +1390,12 @@ document.getElementById('configTurnstileForm')?.addEventListener('submit', async
         }
     } catch (err) {
         turnstileAlert.className = 'alert alert-error';
-        turnstileAlert.textContent = 'Lỗi kết nối tới máy chủ';
+        turnstileAlert.textContent = 'Lá»—i káº¿t ná»‘i tá»›i mÃ¡y chá»§';
         turnstileAlert.classList.remove('hidden');
     } finally {
         if(btnSave) {
             btnSave.disabled = false;
-            btnSave.textContent = 'Lưu Cấu Hình';
+            btnSave.textContent = 'LÆ°u Cáº¥u HÃ¬nh';
         }
     }
 });
@@ -1454,7 +1457,7 @@ async function initApp() {
 }
 initApp();
 
-// Đóng dropdown menu của Admin khi click ra ngoài
+// ÄÃ³ng dropdown menu cá»§a Admin khi click ra ngoÃ i
 document.addEventListener('click', function(event) {
     const dropdown = document.getElementById('admin-dropdown-menu');
     const button = document.getElementById('btn-admin-dropdown');
@@ -1464,3 +1467,332 @@ document.addEventListener('click', function(event) {
         }
     }
 });
+
+// ==========================================
+// SIGNPAD CANVAS LOGIC
+// ==========================================
+let signaturePadContext = null;
+let signatureCanvas = null;
+let isDrawingSignature = false;
+let currentSignDocId = null;
+
+function initSignpad() {
+    signatureCanvas = document.getElementById('signature-canvas');
+    if (!signatureCanvas) return;
+    
+    // Setup high resolution canvas for crisp drawing
+    const rect = signatureCanvas.parentElement.getBoundingClientRect();
+    signatureCanvas.width = rect.width * 2;
+    signatureCanvas.height = rect.height * 2;
+    signatureCanvas.style.width = rect.width + 'px';
+    signatureCanvas.style.height = rect.height + 'px';
+    
+    signaturePadContext = signatureCanvas.getContext('2d');
+    signaturePadContext.scale(2, 2);
+    signaturePadContext.lineCap = 'round';
+    signaturePadContext.lineJoin = 'round';
+    signaturePadContext.lineWidth = 3;
+    signaturePadContext.strokeStyle = '#000000';
+
+    const getPos = (e) => {
+        const rect = signatureCanvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        return {
+            x: clientX - rect.left,
+            y: clientY - rect.top
+        };
+    };
+
+    const startDraw = (e) => {
+        e.preventDefault();
+        isDrawingSignature = true;
+        const pos = getPos(e);
+        signaturePadContext.beginPath();
+        signaturePadContext.moveTo(pos.x, pos.y);
+        document.getElementById('signpad-placeholder').style.display = 'none';
+    };
+
+    const draw = (e) => {
+        if (!isDrawingSignature) return;
+        e.preventDefault();
+        const pos = getPos(e);
+        signaturePadContext.lineTo(pos.x, pos.y);
+        signaturePadContext.stroke();
+    };
+
+    const endDraw = (e) => {
+        if (!isDrawingSignature) return;
+        e.preventDefault();
+        isDrawingSignature = false;
+    };
+
+    signatureCanvas.addEventListener('mousemove', draw);
+    signatureCanvas.addEventListener('mouseup', endDraw);
+    signatureCanvas.addEventListener('mouseout', endDraw);
+
+    signatureCanvas.addEventListener('touchstart', startDraw, { passive: false });
+    signatureCanvas.addEventListener('touchmove', draw, { passive: false });
+    signatureCanvas.addEventListener('touchend', endDraw, { passive: false });
+    
+    document.getElementById('btn-close-signpad').addEventListener('click', closeSignpad);
+    document.getElementById('btn-cancel-signpad').addEventListener('click', closeSignpad);
+    document.getElementById('btn-clear-signpad').addEventListener('click', clearSignpad);
+    document.getElementById('btn-confirm-signpad').addEventListener('click', confirmSignpad);
+}
+
+function clearSignpad() {
+    if(!signaturePadContext) return;
+    const rect = signatureCanvas.getBoundingClientRect();
+    signaturePadContext.clearRect(0, 0, rect.width, rect.height);
+    document.getElementById('signpad-placeholder').style.display = 'block';
+}
+
+function closeSignpad() {
+    document.getElementById('signpad-modal').classList.add('hidden');
+}
+
+window.openSignpad = function(docId) {
+    currentSignDocId = docId;
+    document.getElementById('signpad-modal').classList.remove('hidden');
+    setTimeout(() => {
+        if (!signaturePadContext) {
+            initSignpad();
+        }
+        clearSignpad();
+    }, 50);
+};
+
+async function confirmSignpad() {
+    const isBlank = document.getElementById('signpad-placeholder').style.display !== 'none';
+    if (isBlank) {
+        showToast('Vui lòng vẽ chữ ký trước khi xác nhận!', 'error');
+        return;
+    }
+    
+    const base64Data = signatureCanvas.toDataURL('image/png');
+    closeSignpad();
+    
+    let doc = patientsList.find(d => (d.DocumentInstance_Id || d.Document_Id) == currentSignDocId);
+    if (!doc && typeof currentPatientDocs !== 'undefined') {
+        doc = currentPatientDocs.find(d => (d.DocumentInstance_Id || d.Document_Id) == currentSignDocId);
+    }
+    if (!doc) {
+        showToast('KhÃ´ng tÃ¬m tháº¥y thÃ´ng tin tÃ i liá»‡u', 'error');
+        return;
+    }
+    
+    if (loadingTitle) loadingTitle.textContent = 'Äang xá»­ lÃ½ KÃ½...';
+    if (loadingDesc) loadingDesc.textContent = 'Äang Ä‘áº©y chá»¯ kÃ½ cá»§a báº¡n vÃ o vÄƒn báº£n, vui lÃ²ng Ä‘á»£i.';
+    loadingOverlay.classList.remove('hidden');
+    document.getElementById('pdf-modal').classList.add('hidden'); 
+    
+    try {
+        const data = await callAgent('sign-document-pad', {
+            documentId: doc.Document_Id,
+            roleName: 'BenhNhan',
+            filePath: doc.File_Path || '',
+            reportCode: doc.Report_Code || '',
+            reportParameter: doc.ReportParameter || '',
+            imageBase64: base64Data
+        });
+        
+        if (data.success && data.data && data.data.ok) {
+            showToast('KÃ½ trá»±c tiáº¿p thÃ nh cÃ´ng!', 'success');
+            await new Promise(r => setTimeout(r, 1500));
+            await loadDocumentTypes();
+        } else {
+            showToast(data?.data?.message || 'Lá»—i khi kÃ½ vÄƒn báº£n', 'error');
+        }
+    } catch (err) {
+        showToast('Lá»—i káº¿t ná»‘i khi kÃ½', 'error');
+    }
+    loadingOverlay.classList.add('hidden');
+}
+
+
+
+
+// ==========================================
+// TABS & PATIENT SIGNING LOGIC
+// ==========================================
+let currentMainTab = 'nhan-vien';
+let currentPatientDocs = [];
+
+window.switchMainTab = function(tabName) {
+    currentMainTab = tabName;
+    document.querySelectorAll('.main-tab-btn').forEach(b => {
+        if(b.dataset.mainTab === tabName) {
+            b.classList.add('active');
+            b.style.background = tabName === 'nhan-vien' ? 'var(--primary-color)' : 'var(--primary-color)';
+            b.style.color = 'white';
+        } else {
+            b.classList.remove('active');
+            b.style.background = 'transparent';
+            b.style.color = 'var(--text-main)';
+        }
+    });
+    
+    document.querySelectorAll('.main-tab-content').forEach(c => {
+        if(c.id === `tab-${tabName}`) {
+            c.style.display = 'flex';
+            c.classList.add('active');
+        } else {
+            c.style.display = 'none';
+            c.classList.remove('active');
+        }
+    });
+    
+    // Auto focus search input when switching to patient tab
+    if(tabName === 'benh-nhan') {
+        const input = document.getElementById('patient-code-input');
+        if(input) input.focus();
+    }
+};
+
+window.searchPatientDocuments = async function() {
+    const input = document.getElementById('patient-code-input');
+    const code = input ? input.value.trim() : '';
+    if(!code) {
+        showToast('Vui lÃ²ng nháº­p MÃ£ Y Táº¿ / Sá»‘ há»“ sÆ¡ / Sá»‘ tiáº¿p nháº­n', 'error');
+        return;
+    }
+    
+    const loadingOverlay = document.getElementById('loading-overlay');
+    const loadingTitle = document.getElementById('loading-title');
+    const loadingDesc = document.getElementById('loading-desc');
+    
+    if (loadingTitle) loadingTitle.textContent = 'Äang tÃ¬m kiáº¿m...';
+    if (loadingDesc) loadingDesc.textContent = 'Äang táº£i danh sÃ¡ch há»“ sÆ¡ chá» kÃ½ cá»§a bá»‡nh nhÃ¢n.';
+    loadingOverlay.classList.remove('hidden');
+    
+    try {
+        const res = await callAgent('get-patient-documents', { patientCode: code });
+        if (res.success && res.data) {
+            currentPatientDocs = res.data;
+            renderPatientDocuments();
+            if(currentPatientDocs.length === 0) {
+                showToast('KhÃ´ng tÃ¬m tháº¥y tÃ i liá»‡u nÃ o chá» kÃ½ cho bá»‡nh nhÃ¢n nÃ y', 'info');
+            } else {
+                showToast(`TÃ¬m tháº¥y ${currentPatientDocs.length} tÃ i liá»‡u chá» kÃ½`, 'success');
+            }
+        } else {
+            showToast(res.error || 'Lá»—i khi láº¥y danh sÃ¡ch tÃ i liá»‡u', 'error');
+            currentPatientDocs = [];
+            renderPatientDocuments();
+        }
+    } catch (err) {
+        showToast('Lá»—i káº¿t ná»‘i Server', 'error');
+        currentPatientDocs = [];
+        renderPatientDocuments();
+    }
+    
+    loadingOverlay.classList.add('hidden');
+};
+
+// Add Enter key listener to search input
+setTimeout(() => {
+    const input = document.getElementById('patient-code-input');
+    if(input) {
+        input.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchPatientDocuments();
+            }
+        });
+    }
+}, 1000);
+
+window.renderPatientDocuments = function() {
+    const tbody = document.getElementById('patient-documents-body');
+    if(!tbody) return;
+    
+    if(currentPatientDocs.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="3" style="text-align: center; padding: 30px; color: var(--text-muted);">KhÃ´ng cÃ³ tÃ i liá»‡u nÃ o chá» kÃ½.</td></tr>`;
+        return;
+    }
+    
+    let html = '';
+    currentPatientDocs.forEach(doc => {
+        html += `
+            <tr style="border-bottom: 1px solid var(--glass-border); transition: background 0.2s;">
+                <td style="padding: 15px;">
+                    <div style="font-weight: 600; color: var(--text-main); margin-bottom: 5px;">${doc.ResolvedDocName || 'TÃ i liá»‡u'}</div>
+                    <div style="font-size: 0.85rem; color: var(--text-muted);">
+                        ${doc.File_Path ? doc.File_Path.split('\\').pop() : ''}
+                    </div>
+                </td>
+                <td style="padding: 15px; color: var(--text-muted);">
+                    <span class="status-badge" style="background: rgba(239, 154, 154, 0.2); color: #c62828;">Chá» kÃ½</span>
+                </td>
+                <td style="padding: 15px; text-align: right;">
+                    <button class="btn-primary" onclick="window.previewPatientFile(${doc.Document_Id || doc.DocumentInstance_Id})" style="padding: 8px 16px; font-size: 0.9rem; border-radius: 6px;">
+                        Tiáº¿n hÃ nh kÃ½
+                    </button>
+                </td>
+            </tr>
+        `;
+    });
+    tbody.innerHTML = html;
+};
+
+window.previewPatientFile = async function(docId) {
+    const doc = currentPatientDocs.find(d => (d.DocumentInstance_Id || d.Document_Id) == docId);
+    if (!doc) return;
+    
+    const docName = doc.ResolvedDocName || 'TÃ i liá»‡u';
+    const loadingOverlay = document.getElementById('loading-overlay');
+    const loadingTitle = document.getElementById('loading-title');
+    const loadingDesc = document.getElementById('loading-desc');
+    
+    if (loadingTitle) loadingTitle.textContent = 'Äang táº£i báº£n xem trÆ°á»›c...';
+    if (loadingDesc) loadingDesc.textContent = 'Vui lÃ²ng chá» trong giÃ¢y lÃ¡t.';
+    loadingOverlay.classList.remove('hidden');
+    
+    try {
+        const data = await callAgent('preview-file', {
+            filePath: doc.File_Path || '',
+            reportCode: doc.Report_Code || '',
+            reportParameter: doc.ReportParameter || ''
+        });
+        
+        if (data.success && data.data && data.data.data && data.data.data.base64) {
+            currentPdfBase64 = data.data.data.base64;
+            currentPdfDocName = docName;
+            currentZoomLevel = 100;
+            const zoomSpan = document.getElementById('zoom-level');
+            if(zoomSpan) zoomSpan.textContent = '100%';
+            
+            const uint8Array = base64ToUint8Array(currentPdfBase64);
+            const loadingTask = pdfjsLib.getDocument({ data: uint8Array });
+            
+            loadingTask.promise.then(function(pdf) {
+                currentPdfDoc = pdf;
+                document.getElementById('pdf-modal').classList.remove('hidden');
+                document.body.classList.add('modal-open');
+                
+                // Show ONLY Bá»‡nh nhÃ¢n kÃ½ btn
+                const btnSign = document.getElementById('btn-pdf-sign');
+                const btnCancelSign = document.getElementById('btn-pdf-cancel-sign');
+                const btnSignpad = document.getElementById('btn-pdf-signpad');
+                
+                if (btnSign) btnSign.style.display = 'none';
+                if (btnCancelSign) btnCancelSign.style.display = 'none';
+                if (btnSignpad) {
+                    btnSignpad.style.display = 'block';
+                    btnSignpad.onclick = () => window.openSignpad(docId);
+                }
+                
+                renderPdfPage(1);
+            }).catch(function(error) {
+                showToast('Lá»—i khi táº£i PDF: ' + error.message, 'error');
+            });
+        } else {
+            showToast(data?.data?.message || 'KhÃ´ng thá»ƒ xem trÆ°á»›c tÃ i liá»‡u', 'error');
+        }
+    } catch (err) {
+        showToast('Lá»—i káº¿t ná»‘i Server', 'error');
+    }
+    
+    loadingOverlay.classList.add('hidden');
+};
+
