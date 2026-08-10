@@ -97,12 +97,41 @@ body {
 /* Glassmorphism Utilities */
 .glass-panel {
     background: var(--glass-bg);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
     border: 1px solid var(--glass-border);
     border-radius: 24px;
-    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 }
+
+/* Bento Grid System */
+.bento-container {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 16px;
+    margin-bottom: 20px;
+    width: 100%;
+}
+.bento-box {
+    background: var(--glass-bg);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    padding: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.bento-box:hover {
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+.bento-header { grid-column: span 12; display: flex; justify-content: space-between; align-items: center; padding: 10px 0; }
+.bento-date { grid-column: span 4; }
+.bento-search { grid-column: span 5; }
+.bento-tabs { grid-column: span 3; }
 
 /* Views Management */
 .view {
@@ -305,29 +334,36 @@ body {
     transform: rotate(180deg);
 }
 
-/* Table */
+/* Table - Modern Minimal */
 .table-container {
     overflow-x: auto;
 }
 table {
     width: 100%;
-    border-collapse: collapse;
+    border-collapse: separate;
+    border-spacing: 0;
 }
 th {
     text-align: left;
-    padding: 16px;
+    padding: 16px 20px;
     color: var(--text-muted);
-    font-weight: 500;
-    font-size: 0.9rem;
+    font-weight: 600;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
     border-bottom: 1px solid var(--glass-border);
 }
 td {
-    padding: 16px;
-    border-bottom: 1px solid var(--input-bg);
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--input-border);
     font-size: 0.95rem;
+    transition: background 0.2s ease;
 }
 tr:hover td {
-    background: var(--table-hover);
+    background: rgba(255, 255, 255, 0.03);
+}
+[data-theme="light"] tr:hover td {
+    background: rgba(0, 0, 0, 0.02);
 }
 
 .status-badge {
@@ -569,6 +605,9 @@ tr:hover td {
 
 /* Mobile Responsive */
 @media (max-width: 768px) {
+    .bento-container { display: flex !important; flex-direction: column !important; gap: 12px !important; margin-bottom: 15px !important; }
+    .bento-box { padding: 12px !important; }
+    
     .tab-btn {
         font-size: 0.9rem !important;
         padding: 6px 12px !important;
