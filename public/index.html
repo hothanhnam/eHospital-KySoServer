@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>eHospital - Cổng Ký Số Điện Tử</title>
-    <link rel="stylesheet" href="style.css?v=20260810_11">
+    <link rel="stylesheet" href="style.css?v=20260810_12">
     <style>
         .filter-row { display: flex; gap: 15px; margin-bottom: 15px; flex-wrap: wrap; }
         .filter-row .input-group { flex: 1; min-width: 200px; margin-bottom: 0; }
@@ -68,9 +68,6 @@
                 margin: 0;
                 border-radius: 0;
                 transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-            }
-            .sticky-toolbar.hidden-on-scroll {
-                transform: translateY(-100%) !important;
             }
             .table-container { 
                 display: block;
@@ -542,27 +539,7 @@
     </div>
 
     <script>
-        // Ẩn hiện toolbar khi cuộn trên mobile
-        document.addEventListener('DOMContentLoaded', () => {
-            let lastScrollY = window.scrollY;
-            const toolbar = document.querySelector('.sticky-toolbar');
-            
-            window.addEventListener('scroll', () => {
-                if (window.innerWidth > 768 || !toolbar) return;
-                
-                const currentScrollY = window.scrollY;
-                
-                // Nếu cuộn xuống và cuộn qua 50px thì ẩn
-                if (currentScrollY > lastScrollY && currentScrollY > 50) {
-                    toolbar.classList.add('hidden-on-scroll');
-                } 
-                // Nếu cuộn lên thì hiện lại
-                else if (currentScrollY < lastScrollY) {
-                    toolbar.classList.remove('hidden-on-scroll');
-                }
-                lastScrollY = currentScrollY <= 0 ? 0 : currentScrollY; // Fix cho bounce scroll trên iOS
-            }, { passive: true });
-        });
+        // Ẩn hiện toolbar khi cuộn trên mobile (Đã xóa để tránh lỗi đè giao diện)
     </script>
     <script src="app.js?v=20260810_2"></script>
 </body>
