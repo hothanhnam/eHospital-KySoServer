@@ -116,8 +116,8 @@
                 background: rgba(0,0,0,0.5); z-index: 1999; opacity: 0; transition: opacity 0.3s ease;
             }
             .sheet-backdrop.show { display: block; opacity: 1; }
-            .date-filter-always-visible, .filter-row { flex-direction: column !important; gap: 15px !important; margin-bottom: 0 !important; }
-            .date-filter-always-visible .input-group, .filter-row .input-group { width: 100% !important; min-width: 100% !important; }
+            .filter-row { flex-direction: column !important; gap: 15px !important; margin-bottom: 0 !important; }
+            .filter-row .input-group { width: 100% !important; min-width: 100% !important; }
             .filters-container { display: block !important; margin-top: 15px; border-top: 1px dashed var(--glass-border); padding-top: 15px; }
         }
         /* PC CSS cho Bottom Sheet */
@@ -244,6 +244,19 @@
                         </div>
                     </div>
 
+                    <!-- Ngày tháng (Luôn hiện trên PC và Mobile) -->
+                    <div class="date-filter-always-visible" style="display: flex; gap: 10px; margin-bottom: 12px; align-items: flex-end; flex-wrap: wrap; width: 100%;">
+                        <div class="input-group" style="flex: 1; min-width: 120px; margin-bottom: 0;">
+                            <label style="font-size: 0.8rem; color: #8892b0; margin-bottom: 2px; display: block;">📅 TỪ NGÀY</label>
+                            <input autocomplete="off" type="date" id="date-from" class="form-control" style="padding: 6px 10px; font-size: 0.9rem; border-radius: 8px;">
+                        </div>
+                        <div class="input-group" style="flex: 1; min-width: 120px; margin-bottom: 0;">
+                            <label style="font-size: 0.8rem; color: #8892b0; margin-bottom: 2px; display: block;">📅 ĐẾN NGÀY</label>
+                            <input autocomplete="off" type="date" id="date-to" class="form-control" style="padding: 6px 10px; font-size: 0.9rem; border-radius: 8px;">
+                        </div>
+                        <button id="btn-refresh" class="btn-primary" style="display: none;">Tải lại</button>
+                    </div>
+
                     <!-- Thanh tìm kiếm và nút Lọc -->
                     <div style="display: flex; gap: 8px; margin-bottom: 12px; width: 100%;">
                         <div class="search-box" style="position: relative; flex-grow: 1;">
@@ -265,19 +278,6 @@
                     <div class="tabs-container" style="display: flex; width: 100%; background: var(--card-bg); padding: 4px; border-radius: 12px; border: 1px solid var(--glass-border); margin-bottom: 0;">
                         <button class="tab-btn active" data-tab="0" style="flex: 1; border-radius: 8px; font-size: 0.95rem; padding: 8px; justify-content: center;">✍️ Chưa ký <span id="badge-chua-ky" class="badge">0</span></button>
                         <button class="tab-btn" data-tab="1" style="flex: 1; border-radius: 8px; font-size: 0.95rem; padding: 8px; justify-content: center;">✅ Đã ký <span id="badge-da-ky" class="badge">0</span></button>
-                    </div>
-
-                    <!-- Ngày tháng (Luôn hiện trên PC và Mobile) -->
-                    <div class="date-filter-always-visible" style="display: flex; gap: 10px; margin-bottom: 12px; align-items: flex-end; flex-wrap: wrap; width: 100%;">
-                        <div class="input-group" style="flex: 1; min-width: 120px; margin-bottom: 0;">
-                            <label style="font-size: 0.8rem; color: #8892b0; margin-bottom: 2px; display: block;">📅 TỪ NGÀY</label>
-                            <input autocomplete="off" type="date" id="date-from" class="form-control" style="padding: 6px 10px; font-size: 0.9rem; border-radius: 8px;">
-                        </div>
-                        <div class="input-group" style="flex: 1; min-width: 120px; margin-bottom: 0;">
-                            <label style="font-size: 0.8rem; color: #8892b0; margin-bottom: 2px; display: block;">📅 ĐẾN NGÀY</label>
-                            <input autocomplete="off" type="date" id="date-to" class="form-control" style="padding: 6px 10px; font-size: 0.9rem; border-radius: 8px;">
-                        </div>
-                        <button id="btn-refresh" class="btn-primary" style="display: none;">Tải lại</button>
                     </div>
 
                     <!-- Backdrop của Bottom Sheet -->
