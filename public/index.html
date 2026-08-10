@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>eHospital - Cổng Ký Số Điện Tử</title>
-    <link rel="stylesheet" href="style.css?v=20260810_15">
+    <link rel="stylesheet" href="style.css?v=20260810_16">
     <style>
         .filter-row { display: flex; gap: 15px; margin-bottom: 15px; flex-wrap: wrap; }
         .filter-row .input-group { flex: 1; min-width: 200px; margin-bottom: 0; }
@@ -247,8 +247,10 @@
 
                         <!-- Date Filter -->
                         <div class="minimal-input-group" style="flex-wrap: nowrap; display: flex; align-items: center;">
+                            <span style="color: var(--text-muted); font-size: 0.85rem; font-weight: 500; margin-right: 5px; white-space: nowrap;">Từ:</span>
                             <input autocomplete="off" type="date" id="date-from">
-                            <span style="color: var(--input-border); margin: 0 8px;">|</span>
+                            <span style="color: var(--input-border); margin: 0 10px;">|</span>
+                            <span style="color: var(--text-muted); font-size: 0.85rem; font-weight: 500; margin-right: 5px; white-space: nowrap;">Đến:</span>
                             <input autocomplete="off" type="date" id="date-to">
                             <button id="btn-refresh" class="btn-primary" style="display: none;">Tải lại</button>
                         </div>
