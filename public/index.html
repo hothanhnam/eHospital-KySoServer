@@ -66,10 +66,10 @@
                 position: sticky !important; 
                 top: 0 !important; 
                 z-index: 1000 !important;
-                background: var(--bg-gradient-1) !important;
-                border-bottom: 1px solid var(--glass-border);
-                box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-                padding: 15px 10px; 
+                background: transparent !important;
+                border-bottom: none !important;
+                box-shadow: none !important;
+                padding: 10px 0; 
                 margin: 0;
                 border-radius: 0;
                 transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
@@ -235,61 +235,52 @@
             </div>
         </nav>
 
-        <main class="dashboard-content">
-            <div class="glass-panel main-panel">
-                <div class="sticky-toolbar">
                     <div class="bento-container">
                         <!-- Tiêu đề (Bento Header) -->
-                        <div class="bento-header">
-                            <h3 style="margin: 0; font-size: 1.2rem;">📄 Danh sách văn bản</h3>
+                        <div class="bento-header" style="padding-bottom: 0;">
+                            <h3 style="margin: 0; font-size: 1.1rem; font-weight: 600; letter-spacing: 0.5px;">Danh sách văn bản</h3>
                         </div>
 
                         <!-- Date Filters (Bento Date) -->
-                        <div class="bento-box bento-date">
-                            <div class="date-filter-always-visible" style="display: flex; gap: 10px; align-items: flex-end; width: 100%;">
-                                <div class="input-group" style="flex: 1; min-width: 100px; margin-bottom: 0;">
-                                    <label style="font-size: 0.75rem; font-weight: 600; letter-spacing: 0.5px; color: #8892b0; margin-bottom: 4px; display: block; text-transform: uppercase;">Từ ngày</label>
-                                    <input autocomplete="off" type="date" id="date-from" class="form-control" style="padding: 10px; font-size: 0.9rem; border-radius: 10px;">
-                                </div>
-                                <div class="input-group" style="flex: 1; min-width: 100px; margin-bottom: 0;">
-                                    <label style="font-size: 0.75rem; font-weight: 600; letter-spacing: 0.5px; color: #8892b0; margin-bottom: 4px; display: block; text-transform: uppercase;">Đến ngày</label>
-                                    <input autocomplete="off" type="date" id="date-to" class="form-control" style="padding: 10px; font-size: 0.9rem; border-radius: 10px;">
-                                </div>
-                                <button id="btn-refresh" class="btn-primary" style="display: none;">Tải lại</button>
-                            </div>
+                        <div class="bento-box bento-date" style="flex-direction: row; align-items: center; justify-content: space-between; padding: 8px 12px;">
+                            <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 500;">📅 Từ</span>
+                            <input autocomplete="off" type="date" id="date-from" style="background: transparent; border: none; color: var(--text-main); font-size: 0.9rem; outline: none; flex: 1; padding: 4px; margin-left: 6px;">
+                            
+                            <span style="color: var(--glass-border); margin: 0 5px;">|</span>
+                            
+                            <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 500;">Đến</span>
+                            <input autocomplete="off" type="date" id="date-to" style="background: transparent; border: none; color: var(--text-main); font-size: 0.9rem; outline: none; flex: 1; padding: 4px; margin-left: 6px;">
+                            
+                            <button id="btn-refresh" class="btn-primary" style="display: none;">Tải lại</button>
                         </div>
 
                         <!-- Search & Filter (Bento Search) -->
-                        <div class="bento-box bento-search">
-                            <div style="display: flex; gap: 8px; width: 100%; align-items: flex-end; height: 100%;">
-                                <div class="search-box" style="position: relative; flex-grow: 1;">
-                                    <label style="font-size: 0.75rem; font-weight: 600; letter-spacing: 0.5px; color: #8892b0; margin-bottom: 4px; display: block; text-transform: uppercase;">Tìm kiếm</label>
-                                    <svg style="position: absolute; left: 12px; bottom: 12px; color: #8892b0; pointer-events: none;" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                                    <input type="text" id="grid-search" class="form-control" placeholder="Tên BN, hồ sơ..." style="padding-left: 38px; padding-right: 35px; border-radius: 10px; height: 42px; width: 100%;">
-                                    <button id="btn-clear-search" style="position: absolute; right: 10px; bottom: 8px; background: none; border: none; color: #8892b0; cursor: pointer; display: none; padding: 5px; z-index: 10;">
-                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                                    </button>
-                                </div>
-                                <button id="btn-search" class="btn-primary" style="width: 42px; height: 42px; padding: 0; display: flex; align-items: center; justify-content: center; border-radius: 10px; flex-shrink: 0; margin-top: 0;" title="Tìm kiếm">
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
-                                </button>
-                                <button id="btn-mobile-filter" class="btn-secondary" style="width: 42px; height: 42px; padding: 0; display: flex; align-items: center; justify-content: center; border-radius: 10px; flex-shrink: 0;" title="Lọc nâng cao" onclick="document.getElementById('mobile-bottom-sheet').classList.add('show'); document.getElementById('sheet-backdrop').classList.add('show');">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+                        <div class="bento-box bento-search" style="flex-direction: row; align-items: center; padding: 6px; gap: 8px; border: none; background: transparent; box-shadow: none;">
+                            <div style="display: flex; align-items: center; flex: 1; background: var(--input-bg); border-radius: 12px; padding: 0 12px; height: 42px; border: 1px solid var(--glass-border);">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--text-muted);"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                                <input type="text" id="grid-search" placeholder="Tên BN, hồ sơ..." style="background: transparent; border: none; color: var(--text-main); font-size: 0.95rem; width: 100%; outline: none; padding: 0 10px;">
+                                <button id="btn-clear-search" style="background: none; border: none; color: var(--text-muted); cursor: pointer; display: none; padding: 5px;">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                                 </button>
                             </div>
+                            <button id="btn-search" class="btn-primary" style="width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center; padding: 0; margin: 0; border: none; flex-shrink: 0;" title="Tìm kiếm">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                            </button>
+                            <button id="btn-mobile-filter" class="btn-secondary" style="width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center; padding: 0; margin: 0; flex-shrink: 0;" title="Lọc nâng cao" onclick="document.getElementById('mobile-bottom-sheet').classList.add('show'); document.getElementById('sheet-backdrop').classList.add('show');">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+                            </button>
                         </div>
 
                         <!-- Tabs (Bento Tabs) -->
-                        <div class="bento-box bento-tabs">
-                            <label style="font-size: 0.75rem; font-weight: 600; letter-spacing: 0.5px; color: #8892b0; margin-bottom: 4px; display: block; text-transform: uppercase;">Trạng thái</label>
-                            <div class="tabs-container" style="display: flex; width: 100%; background: var(--input-bg); padding: 4px; border-radius: 12px; margin-bottom: 0; border: 1px solid var(--glass-border);">
-                                <button class="tab-btn active" data-tab="0" style="flex: 1; border-radius: 8px; font-size: 0.95rem; padding: 6px 8px; justify-content: center; border: none;">✍️ Chưa ký <span id="badge-chua-ky" class="badge">0</span></button>
-                                <button class="tab-btn" data-tab="1" style="flex: 1; border-radius: 8px; font-size: 0.95rem; padding: 6px 8px; justify-content: center; border: none;">✅ Đã ký <span id="badge-da-ky" class="badge">0</span></button>
-                            </div>
+                        <div class="bento-box bento-tabs" style="flex-direction: row; padding: 4px; border-radius: 14px;">
+                            <button class="tab-btn active" data-tab="0" style="flex: 1; border-radius: 10px; font-size: 0.95rem; padding: 8px; justify-content: center; border: none; font-weight: 600;">✍️ Chưa ký <span id="badge-chua-ky" class="badge">0</span></button>
+                            <button class="tab-btn" data-tab="1" style="flex: 1; border-radius: 10px; font-size: 0.95rem; padding: 8px; justify-content: center; border: none; font-weight: 600;">✅ Đã ký <span id="badge-da-ky" class="badge">0</span></button>
                         </div>
                     </div>
+                </div>
 
-                    <!-- Backdrop của Bottom Sheet -->
+                <!-- Backdrop của Bottom Sheet (Được tách riêng rẽ khỏi sticky-toolbar) -->
+
                     <div id="sheet-backdrop" class="sheet-backdrop" onclick="document.getElementById('mobile-bottom-sheet').classList.remove('show'); document.getElementById('sheet-backdrop').classList.remove('show');"></div>
 
                     <!-- Bottom Sheet chứa các Filter -->
@@ -339,8 +330,6 @@
                             <button class="btn-primary" style="width: 100%; padding: 12px; font-size: 1.1rem; border-radius: 12px; font-weight: 600;" onclick="document.getElementById('mobile-bottom-sheet').classList.remove('show'); document.getElementById('sheet-backdrop').classList.remove('show'); document.getElementById('btn-refresh').click();">Áp dụng bộ lọc</button>
                         </div>
                     </div>
-                </div>
-
                 <div class="table-container">
                     <table id="docs-table">
                         <thead>
