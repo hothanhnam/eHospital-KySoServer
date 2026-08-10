@@ -72,6 +72,10 @@
                 padding: 15px 10px; 
                 margin: 0;
                 border-radius: 0;
+                transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            }
+            .sticky-toolbar.hidden-on-scroll {
+                transform: translateY(-100%) !important;
             }
             .table-container { 
                 display: block;
@@ -493,6 +497,29 @@
         </div>
     </div>
 
+    <script>
+        // Ẩn hiện toolbar khi cuộn trên mobile
+        document.addEventListener('DOMContentLoaded', () => {
+            let lastScrollY = window.scrollY;
+            const toolbar = document.querySelector('.sticky-toolbar');
+            
+            window.addEventListener('scroll', () => {
+                if (window.innerWidth > 768 || !toolbar) return;
+                
+                const currentScrollY = window.scrollY;
+                
+                // Nếu cuộn xuống và cuộn qua 50px thì ẩn
+                if (currentScrollY > lastScrollY && currentScrollY > 50) {
+                    toolbar.classList.add('hidden-on-scroll');
+                } 
+                // Nếu cuộn lên thì hiện lại
+                else if (currentScrollY < lastScrollY) {
+                    toolbar.classList.remove('hidden-on-scroll');
+                }
+                lastScrollY = currentScrollY <= 0 ? 0 : currentScrollY; // Fix cho bounce scroll trên iOS
+            }, { passive: true });
+        });
+    </script>
     <script src="app.js?v=20260707_1"></script>
 </body>
 </html>
