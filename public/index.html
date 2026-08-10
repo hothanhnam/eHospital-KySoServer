@@ -245,19 +245,17 @@
                     </div>
 
                     <!-- Thanh tìm kiếm và nút Lọc -->
-                    <div style="display: flex; gap: 10px; margin-bottom: 15px; width: 100%;">
-                        <div class="search-box" style="position: relative; flex-grow: 1; display: flex; gap: 10px;">
-                            <div style="position: relative; flex-grow: 1;">
-                                <input type="text" id="grid-search" class="form-control" placeholder="Tìm kiếm bệnh nhân, hồ sơ..." style="padding-right: 35px; border-radius: 12px; height: 42px; width: 100%;">
-                                <button id="btn-clear-search" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #8892b0; cursor: pointer; display: none; padding: 5px; z-index: 10;">
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                                </button>
-                            </div>
-                            <button id="btn-search" class="btn-primary" style="width: auto; margin-top: 0; height: 42px; padding: 0 20px; border-radius: 12px; flex-shrink: 0; font-weight: 600; white-space: nowrap;">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 5px; vertical-align: middle;"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                                Tìm kiếm
+                    <div style="display: flex; gap: 8px; margin-bottom: 12px; width: 100%;">
+                        <div class="search-box" style="position: relative; flex-grow: 1;">
+                            <svg style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #8892b0; pointer-events: none;" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                            <input type="text" id="grid-search" class="form-control" placeholder="Tìm kiếm bệnh nhân, hồ sơ..." style="padding-left: 38px; padding-right: 35px; border-radius: 12px; height: 42px; width: 100%;">
+                            <button id="btn-clear-search" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #8892b0; cursor: pointer; display: none; padding: 5px; z-index: 10;">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                             </button>
                         </div>
+                        <button id="btn-search" class="btn-primary" style="width: 42px; height: 42px; padding: 0; display: flex; align-items: center; justify-content: center; border-radius: 12px; flex-shrink: 0;" title="Tìm kiếm">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                        </button>
                         <button id="btn-mobile-filter" class="btn-secondary" style="width: 42px; height: 42px; padding: 0; display: flex; align-items: center; justify-content: center; border-radius: 12px; flex-shrink: 0;" title="Lọc nâng cao" onclick="document.getElementById('mobile-bottom-sheet').classList.add('show'); document.getElementById('sheet-backdrop').classList.add('show');">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
                         </button>
@@ -267,6 +265,19 @@
                     <div class="tabs-container" style="display: flex; width: 100%; background: var(--card-bg); padding: 4px; border-radius: 12px; border: 1px solid var(--glass-border); margin-bottom: 0;">
                         <button class="tab-btn active" data-tab="0" style="flex: 1; border-radius: 8px; font-size: 0.95rem; padding: 8px; justify-content: center;">✍️ Chưa ký <span id="badge-chua-ky" class="badge">0</span></button>
                         <button class="tab-btn" data-tab="1" style="flex: 1; border-radius: 8px; font-size: 0.95rem; padding: 8px; justify-content: center;">✅ Đã ký <span id="badge-da-ky" class="badge">0</span></button>
+                    </div>
+
+                    <!-- Ngày tháng (Luôn hiện trên PC và Mobile) -->
+                    <div class="date-filter-always-visible" style="display: flex; gap: 10px; margin-bottom: 12px; align-items: flex-end; flex-wrap: wrap; width: 100%;">
+                        <div class="input-group" style="flex: 1; min-width: 120px; margin-bottom: 0;">
+                            <label style="font-size: 0.8rem; color: #8892b0; margin-bottom: 2px; display: block;">📅 TỪ NGÀY</label>
+                            <input autocomplete="off" type="date" id="date-from" class="form-control" style="padding: 6px 10px; font-size: 0.9rem; border-radius: 8px;">
+                        </div>
+                        <div class="input-group" style="flex: 1; min-width: 120px; margin-bottom: 0;">
+                            <label style="font-size: 0.8rem; color: #8892b0; margin-bottom: 2px; display: block;">📅 ĐẾN NGÀY</label>
+                            <input autocomplete="off" type="date" id="date-to" class="form-control" style="padding: 6px 10px; font-size: 0.9rem; border-radius: 8px;">
+                        </div>
+                        <button id="btn-refresh" class="btn-primary" style="display: none;">Tải lại</button>
                     </div>
 
                     <!-- Backdrop của Bottom Sheet -->
@@ -280,34 +291,24 @@
                         </div>
                         
                         <div class="bottom-sheet-content">
-                            <!-- Ngày tháng (Luôn hiện trên PC) -->
-                            <div class="date-filter-always-visible" style="display: flex; gap: 10px; margin-bottom: 10px; align-items: flex-end; flex-wrap: wrap;">
-                                <div class="input-group" style="flex: 1; min-width: 130px; margin-bottom: 0;">
-                                    <label style="font-size: 0.8rem; color: #8892b0; margin-bottom: 2px; display: block;">📅 TỪ NGÀY</label>
-                                    <input autocomplete="off" type="date" id="date-from" class="form-control" style="padding: 6px 10px; font-size: 0.9rem; border-radius: 8px;">
+                            <!-- Quyền Ký và Các bộ lọc khác -->
+                            <div class="filters-container" id="filters-container" style="display: block; margin-top: 0; padding-top: 0; border-top: none;">
+                                <div class="filter-row" style="margin-bottom: 15px;">
+                                    <div class="input-group" style="width: 100%; margin-bottom: 0;">
+                                        <label style="font-size: 0.8rem; color: #8892b0; margin-bottom: 2px; display: block;">👤 QUYỀN KÝ</label>
+                                        <select autocomplete="off" id="quyen-ky-select" class="form-control" style="padding: 6px 10px; font-size: 0.9rem; border-radius: 8px;">
+                                            <option value="">-- Tất cả --</option>
+                                        </select>
+                                    </div>
+                                    <div id="lanh-dao-checkbox-container" style="display: none; align-items: center; gap: 5px; margin-bottom: 0;">
+                                        <input type="checkbox" id="chk-lanh-dao" style="cursor: pointer; width: 18px; height: 18px; margin: 0;">
+                                        <label for="chk-lanh-dao" style="font-size: 0.95rem; color: var(--text-main); margin: 0; cursor: pointer; font-weight: 600;">Lãnh đạo bệnh viện</label>
+                                    </div>
+                                    <div id="all-roles-checkbox-container" style="display: flex; align-items: center; gap: 5px; margin-bottom: 0;">
+                                        <input type="checkbox" id="chk-all-roles" style="cursor: pointer; width: 18px; height: 18px; margin: 0;">
+                                        <label for="chk-all-roles" style="font-size: 0.95rem; color: var(--text-main); margin: 0; cursor: pointer; font-weight: 600;">Tất cả quyền có thể ký</label>
+                                    </div>
                                 </div>
-                                <div class="input-group" style="flex: 1; min-width: 130px; margin-bottom: 0;">
-                                    <label style="font-size: 0.8rem; color: #8892b0; margin-bottom: 2px; display: block;">📅 ĐẾN NGÀY</label>
-                                    <input autocomplete="off" type="date" id="date-to" class="form-control" style="padding: 6px 10px; font-size: 0.9rem; border-radius: 8px;">
-                                </div>
-                                <div class="input-group" style="flex: 1; min-width: 130px; margin-bottom: 0;">
-                                    <label style="font-size: 0.8rem; color: #8892b0; margin-bottom: 2px; display: block;">👤 QUYỀN KÝ</label>
-                                    <select autocomplete="off" id="quyen-ky-select" class="form-control" style="padding: 6px 10px; font-size: 0.9rem; border-radius: 8px;">
-                                        <option value="">-- Tất cả --</option>
-                                    </select>
-                                </div>
-                                <div id="lanh-dao-checkbox-container" style="display: none; align-items: center; gap: 5px; margin-bottom: 0; padding-bottom: 4px;">
-                                    <input type="checkbox" id="chk-lanh-dao" style="cursor: pointer; width: 18px; height: 18px; margin: 0;">
-                                    <label for="chk-lanh-dao" style="font-size: 0.95rem; color: var(--text-main); margin: 0; cursor: pointer; font-weight: 600;">Lãnh đạo bệnh viện</label>
-                                </div>
-                                <div id="all-roles-checkbox-container" style="display: flex; align-items: center; gap: 5px; margin-bottom: 0; padding-bottom: 4px;">
-                                    <input type="checkbox" id="chk-all-roles" style="cursor: pointer; width: 18px; height: 18px; margin: 0;">
-                                    <label for="chk-all-roles" style="font-size: 0.95rem; color: var(--text-main); margin: 0; cursor: pointer; font-weight: 600;">Tất cả quyền có thể ký</label>
-                                </div>
-                                <button id="btn-refresh" class="btn-primary" style="display: none;">Tải lại</button>
-                            </div>
-
-                            <div class="filters-container" id="filters-container">
                                 <div class="filter-row">
                                     <div class="input-group">
                                         <label>🏢 PHÒNG BAN</label>
