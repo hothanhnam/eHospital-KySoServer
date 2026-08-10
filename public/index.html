@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
@@ -242,10 +242,10 @@
         </nav>
 
         <!-- MAIN TABS -->
-        <div class="main-tabs-container" style="padding: 10px 20px; display: flex; gap: 10px; background: transparent; border-bottom: 1px solid var(--glass-border); flex-shrink: 0;">
-            <button class="main-tab-btn active" data-main-tab="nhan-vien" onclick="switchMainTab('nhan-vien')" style="padding: 10px 20px; border-radius: 8px; border: none; background: var(--primary-color); color: white; font-weight: 600; cursor: pointer; transition: all 0.3s;">Ký Nhân viên</button>
-            <button class="main-tab-btn" data-main-tab="benh-nhan" onclick="switchMainTab('benh-nhan')" style="padding: 10px 20px; border-radius: 8px; border: none; background: transparent; color: var(--text-main); font-weight: 600; cursor: pointer; transition: all 0.3s;">Ký Bệnh nhân</button>
-        </div>
+        <div class="main-tabs-container" style="padding: 0 20px; display: flex; gap: 20px; background: transparent; border-bottom: 1px solid var(--glass-border); flex-shrink: 0; align-items: flex-end;">
+    <button class="main-tab-btn active" data-main-tab="nhan-vien" onclick="switchMainTab('nhan-vien')" style="padding: 15px 10px; border: none; background: transparent; color: var(--primary); font-weight: 700; cursor: pointer; transition: all 0.3s; border-bottom: 3px solid var(--primary); font-size: 1rem;">Ký Nhân viên</button>
+    <button class="main-tab-btn" data-main-tab="benh-nhan" onclick="switchMainTab('benh-nhan')" style="padding: 15px 10px; border: none; background: transparent; color: var(--text-muted); font-weight: 600; cursor: pointer; transition: all 0.3s; border-bottom: 3px solid transparent; font-size: 1rem;">Ký Bệnh nhân</button>
+</div>
 
         <div id="tab-nhan-vien" class="main-tab-content active" style="flex: 1; display: flex; flex-direction: column; overflow: hidden; min-height: 0;">
                 <div class="sticky-toolbar" style="background: var(--glass-bg); padding: 12px 20px; border-bottom: 1px solid var(--input-border); box-shadow: 0 2px 5px rgba(0,0,0,0.02); z-index: 1000; display: flex; flex-direction: column; gap: 12px;">

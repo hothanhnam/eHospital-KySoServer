@@ -1,4 +1,4 @@
-
+﻿
 // Theme management
 let currentTheme = localStorage.getItem('theme') || 'dark';
 document.documentElement.setAttribute('data-theme', currentTheme);
@@ -1624,17 +1624,19 @@ window.switchMainTab = function(tabName) {
     document.querySelectorAll('.main-tab-btn').forEach(b => {
         if(b.dataset.mainTab === tabName) {
             b.classList.add('active');
-            b.style.background = tabName === 'nhan-vien' ? 'var(--primary-color)' : 'var(--primary-color)';
-            b.style.color = 'white';
+            b.style.color = 'var(--primary)';
+            b.style.fontWeight = '700';
+            b.style.borderBottom = '3px solid var(--primary)';
         } else {
             b.classList.remove('active');
-            b.style.background = 'transparent';
-            b.style.color = 'var(--text-main)';
+            b.style.color = 'var(--text-muted)';
+            b.style.fontWeight = '600';
+            b.style.borderBottom = '3px solid transparent';
         }
     });
     
     document.querySelectorAll('.main-tab-content').forEach(c => {
-        if(c.id === `tab-${tabName}`) {
+        if(c.id === 	ab-) {
             c.style.display = 'flex';
             c.classList.add('active');
         } else {
