@@ -113,7 +113,7 @@ body {
     width: 100%;
 }
 .bento-box {
-    background: var(--glass-bg);
+    background: rgba(255, 255, 255, 0.2);
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
     border: 1px solid var(--glass-border);
@@ -124,6 +124,9 @@ body {
     flex-direction: column;
     justify-content: center;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+[data-theme="dark"] .bento-box {
+    background: rgba(0, 0, 0, 0.2);
 }
 .bento-box:hover {
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);

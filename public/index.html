@@ -118,11 +118,16 @@
             .sheet-backdrop.show { display: block; opacity: 1; }
             .filter-row { flex-direction: column !important; gap: 15px !important; margin-bottom: 0 !important; }
             .filter-row .input-group { width: 100% !important; min-width: 100% !important; }
-            .filters-container { display: block !important; margin-top: 15px; border-top: 1px dashed var(--glass-border); padding-top: 15px; }
+            .filters-container { display: block !important; margin-top: 0; border-top: none; padding-top: 0; }
         }
-        /* PC CSS cho Bottom Sheet */
+        /* PC CSS cho Bottom Sheet & Bento Grid */
         .bottom-sheet-header, .bottom-sheet-footer, .sheet-backdrop { display: none; }
         .bottom-sheet { display: block !important; }
+        .bento-advanced-filters { grid-column: span 12; padding: 12px; background: rgba(255, 255, 255, 0.05); border-radius: 16px; border: 1px solid var(--glass-border); display: flex; align-items: center; }
+        .bento-advanced-filters .bottom-sheet-content { padding: 0; width: 100%; }
+        .bento-advanced-filters .filters-container { display: flex; flex-direction: column; gap: 15px; }
+        .bento-advanced-filters .filter-row { display: flex; flex-direction: row; gap: 15px; width: 100%; }
+        .bento-advanced-filters.bottom-sheet.show { transform: none; visibility: visible; }
     </style>
 </head>
 <body>
@@ -267,69 +272,63 @@
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
                             </button>
                             <button id="btn-mobile-filter" class="btn-secondary" style="width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center; padding: 0; margin: 0; flex-shrink: 0;" title="Lọc nâng cao" onclick="document.getElementById('mobile-bottom-sheet').classList.add('show'); document.getElementById('sheet-backdrop').classList.add('show');">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
-                            </button>
-                        </div>
-
-                        <!-- Tabs (Bento Tabs) -->
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill                        <!-- Tabs (Bento Tabs) -->
                         <div class="bento-box bento-tabs" style="flex-direction: row; padding: 4px; border-radius: 14px;">
                             <button class="tab-btn active" data-tab="0" style="flex: 1; border-radius: 10px; font-size: 0.95rem; padding: 8px; justify-content: center; border: none; font-weight: 600;">✍️ Chưa ký <span id="badge-chua-ky" class="badge">0</span></button>
                             <button class="tab-btn" data-tab="1" style="flex: 1; border-radius: 10px; font-size: 0.95rem; padding: 8px; justify-content: center; border: none; font-weight: 600;">✅ Đã ký <span id="badge-da-ky" class="badge">0</span></button>
                         </div>
-                    </div>
-                </div>
-
-                <!-- Backdrop của Bottom Sheet (Được tách riêng rẽ khỏi sticky-toolbar) -->
-
-                    <div id="sheet-backdrop" class="sheet-backdrop" onclick="document.getElementById('mobile-bottom-sheet').classList.remove('show'); document.getElementById('sheet-backdrop').classList.remove('show');"></div>
-
-                    <!-- Bottom Sheet chứa các Filter -->
-                    <div id="mobile-bottom-sheet" class="bottom-sheet">
-                        <div class="bottom-sheet-header">
-                            <h4>Bộ lọc nâng cao</h4>
-                            <button type="button" class="btn-close-sheet" onclick="document.getElementById('mobile-bottom-sheet').classList.remove('show'); document.getElementById('sheet-backdrop').classList.remove('show');">&times;</button>
-                        </div>
                         
-                        <div class="bottom-sheet-content">
-                            <!-- Quyền Ký và Các bộ lọc khác -->
-                            <div class="filters-container" id="filters-container" style="display: block; margin-top: 0; padding-top: 0; border-top: none;">
-                                <div class="filter-row" style="margin-bottom: 15px;">
-                                    <div class="input-group" style="width: 100%; margin-bottom: 0;">
-                                        <label style="font-size: 0.8rem; color: #8892b0; margin-bottom: 2px; display: block;">👤 QUYỀN KÝ</label>
-                                        <select autocomplete="off" id="quyen-ky-select" class="form-control" style="padding: 6px 10px; font-size: 0.9rem; border-radius: 8px;">
-                                            <option value="">-- Tất cả --</option>
-                                        </select>
+                        <!-- Filter Advanced (Bento Box on PC, Bottom Sheet on Mobile) -->
+                        <div id="mobile-bottom-sheet" class="bottom-sheet bento-box bento-advanced-filters">
+                            <div class="bottom-sheet-header">
+                                <h4>Bộ lọc nâng cao</h4>
+                                <button type="button" class="btn-close-sheet" onclick="document.getElementById('mobile-bottom-sheet').classList.remove('show'); document.getElementById('sheet-backdrop').classList.remove('show');">&times;</button>
+                            </div>
+                            
+                            <div class="bottom-sheet-content">
+                                <div class="filters-container" id="filters-container" style="display: block; margin-top: 0; padding-top: 0; border-top: none;">
+                                    <div class="filter-row" style="margin-bottom: 15px; display: flex; gap: 15px; flex-wrap: wrap;">
+                                        <div class="input-group" style="flex: 1; min-width: 200px; margin-bottom: 0;">
+                                            <label style="font-size: 0.8rem; color: #8892b0; margin-bottom: 2px; display: block;">👑 QUYỀN KÝ</label>
+                                            <select autocomplete="off" id="quyen-ky-select" class="form-control" style="padding: 6px 10px; font-size: 0.9rem; border-radius: 8px; width: 100%;">
+                                                <option value="">-- Tất cả --</option>
+                                            </select>
+                                        </div>
+                                        <div id="lanh-dao-checkbox-container" style="display: none; align-items: center; gap: 5px; margin-bottom: 0;">
+                                            <input type="checkbox" id="chk-lanh-dao" style="cursor: pointer; width: 18px; height: 18px; margin: 0;">
+                                            <label for="chk-lanh-dao" style="font-size: 0.95rem; color: var(--text-main); margin: 0; cursor: pointer; font-weight: 600;">Lãnh đạo bệnh viện</label>
+                                        </div>
+                                        <div id="all-roles-checkbox-container" style="display: flex; align-items: center; gap: 5px; margin-bottom: 0;">
+                                            <input type="checkbox" id="chk-all-roles" style="cursor: pointer; width: 18px; height: 18px; margin: 0;">
+                                            <label for="chk-all-roles" style="font-size: 0.95rem; color: var(--text-main); margin: 0; cursor: pointer; font-weight: 600;">Tất cả quyền có thể ký</label>
+                                        </div>
                                     </div>
-                                    <div id="lanh-dao-checkbox-container" style="display: none; align-items: center; gap: 5px; margin-bottom: 0;">
-                                        <input type="checkbox" id="chk-lanh-dao" style="cursor: pointer; width: 18px; height: 18px; margin: 0;">
-                                        <label for="chk-lanh-dao" style="font-size: 0.95rem; color: var(--text-main); margin: 0; cursor: pointer; font-weight: 600;">Lãnh đạo bệnh viện</label>
-                                    </div>
-                                    <div id="all-roles-checkbox-container" style="display: flex; align-items: center; gap: 5px; margin-bottom: 0;">
-                                        <input type="checkbox" id="chk-all-roles" style="cursor: pointer; width: 18px; height: 18px; margin: 0;">
-                                        <label for="chk-all-roles" style="font-size: 0.95rem; color: var(--text-main); margin: 0; cursor: pointer; font-weight: 600;">Tất cả quyền có thể ký</label>
-                                    </div>
-                                </div>
-                                <div class="filter-row">
-                                    <div class="input-group">
-                                        <label>🏢 PHÒNG BAN</label>
-                                        <select autocomplete="off" id="phong-ban-select" class="form-control" style="border-radius: 8px;">
-                                            <option value="">-- Tất cả --</option>
-                                        </select>
-                                    </div>
-                                    <div class="input-group">
-                                        <label>📄 LOẠI GIẤY TỜ</label>
-                                        <select autocomplete="off" id="doc-type-select" class="form-control" style="border-radius: 8px;">
-                                            <option value="">-- Tất cả loại giấy tờ --</option>
-                                        </select>
+                                    <div class="filter-row" style="display: flex; gap: 15px; flex-wrap: wrap;">
+                                        <div class="input-group" style="flex: 1; min-width: 200px;">
+                                            <label style="font-size: 0.8rem; color: #8892b0; margin-bottom: 2px; display: block;">🏢 PHÒNG BAN</label>
+                                            <select autocomplete="off" id="phong-ban-select" class="form-control" style="border-radius: 8px; width: 100%;">
+                                                <option value="">-- Tất cả --</option>
+                                            </select>
+                                        </div>
+                                        <div class="input-group" style="flex: 1; min-width: 200px;">
+                                            <label style="font-size: 0.8rem; color: #8892b0; margin-bottom: 2px; display: block;">📄 LOẠI GIẤY TỜ</label>
+                                            <select autocomplete="off" id="doc-type-select" class="form-control" style="border-radius: 8px; width: 100%;">
+                                                <option value="">-- Tất cả loại giấy tờ --</option>
+                                            </select>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <div class="bottom-sheet-footer">
-                            <button class="btn-primary" style="width: 100%; padding: 12px; font-size: 1.1rem; border-radius: 12px; font-weight: 600;" onclick="document.getElementById('mobile-bottom-sheet').classList.remove('show'); document.getElementById('sheet-backdrop').classList.remove('show'); document.getElementById('btn-refresh').click();">Áp dụng bộ lọc</button>
+                            <div class="bottom-sheet-footer">
+                                <button class="btn-primary" style="width: 100%; padding: 12px; font-size: 1.1rem; border-radius: 12px; font-weight: 600;" onclick="document.getElementById('mobile-bottom-sheet').classList.remove('show'); document.getElementById('sheet-backdrop').classList.remove('show'); document.getElementById('btn-refresh').click();">Áp dụng bộ lọc</button>
+                            </div>
                         </div>
                     </div>
+                </div>
+
+                <div id="sheet-backdrop" class="sheet-backdrop" onclick="document.getElementById('mobile-bottom-sheet').classList.remove('show'); document.getElementById('sheet-backdrop').classList.remove('show');"></div>
+
                 <div class="table-container">
                     <table id="docs-table">
                         <thead>
